@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm dlx nuxi@latest init:*)",
+      "Bash(pnpm build:*)"
+    ]
+  }
+}
