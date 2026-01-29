@@ -36,7 +36,7 @@ function formatDate(dateString: string): string {
   <Sheet :open="open" @update:open="emit('update:open', $event)">
     <SheetContent side="bottom" class="max-h-[85vh] overflow-y-auto">
       <template v-if="entry">
-        <div v-if="entry.photoUrl" class="mb-4 overflow-hidden rounded-lg">
+        <div v-if="entry.photoUrl" class="photo-frame mb-4 overflow-hidden">
           <img
             :src="entry.photoUrl"
             :alt="`Photo by ${entry.name}`"
@@ -45,14 +45,14 @@ function formatDate(dateString: string): string {
         </div>
 
         <SheetHeader class="text-left">
-          <SheetTitle>{{ entry.name }}</SheetTitle>
+          <SheetTitle class="font-handwritten text-2xl">{{ entry.name }}</SheetTitle>
           <SheetDescription>
             {{ formatDate(entry.createdAt) }}
           </SheetDescription>
         </SheetHeader>
 
         <div class="mt-4">
-          <p class="whitespace-pre-wrap text-foreground">{{ entry.message }}</p>
+          <p class="whitespace-pre-wrap leading-relaxed text-foreground">{{ entry.message }}</p>
         </div>
       </template>
     </SheetContent>

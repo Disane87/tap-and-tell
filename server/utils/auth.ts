@@ -1,8 +1,17 @@
+/**
+ * Admin authentication utilities using HMAC-SHA256 tokens.
+ * @module server/utils/auth
+ */
 import { createHmac } from 'crypto'
 import type { H3Event } from 'h3'
 
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'tap-and-tell-secret'
 
+/**
+ * Verifies an admin token by checking its HMAC signature and expiry (24 hours).
+ * @param token - The base64-encoded token string.
+ * @returns `true` if the token is valid and not expired.
+ */
 export function verifyToken(token: string): boolean {
   try {
     const decoded = Buffer.from(token, 'base64').toString('utf-8')
@@ -31,6 +40,11 @@ export function verifyToken(token: string): boolean {
   }
 }
 
+/**
+ * Middleware guard that extracts and verifies a Bearer token from the
+ * `Authorization` header. Throws a 401 error if the token is missing or invalid.
+ * @param event - The H3 event to authenticate.
+ */
 export function requireAuth(event: H3Event): void {
   const authHeader = getHeader(event, 'authorization')
 

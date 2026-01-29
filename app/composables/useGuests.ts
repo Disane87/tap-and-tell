@@ -1,10 +1,20 @@
 import type { GuestEntry, CreateGuestEntryInput, GuestEntriesResponse, GuestEntryResponse } from '~/types/guest'
 
+/**
+ * Composable for managing guest entries (CRUD operations).
+ *
+ * Provides reactive state for entries, loading, and error, plus
+ * `fetchEntries`, `createEntry`, and `deleteEntry` methods that
+ * call the `/api/entries` server routes.
+ *
+ * @returns Reactive guest entries state and mutation functions.
+ */
 export function useGuests() {
   const entries = useState<GuestEntry[]>('guest-entries', () => [])
   const isLoading = useState('guests-loading', () => false)
   const error = useState<string | null>('guests-error', () => null)
 
+  /** Fetches all guest entries from the server and updates reactive state. */
   async function fetchEntries(): Promise<void> {
     isLoading.value = true
     error.value = null
@@ -25,6 +35,11 @@ export function useGuests() {
     }
   }
 
+  /**
+   * Creates a new guest entry via `POST /api/entries`.
+   * @param input - The guest entry data (name, message, optional photo).
+   * @returns The created entry, or `null` if creation failed.
+   */
   async function createEntry(input: CreateGuestEntryInput): Promise<GuestEntry | null> {
     isLoading.value = true
     error.value = null
@@ -50,6 +65,11 @@ export function useGuests() {
     }
   }
 
+  /**
+   * Deletes a guest entry by ID via `DELETE /api/entries/:id`.
+   * @param id - The entry ID to delete.
+   * @returns `true` if deleted successfully, `false` otherwise.
+   */
   async function deleteEntry(id: string): Promise<boolean> {
     isLoading.value = true
     error.value = null

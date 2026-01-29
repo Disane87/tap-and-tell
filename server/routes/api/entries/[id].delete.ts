@@ -1,5 +1,6 @@
 import { deleteEntry } from '../../../utils/storage'
 
+/** DELETE /api/entries/:id — Deletes a guest entry and its photo. */
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 

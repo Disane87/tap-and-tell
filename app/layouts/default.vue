@@ -3,10 +3,10 @@ import { Sonner } from '@/components/ui/sonner'
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
-    <header class="border-b">
+  <div class="transition-theme min-h-screen bg-background">
+    <header class="border-b border-border/60 bg-card/80 backdrop-blur-sm">
       <div class="container mx-auto flex h-16 items-center justify-between px-4">
-        <NuxtLink to="/" class="text-xl font-semibold text-foreground">
+        <NuxtLink to="/" class="font-display text-xl font-semibold tracking-tight text-foreground">
           Tap & Tell
         </NuxtLink>
         <nav class="flex items-center gap-4">
@@ -22,7 +22,9 @@ import { Sonner } from '@/components/ui/sonner'
           >
             Guestbook
           </NuxtLink>
-          <ThemeToggle />
+          <ClientOnly>
+            <ThemeToggle />
+          </ClientOnly>
         </nav>
       </div>
     </header>

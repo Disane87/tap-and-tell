@@ -1,6 +1,7 @@
 import { addEntry, savePhoto, generateId } from '../../../utils/storage'
 import type { CreateGuestEntryInput, GuestEntry } from '../../../../app/types/guest'
 
+/** POST /api/entries — Creates a new guest entry with optional photo upload. */
 export default defineEventHandler(async (event) => {
   try {
     const body = await readBody<CreateGuestEntryInput>(event)

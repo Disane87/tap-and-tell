@@ -1,3 +1,7 @@
+/**
+ * GET /api/photos/:filename — Serves a stored photo file with
+ * appropriate MIME type and immutable cache headers.
+ */
 import { promises as fs } from 'fs'
 import { join } from 'path'
 

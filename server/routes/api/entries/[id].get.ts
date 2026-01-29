@@ -1,5 +1,6 @@
 import { getEntryById } from '../../../utils/storage'
 
+/** GET /api/entries/:id — Returns a single guest entry by ID. */
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 

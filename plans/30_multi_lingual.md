@@ -1,5 +1,5 @@
 # Multi lingual app
-Everything should be translatable to multiple languages. English as default but other languages should be selectable.
+Everything should be translated to multiple languages. English as default but other languages should be selectable.
 
 ## Features
 - Multi-lingual support for all user-facing text

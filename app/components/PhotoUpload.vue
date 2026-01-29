@@ -62,7 +62,7 @@ function removePhoto() {
   <div class="space-y-3">
     <div
       v-if="photo"
-      class="relative overflow-hidden rounded-lg border bg-muted"
+      class="photo-frame relative overflow-hidden border border-border/40"
     >
       <img
         :src="photo"
