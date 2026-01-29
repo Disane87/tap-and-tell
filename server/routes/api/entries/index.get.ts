@@ -1,5 +1,6 @@
 import { getEntries } from '../../../utils/storage'
 
+/** GET /api/entries — Returns all guest entries sorted newest-first. */
 export default defineEventHandler(async () => {
   try {
     const entries = await getEntries()

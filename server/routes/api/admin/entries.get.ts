@@ -1,6 +1,7 @@
 import { requireAuth } from '../../../utils/auth'
 import { getEntries } from '../../../utils/storage'
 
+/** GET /api/admin/entries — Returns all entries with count (admin auth required). */
 export default defineEventHandler(async (event) => {
   requireAuth(event)
 

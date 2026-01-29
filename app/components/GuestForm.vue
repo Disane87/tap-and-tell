@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
 interface Props {
   formState: FormState
@@ -29,12 +28,12 @@ function handleSubmit(event: Event) {
 </script>
 
 <template>
-  <Card>
-    <CardHeader>
-      <CardTitle>Leave a Message</CardTitle>
-      <CardDescription>Share a moment with us</CardDescription>
-    </CardHeader>
-    <CardContent>
+  <div class="card-polaroid overflow-hidden border border-border/40">
+    <div class="border-b border-border/40 px-6 py-5">
+      <h2 class="font-display text-lg font-semibold text-foreground">Leave a Message</h2>
+      <p class="mt-1 text-sm text-muted-foreground">Share a moment with us</p>
+    </div>
+    <div class="px-6 py-5">
       <form class="space-y-6" @submit="handleSubmit">
         <div class="space-y-2">
           <Label for="name">Your Name</Label>
@@ -89,6 +88,6 @@ function handleSubmit(event: Event) {
           <span v-else>Submit</span>
         </Button>
       </form>
-    </CardContent>
-  </Card>
+    </div>
+  </div>
 </template>

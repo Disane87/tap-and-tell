@@ -1,8 +1,13 @@
+/**
+ * POST /api/admin/login — Authenticates with a password and returns
+ * an HMAC-SHA256 signed token valid for 24 hours.
+ */
 import { createHmac, randomBytes } from 'crypto'
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'tap-and-tell-secret'
 
+/** Generates a base64-encoded HMAC-SHA256 token with timestamp and random nonce. */
 function generateToken(): string {
   const timestamp = Date.now().toString()
   const random = randomBytes(16).toString('hex')

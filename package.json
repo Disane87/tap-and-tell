@@ -25,6 +25,7 @@
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/vite": "^4.1.18",
     "shadcn-nuxt": "^2.4.3",
-    "tailwindcss": "4"
+    "tailwindcss": "4",
+    "typescript": "^5.9.3"
   }
 }

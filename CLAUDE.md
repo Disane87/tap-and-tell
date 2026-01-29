@@ -97,6 +97,61 @@ The `/plans` directory contains 15 sequential plans:
 - Mobile-first approach (NFC is mobile-only)
 - No feature invention beyond PRD and plans
 
-## Current Status
+## Mandatory Process Rules
 
-This is a greenfield project. The repository contains only planning documentation. Implementation has not yet started.
+### Build Integrity
+- Treat every implementation as if `npm run build` will be executed
+- Do not mark any step as completed unless the project would build successfully
+- Consider TypeScript, imports, Nuxt conventions, and SSR constraints
+- If a build error is likely, stop and explain before proceeding
+
+### Plan Tracking
+- After completing a plan file, mark completed steps explicitly
+- Use checkmarks (✔) inside the relevant plan file
+- Never mark a step as completed unless it is fully implemented
+
+### Plan Maintenance
+- If new tasks are discovered during implementation:
+  - Add them to the most appropriate existing plan file, OR
+  - Create a new numbered plan file if scope is larger
+- Never silently implement undocumented work
+
+### Documentation First
+- If a change affects architecture, features, or scope:
+  - Update the relevant Markdown files first
+  - Then proceed with implementation
+
+## Project Memory
+
+- Always read PROJECT_MEMORY.md before implementing changes
+- Treat documented issues and rules as hard constraints
+- Do not repeat known mistakes
+- If unsure, stop and ask before proceeding
+
+### General
+- All non-trivial code must be documented
+- Documentation is mandatory, not optional
+- Code without proper documentation is considered incomplete
+
+### JSDoc Requirements
+- Use JSDoc for all:
+  - Functions
+  - Composables
+  - Utilities
+  - Server handlers
+  - Public-facing helpers
+- Every JSDoc block must describe:
+  - The intention of the code
+  - Expected inputs
+  - Outputs
+  - Side effects (if any)
+
+### Style
+- Documentation must explain *why*, not just *what*
+- Avoid redundant comments that repeat the code
+- Prefer descriptive JSDoc over inline comments
+
+### Maintenance Rule
+- If existing code is modified:
+  - Update the corresponding JSDoc
+- Outdated documentation is considered a bug

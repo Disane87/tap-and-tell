@@ -2,11 +2,7 @@
 import { Sun, Moon, Monitor } from 'lucide-vue-next'
 import { Button } from '@/components/ui/button'
 
-const { theme, toggleTheme, initTheme } = useTheme()
-
-onMounted(() => {
-  initTheme()
-})
+const { theme, toggleTheme } = useTheme()
 </script>
 
 <template>
@@ -14,6 +10,7 @@ onMounted(() => {
     variant="ghost"
     size="icon"
     :title="`Current theme: ${theme}. Click to change.`"
+    aria-label="Toggle theme"
     @click="toggleTheme"
   >
     <Sun v-if="theme === 'light'" class="h-5 w-5" />

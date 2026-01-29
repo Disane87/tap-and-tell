@@ -1,6 +1,7 @@
 import { requireAuth } from '../../../../utils/auth'
 import { deleteEntry } from '../../../../utils/storage'
 
+/** DELETE /api/admin/entries/:id — Deletes an entry (admin auth required). */
 export default defineEventHandler(async (event) => {
   requireAuth(event)
 
