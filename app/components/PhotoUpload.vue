@@ -1,13 +1,16 @@
 <script setup lang="ts">
 /**
- * Photo upload component with preview and drag-and-drop support.
+ * Photo upload component with preview, drag-and-drop, and compression.
  *
- * Accepts images up to 5MB, converts to base64 for submission.
- * Emits the base64 string to parent via v-model.
+ * Accepts images up to 10MB, compresses them client-side to max 500KB,
+ * and emits the compressed base64 string to parent via v-model.
  *
  * @model modelValue - Base64-encoded image string or null.
  */
-import { Camera, X, Upload } from 'lucide-vue-next'
+import { Camera, X, Upload, Loader2 } from 'lucide-vue-next'
+
+const { t } = useI18n()
+const { compressImage, isCompressing, compressionProgress } = useImageCompression()
 
 const props = defineProps<{
   modelValue: string | null
@@ -22,14 +25,15 @@ const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 /**
- * Maximum file size in bytes (5MB).
+ * Maximum file size in bytes (10MB - will be compressed).
  */
-const MAX_SIZE = 5 * 1024 * 1024
+const MAX_SIZE = 10 * 1024 * 1024
 
 /**
  * Handles file selection from input or drop.
+ * Compresses the image before emitting.
  */
-function handleFile(file: File): void {
+async function handleFile(file: File): Promise<void> {
   if (!file.type.startsWith('image/')) {
     return
   }
@@ -38,11 +42,12 @@ function handleFile(file: File): void {
     return
   }
 
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    emit('update:modelValue', e.target?.result as string)
+  try {
+    const compressedBase64 = await compressImage(file)
+    emit('update:modelValue', compressedBase64)
+  } catch (error) {
+    console.error('Failed to compress image:', error)
   }
-  reader.readAsDataURL(file)
 }
 
 /**
@@ -135,7 +140,8 @@ function removePhoto(): void {
       class="relative aspect-square w-full cursor-pointer rounded-xl border-2 border-dashed transition-colors"
       :class="[
         isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50',
-        error ? 'border-destructive' : ''
+        error ? 'border-destructive' : '',
+        isCompressing ? 'pointer-events-none' : ''
       ]"
       @click="openFilePicker"
       @dragenter="onDragEnter"
@@ -143,17 +149,35 @@ function removePhoto(): void {
       @dragover="onDragOver"
       @drop="onDrop"
     >
-      <div class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+      <!-- Compressing state -->
+      <div v-if="isCompressing" class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <Loader2 class="h-6 w-6 animate-spin text-primary" />
+        </div>
+        <div>
+          <p class="text-sm font-medium text-foreground">
+            {{ $t('photo.compressing') }}
+          </p>
+          <div class="mt-2 h-1.5 w-32 overflow-hidden rounded-full bg-muted">
+            <div
+              class="h-full bg-primary transition-all duration-200"
+              :style="{ width: `${compressionProgress}%` }"
+            />
+          </div>
+        </div>
+      </div>
+      <!-- Normal upload state -->
+      <div v-else class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
           <Camera v-if="!isDragging" class="h-6 w-6 text-muted-foreground" />
           <Upload v-else class="h-6 w-6 text-primary" />
         </div>
         <div>
           <p class="text-sm font-medium text-foreground">
-            {{ isDragging ? 'Drop your photo here' : 'Add a photo' }}
+            {{ isDragging ? $t('photo.dropHere') : $t('photo.addPhoto') }}
           </p>
           <p class="mt-1 text-xs text-muted-foreground">
-            Tap or drag & drop (max 5MB)
+            {{ $t('photo.hint') }}
           </p>
         </div>
       </div>

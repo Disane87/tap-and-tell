@@ -1,0 +1,54 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build output
+.output
+.nuxt
+dist
+
+# Data directory
+.data
+
+# Development files
+.git
+.gitignore
+*.md
+!README.md
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files (use docker environment instead)
+.env
+.env.*
+
+# Test files
+coverage
+*.test.ts
+*.spec.ts
+__tests__
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Docker files (not needed in build context)
+docker-compose*.yml
+Dockerfile*
+
+# Plans and docs
+plans
+docs
+
+# Misc
+.eslintcache
+.stylelintcache

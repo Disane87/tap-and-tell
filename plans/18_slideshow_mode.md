@@ -1,18 +1,23 @@
-# Slideshow Mode
+# Slideshow Mode ✔
 
 Full-screen auto-rotating display for party screens.
 
 ## Features
 
-- Full-screen entry display
-- Auto-advance timer (configurable 5-15 seconds)
-- Smooth transitions between entries
-- Pause on hover/tap
-- Keyboard controls (arrow keys, space, escape)
+- [x] Full-screen entry display
+- [x] Auto-advance timer (configurable 3-20 seconds)
+- [x] Smooth fade transitions between entries
+- [x] Pause on click/tap
+- [x] Keyboard controls (arrow keys, space, P for pause, F for fullscreen, Escape)
+- [x] Fullscreen API integration
+- [x] Settings panel for interval adjustment
+- [x] Progress indicator dots
+- [x] Link from guestbook page
 
 ## Implementation
 
-- `/slideshow` page
-- `useSlideshow` composable
-- CSS transitions for card animations
-- Fullscreen API integration
+- [x] `/slideshow` page with layout: false
+- [x] `useSlideshow` composable with play/pause/next/prev
+- [x] CSS fade transitions
+- [x] Auto-hide controls after 3 seconds
+- [x] Localized UI (EN/DE)

@@ -1,18 +1,19 @@
-# Entry Moderation
+# Entry Moderation ✔
 
 Approve entries before public display.
 
 ## Features
 
-- Entries start as "pending" status
-- Admin reviews and approves/rejects
-- Only approved entries shown publicly
-- Optional: auto-approve mode toggle
-- Rejection reason (optional)
+- [x] Entries start as "pending" status
+- [x] Admin reviews and approves/rejects
+- [x] Only approved entries shown publicly
+- [x] Rejection reason (optional)
 
 ## Implementation
 
-- Add `status` field to entry schema (`pending`, `approved`, `rejected`)
-- Filter public API to approved only
-- Admin moderation queue UI
-- Bulk approve/reject actions
+- [x] Add `status` field to entry schema (`pending`, `approved`, `rejected`)
+- [x] Filter public API to approved only
+- [x] Admin moderation queue UI with tabs
+- [x] Bulk approve/reject actions
+- [x] Status badges on entries
+- [x] Localized UI (EN/DE)

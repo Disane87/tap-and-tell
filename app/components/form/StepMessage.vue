@@ -11,20 +11,20 @@ const { formState, errors } = useGuestForm()
   <div class="space-y-6">
     <div class="text-center">
       <h2 class="font-display text-xl font-semibold text-foreground">
-        Deine Nachricht
+        {{ $t('form.message.title') }}
       </h2>
       <p class="mt-1 text-sm text-muted-foreground">
-        Hinterlasse einen persönlichen Gruß!
+        {{ $t('form.message.subtitle') }}
       </p>
     </div>
 
     <!-- Message -->
     <div class="space-y-2">
-      <Label for="message">Nachricht *</Label>
+      <Label for="message">{{ $t('form.message.message') }} *</Label>
       <Textarea
         id="message"
         v-model="formState.message"
-        placeholder="Schreib etwas Nettes..."
+        :placeholder="$t('form.message.messagePlaceholder')"
         :class="{ 'border-destructive': errors.message }"
         rows="4"
         maxlength="1000"
@@ -41,22 +41,22 @@ const { formState, errors } = useGuestForm()
 
     <!-- How We Met -->
     <div class="space-y-2">
-      <Label for="howWeMet">Wie haben wir uns kennengelernt?</Label>
+      <Label for="howWeMet">{{ $t('form.message.howWeMet') }}</Label>
       <Textarea
         id="howWeMet"
         v-model="formState.howWeMet"
-        placeholder="Erzähl unsere Geschichte..."
+        :placeholder="$t('form.message.howWeMetPlaceholder')"
         rows="3"
       />
     </div>
 
     <!-- Best Memory -->
     <div class="space-y-2">
-      <Label for="bestMemory">Beste Erinnerung</Label>
+      <Label for="bestMemory">{{ $t('form.message.bestMemory') }}</Label>
       <Textarea
         id="bestMemory"
         v-model="formState.bestMemory"
-        placeholder="Was ist deine liebste Erinnerung mit mir?"
+        :placeholder="$t('form.message.bestMemoryPlaceholder')"
         rows="3"
       />
     </div>

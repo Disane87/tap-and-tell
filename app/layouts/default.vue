@@ -9,15 +9,16 @@
  */
 import { BookOpen, Home, Settings } from 'lucide-vue-next'
 
+const { t } = useI18n()
 const route = useRoute()
 
 /**
  * Navigation links.
  */
-const navLinks = [
-  { to: '/', label: 'Home', icon: Home },
-  { to: '/guestbook', label: 'Guestbook', icon: BookOpen }
-]
+const navLinks = computed(() => [
+  { to: '/', label: t('nav.home'), icon: Home },
+  { to: '/guestbook', label: t('nav.guestbook'), icon: BookOpen }
+])
 
 /**
  * Checks if a link is active.
@@ -63,6 +64,11 @@ function isActive(path: string): boolean {
             <Settings class="h-4 w-4" />
             <span class="hidden sm:inline">Admin</span>
           </NuxtLink>
+
+          <!-- Language switcher -->
+          <ClientOnly>
+            <LanguageSwitcher />
+          </ClientOnly>
 
           <!-- Theme toggle -->
           <ClientOnly>

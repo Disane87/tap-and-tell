@@ -1,19 +1,19 @@
-# PWA Support
+# PWA Support ✔
 
 Progressive Web App for installable mobile experience.
 
 ## Features
 
-- Web app manifest
-- Service worker for offline caching
-- Offline entry queuing (sync when online)
-- Install prompt
-- App icons
+- [x] Web app manifest
+- [x] Service worker for offline caching
+- [x] Offline entry queuing (sync when online)
+- [x] Install prompt (browser native)
+- [x] App icons (SVG)
 
 ## Implementation
 
-- `@vite-pwa/nuxt` module
-- Configure manifest (name, icons, colors)
-- Cache static assets
-- IndexedDB for offline entries
-- Background sync API
+- [x] `@vite-pwa/nuxt` module
+- [x] Configure manifest (name, icons, colors)
+- [x] Cache static assets
+- [x] IndexedDB for offline entries (`useOfflineQueue`)
+- [x] Runtime caching for Google Fonts

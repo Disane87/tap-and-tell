@@ -1,0 +1,228 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "saving": "Saving...",
+    "entry": "entry",
+    "entries": "entries",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "logout": "Logout",
+    "login": "Login",
+    "optional": "optional",
+    "required": "required"
+  },
+  "landing": {
+    "title": "Tap & Tell",
+    "subtitle": "Leave a message and tell us something about yourself.",
+    "cta": "Sign the Guestbook",
+    "viewAll": "View all entries"
+  },
+  "form": {
+    "addEntry": "Add Entry",
+    "addEntryDescription": "Fill out the form to add your entry.",
+    "step": "Step {current} of {total}: {label}",
+    "steps": {
+      "basics": "Basics",
+      "favorites": "Favorites",
+      "funFacts": "Fun Facts",
+      "message": "Message"
+    },
+    "basics": {
+      "title": "Who are you?",
+      "subtitle": "Tell us your name and show your best side.",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "photo": "Photo"
+    },
+    "favorites": {
+      "title": "Your Favorites",
+      "subtitle": "What do you like best? All optional!",
+      "color": "Favorite Color",
+      "colorPlaceholder": "e.g. Mint Green",
+      "food": "Favorite Food",
+      "foodPlaceholder": "e.g. Ramen",
+      "movie": "Favorite Movie",
+      "moviePlaceholder": "e.g. Interstellar",
+      "song": "Favorite Song",
+      "songTitle": "Title",
+      "songArtist": "Artist (optional)",
+      "songUrl": "Spotify/YouTube Link (optional)",
+      "video": "Favorite Video",
+      "videoTitle": "Title",
+      "videoUrl": "YouTube Link (optional)"
+    },
+    "funFacts": {
+      "title": "Fun Facts",
+      "subtitle": "Tell us something fun about yourself!",
+      "coffeeOrTea": "Coffee or Tea?",
+      "coffee": "Coffee",
+      "tea": "Tea",
+      "nightOwlOrEarlyBird": "Night Owl or Early Bird?",
+      "nightOwl": "Night Owl",
+      "earlyBird": "Early Bird",
+      "beachOrMountains": "Beach or Mountains?",
+      "beach": "Beach",
+      "mountains": "Mountains",
+      "superpower": "Your Superpower",
+      "superpowerPlaceholder": "e.g. Empathy",
+      "hiddenTalent": "Hidden Talent",
+      "hiddenTalentPlaceholder": "e.g. Origami",
+      "desertIsland": "3 Things on a Desert Island",
+      "desertIslandPlaceholder": "e.g. Book, Coffee, Blanket"
+    },
+    "message": {
+      "title": "Your Message",
+      "subtitle": "Leave a personal greeting!",
+      "message": "Message",
+      "messagePlaceholder": "Write something nice...",
+      "howWeMet": "How did we meet?",
+      "howWeMetPlaceholder": "Tell our story...",
+      "bestMemory": "Best Memory",
+      "bestMemoryPlaceholder": "What's your favorite memory with me?"
+    }
+  },
+  "guestbook": {
+    "title": "Guestbook",
+    "empty": "No entries yet.",
+    "createFirst": "Create first entry",
+    "searchPlaceholder": "Search by name...",
+    "sortNewest": "Newest first",
+    "sortOldest": "Oldest first",
+    "clearFilters": "Clear filters",
+    "noResults": "No entries found.",
+    "of": "of",
+    "exportPdf": "Export PDF"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "login": {
+      "title": "Admin Login",
+      "description": "Sign in to manage entries.",
+      "password": "Password",
+      "passwordPlaceholder": "Admin password",
+      "passwordRequired": "Password required",
+      "wrongPassword": "Wrong password",
+      "loggingIn": "Signing in...",
+      "loginButton": "Sign In",
+      "loginSuccess": "Signed in!",
+      "loginFailed": "Login failed"
+    },
+    "logoutSuccess": "Signed out",
+    "noEntries": "No entries available.",
+    "deleteEntry": "Delete entry?",
+    "deleteConfirm": "The entry by \"{name}\" will be permanently deleted.",
+    "deleteSuccess": "Entry deleted",
+    "deleteFailed": "Delete failed",
+    "qr": {
+      "title": "QR Code Generator",
+      "description": "Generate a QR code for guests without NFC.",
+      "eventName": "Event Name (optional)",
+      "eventPlaceholder": "e.g. Birthday Party 2024",
+      "eventHint": "This will be shown as a welcome message when guests scan the code.",
+      "urlPreview": "URL Preview",
+      "copied": "URL copied!",
+      "copyFailed": "Failed to copy URL",
+      "generateFailed": "Failed to generate QR code",
+      "instructions": "How to use:",
+      "instruction1": "Download the QR code as PNG or SVG",
+      "instruction2": "Print it and place it where guests can scan it",
+      "instruction3": "Guests scan with their phone camera to open the guestbook",
+      "backToAdmin": "Back to Admin"
+    },
+    "moderation": {
+      "tabs": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "selected": "{count} selected",
+      "selectAll": "Select all",
+      "approveAll": "Approve all",
+      "rejectAll": "Reject all",
+      "approvedSuccess": "Entry approved",
+      "rejectedSuccess": "Entry rejected",
+      "pendingSuccess": "Entry set to pending",
+      "updateFailed": "Failed to update status",
+      "bulkSuccess": "{count} entries updated",
+      "noEntries": "No entries in this category."
+    }
+  },
+  "toast": {
+    "entryAdded": "Entry added!",
+    "saveFailed": "Something went wrong.",
+    "saveError": "Error saving. Please try again."
+  },
+  "nav": {
+    "home": "Home",
+    "guestbook": "Guestbook",
+    "admin": "Admin",
+    "slideshow": "Slideshow",
+    "previous": "Previous",
+    "next": "Next",
+    "goToSlide": "Go to slide {number}"
+  },
+  "slideshow": {
+    "exit": "Exit",
+    "settings": "Settings",
+    "interval": "Interval"
+  },
+  "photo": {
+    "upload": "Upload Photo",
+    "change": "Change",
+    "remove": "Remove",
+    "addPhoto": "Add a photo",
+    "dropHere": "Drop your photo here",
+    "hint": "Tap or drag & drop (max 10MB)",
+    "compressing": "Compressing..."
+  },
+  "errors": {
+    "nameRequired": "Name is required",
+    "messageRequired": "Message is required"
+  },
+  "entry": {
+    "subtitle": "Digital Guestbook Entry",
+    "likeEntry": "Like entry",
+    "comment": "Comment",
+    "photoBy": "Photo by {name}",
+    "sections": {
+      "favorites": "Favorites",
+      "funFacts": "Fun Facts",
+      "ourStory": "Our Story",
+      "date": "Date"
+    },
+    "labels": {
+      "color": "Color:",
+      "food": "Food:",
+      "movie": "Movie:",
+      "song": "Song:",
+      "video": "Video:",
+      "superpower": "Superpower:",
+      "hiddenTalent": "Hidden Talent:",
+      "desertIsland": "Desert Island Items:",
+      "howWeMet": "How We Met:",
+      "bestMemory": "Best Memory:",
+      "by": "by"
+    },
+    "actions": {
+      "listen": "Listen",
+      "watch": "Watch"
+    },
+    "badges": {
+      "coffee": "Coffee",
+      "tea": "Tea",
+      "nightOwl": "Night Owl",
+      "earlyBird": "Early Bird",
+      "beach": "Beach",
+      "mountains": "Mountains"
+    }
+  }
+}

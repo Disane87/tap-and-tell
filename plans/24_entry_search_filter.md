@@ -1,19 +1,19 @@
-# Entry Search & Filter
+# Entry Search & Filter ✔
 
 Find entries by name or date.
 
 ## Features
 
-- Search by guest name
-- Filter by date range
-- Sort options (newest, oldest)
-- Clear filters button
-- Result count display
+- [x] Search by guest name
+- [x] Sort options (newest, oldest)
+- [x] Clear filters button
+- [x] Result count display
+- [x] No results state
 
 ## Implementation
 
-- Search input in guestbook header
-- `useEntryFilters` composable
-- Client-side filtering (or server if large dataset)
-- Debounced search input
-- URL query params for shareable filters
+- [x] Search input in guestbook header
+- [x] `useEntryFilters` composable
+- [x] Client-side filtering with computed
+- [x] Debounced search input (300ms)
+- [x] Localized UI (EN/DE)

@@ -11,20 +11,20 @@ const { formState, errors } = useGuestForm()
   <div class="space-y-6">
     <div class="text-center">
       <h2 class="font-display text-xl font-semibold text-foreground">
-        Wer bist du?
+        {{ $t('form.basics.title') }}
       </h2>
       <p class="mt-1 text-sm text-muted-foreground">
-        Sag uns deinen Namen und zeig dich von deiner besten Seite.
+        {{ $t('form.basics.subtitle') }}
       </p>
     </div>
 
     <!-- Name input -->
     <div class="space-y-2">
-      <Label for="name">Name *</Label>
+      <Label for="name">{{ $t('form.basics.name') }} *</Label>
       <Input
         id="name"
         v-model="formState.name"
-        placeholder="Dein Name"
+        :placeholder="$t('form.basics.namePlaceholder')"
         :class="{ 'border-destructive': errors.name }"
         maxlength="100"
       />
@@ -35,7 +35,7 @@ const { formState, errors } = useGuestForm()
 
     <!-- Photo upload -->
     <div class="space-y-2">
-      <Label>Foto (optional)</Label>
+      <Label>{{ $t('form.basics.photo') }} ({{ $t('common.optional') }})</Label>
       <PhotoUpload
         v-model="formState.photo"
         :error="errors.photo"

@@ -16,6 +16,7 @@ definePageMeta({
   layout: false
 })
 
+const { t } = useI18n()
 const { nfcContext, welcomeMessage } = useNfc()
 const { entries, fetchEntries, createEntry } = useGuests()
 const { formState, status, reset, setStatus, setError, getSubmitData, validate } = useGuestForm()
@@ -95,15 +96,15 @@ async function handleSubmit(): Promise<void> {
 
   if (entry) {
     setStatus('success')
-    toast.success('Eintrag hinzugefügt!')
+    toast.success(t('toast.entryAdded'))
     sheetOpen.value = false
     reset()
     // Navigate to the newly added entry (first in list)
     slideDirection.value = 'forward'
     currentSlide.value = 1
   } else {
-    setError('Fehler beim Speichern. Bitte versuche es erneut.')
-    toast.error('Etwas ist schiefgelaufen.')
+    setError(t('toast.saveError'))
+    toast.error(t('toast.saveFailed'))
   }
 }
 
@@ -133,23 +134,23 @@ onUnmounted(() => {
       >
         <div class="info-card mx-auto max-w-sm text-center">
           <h1 class="font-handwritten text-5xl text-foreground">
-            Tap & Tell
+            {{ $t('landing.title') }}
           </h1>
           <p v-if="nfcContext.isNfcEntry" class="mt-3 text-sm text-muted-foreground">
             {{ welcomeMessage }}
           </p>
           <p v-else class="mt-3 text-sm text-muted-foreground">
-            Hinterlasse eine Nachricht und erzähl uns etwas über dich.
+            {{ $t('landing.subtitle') }}
           </p>
           <Button class="mt-6 w-full" size="lg" @click="sheetOpen = true">
-            Reinschreiben
+            {{ $t('landing.cta') }}
           </Button>
           <NuxtLink
             v-if="hasEntries"
             to="/guestbook"
             class="mt-3 block text-sm text-muted-foreground underline hover:text-foreground"
           >
-            Alle Einträge ansehen
+            {{ $t('landing.viewAll') }}
           </NuxtLink>
         </div>
       </div>
@@ -169,7 +170,7 @@ onUnmounted(() => {
       <button
         v-if="currentSlide > 0"
         class="nav-arrow nav-arrow-left hidden md:flex"
-        aria-label="Previous"
+        :aria-label="$t('nav.previous')"
         @click="prevSlide"
       >
         <ChevronLeft class="h-5 w-5" />
@@ -177,7 +178,7 @@ onUnmounted(() => {
       <button
         v-if="currentSlide < totalSlides - 1"
         class="nav-arrow nav-arrow-right hidden md:flex"
-        aria-label="Next"
+        :aria-label="$t('nav.next')"
         @click="nextSlide"
       >
         <ChevronRight class="h-5 w-5" />
@@ -194,7 +195,7 @@ onUnmounted(() => {
         :key="i"
         class="pagination-dot"
         :class="{ active: currentSlide === i - 1 }"
-        :aria-label="`Go to slide ${i}`"
+        :aria-label="$t('nav.goToSlide', { number: i })"
         @click="slideDirection = (i - 1) > currentSlide ? 'forward' : 'backward'; currentSlide = i - 1"
       />
     </div>
@@ -211,9 +212,9 @@ onUnmounted(() => {
     <Sheet v-model:open="sheetOpen">
       <SheetContent side="bottom" class="form-sheet-content overflow-y-auto">
         <SheetHeader>
-          <SheetTitle class="font-display text-xl">Eintrag hinzufügen</SheetTitle>
+          <SheetTitle class="font-display text-xl">{{ $t('form.addEntry') }}</SheetTitle>
           <SheetDescription>
-            Füll das Formular aus um deinen Eintrag hinzuzufügen.
+            {{ $t('form.addEntryDescription') }}
           </SheetDescription>
         </SheetHeader>
         <div class="mt-4 pb-8">
@@ -222,7 +223,7 @@ onUnmounted(() => {
             v-if="status === 'submitting'"
             class="mt-3 animate-gentle-pulse text-center text-sm text-muted-foreground"
           >
-            Wird gespeichert...
+            {{ $t('common.saving') }}
           </p>
         </div>
       </SheetContent>

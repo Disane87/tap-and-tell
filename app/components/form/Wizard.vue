@@ -14,6 +14,8 @@
  */
 import { ChevronLeft, ChevronRight, Check } from 'lucide-vue-next'
 
+const { t } = useI18n()
+
 const emit = defineEmits<{
   submit: []
 }>()
@@ -49,14 +51,19 @@ const isLastStep = computed(() => currentStep.value === totalSteps)
  * Button text based on current step.
  */
 const nextButtonText = computed(() => {
-  if (isLastStep.value) return 'Absenden'
-  return 'Weiter'
+  if (isLastStep.value) return t('common.submit')
+  return t('common.next')
 })
 
 /**
  * Step labels for progress indicator.
  */
-const stepLabels = ['Basics', 'Favoriten', 'Fun Facts', 'Nachricht']
+const stepLabels = computed(() => [
+  t('form.steps.basics'),
+  t('form.steps.favorites'),
+  t('form.steps.funFacts'),
+  t('form.steps.message')
+])
 </script>
 
 <template>
@@ -77,7 +84,7 @@ const stepLabels = ['Basics', 'Favoriten', 'Fun Facts', 'Nachricht']
 
     <!-- Step indicator -->
     <p class="text-center text-xs text-muted-foreground">
-      Schritt {{ currentStep }} von {{ totalSteps }}: {{ stepLabels[currentStep - 1] }}
+      {{ $t('form.step', { current: currentStep, total: totalSteps, label: stepLabels[currentStep - 1] }) }}
     </p>
 
     <!-- Step content -->
@@ -98,7 +105,7 @@ const stepLabels = ['Basics', 'Favoriten', 'Fun Facts', 'Nachricht']
         @click="prevStep"
       >
         <ChevronLeft class="mr-1 h-4 w-4" />
-        Zurück
+        {{ $t('common.back') }}
       </Button>
       <Button
         type="button"

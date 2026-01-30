@@ -1,9 +1,10 @@
 /**
  * GET /api/entries
- * Returns all guest entries, newest first.
+ * Returns only approved guest entries, newest first.
+ * Entries without a status are treated as approved (backwards compatibility).
  */
 export default defineEventHandler(() => {
-  const entries = readEntries()
+  const entries = readApprovedEntries()
   return {
     success: true,
     data: entries

@@ -7,6 +7,7 @@
  */
 import { toast } from 'vue-sonner'
 
+const { t } = useI18n()
 const { isAuthenticated, login, initAuth } = useAdmin()
 const router = useRouter()
 
@@ -19,7 +20,7 @@ const error = ref('')
  */
 async function handleLogin(): Promise<void> {
   if (!password.value.trim()) {
-    error.value = 'Passwort erforderlich'
+    error.value = t('admin.login.passwordRequired')
     return
   }
 
@@ -29,11 +30,11 @@ async function handleLogin(): Promise<void> {
   const success = await login(password.value)
 
   if (success) {
-    toast.success('Angemeldet!')
+    toast.success(t('admin.login.loginSuccess'))
     router.push('/admin')
   } else {
-    error.value = 'Falsches Passwort'
-    toast.error('Anmeldung fehlgeschlagen')
+    error.value = t('admin.login.wrongPassword')
+    toast.error(t('admin.login.loginFailed'))
   }
 
   loading.value = false
@@ -52,20 +53,20 @@ onMounted(() => {
   <div class="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4">
     <Card class="w-full max-w-sm">
       <CardHeader class="text-center">
-        <CardTitle class="font-display text-2xl">Admin Login</CardTitle>
+        <CardTitle class="font-display text-2xl">{{ $t('admin.login.title') }}</CardTitle>
         <CardDescription>
-          Melde dich an um Einträge zu verwalten.
+          {{ $t('admin.login.description') }}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form class="space-y-4" @submit.prevent="handleLogin">
           <div class="space-y-2">
-            <Label for="password">Passwort</Label>
+            <Label for="password">{{ $t('admin.login.password') }}</Label>
             <Input
               id="password"
               v-model="password"
               type="password"
-              placeholder="Admin-Passwort"
+              :placeholder="$t('admin.login.passwordPlaceholder')"
               :class="{ 'border-destructive': error }"
               :disabled="loading"
             />
@@ -74,7 +75,7 @@ onMounted(() => {
             </p>
           </div>
           <Button type="submit" class="w-full" :disabled="loading">
-            {{ loading ? 'Wird angemeldet...' : 'Anmelden' }}
+            {{ loading ? $t('admin.login.loggingIn') : $t('admin.login.loginButton') }}
           </Button>
         </form>
       </CardContent>
