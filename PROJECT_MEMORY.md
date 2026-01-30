@@ -57,3 +57,42 @@ and avoid repeating documented issues.
 - **Problem**: When multiple components call `useMyComposable()` and the state (reactive/ref) is defined INSIDE the function, each component gets its own separate copy of state. This breaks shared state patterns like form wizards where multiple step components need to access the same data.
 - **Fix**: Define state variables at MODULE LEVEL (outside the function) so they are shared across all calls.
 - **Rule**: For composables that need shared state across components, always define `ref()` and `reactive()` at module level, not inside the composable function. See `useGuests`, `useTheme`, `useGuestForm` for examples.
+
+### Vue-i18n Special Characters
+- **Problem**: The `@` character in i18n translation values (e.g. email placeholders) is interpreted as vue-i18n linked message syntax, causing build errors.
+- **Fix**: Escape `@` using `{'@'}` syntax in JSON locale files: `"you{'@'}example.com"`.
+- **Rule**: Always escape `@` characters in i18n locale values using `{'@'}`.
+
+---
+
+## Architecture: Multi-Tenant System (Plan 26)
+
+### Database
+- **SQLite via Drizzle ORM**: Schema in `server/database/schema.ts`, connection in `server/database/index.ts`.
+- **Tables**: `users`, `sessions`, `tenants`, `entries` (with `tenant_id` FK).
+- **Drivers**: `better-sqlite3` (local), `@libsql/client` (Turso production).
+- **Init**: Nitro plugin `server/plugins/database.ts` runs migrations + seeds from legacy `entries.json`.
+
+### Owner Authentication
+- **JWT via `jose`**: HTTP-only cookies (`auth_token`), 7-day expiry.
+- **Password hashing**: Node.js `crypto.scrypt` (no native module needed).
+- **Server middleware** `server/middleware/auth.ts` attaches `event.context.user`.
+- **API routes**: `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`.
+
+### Tenant System
+- **Owner CRUD**: `/api/tenants` (GET, POST), `/api/tenants/[uuid]` (GET, PUT, DELETE).
+- **Public guest APIs**: `/api/t/[uuid]/entries` (GET approved, POST new), `/api/t/[uuid]/info`.
+- **Admin APIs**: `/api/tenants/[uuid]/entries` (GET all, DELETE, PATCH status, POST bulk).
+- **Photos**: Namespaced per tenant: `.data/photos/[tenantId]/[entryId].[ext]`.
+
+### Frontend
+- **Auth composable**: `useAuth()` with module-level refs (`user`, `loading`, `initialized`).
+- **Tenant composables**: `useTenants()`, `useTenantGuests()`, `useTenantAdmin()`.
+- **Pages**: `/login`, `/register`, `/dashboard`, `/t/[uuid]`, `/t/[uuid]/guestbook`, `/t/[uuid]/admin`, `/t/[uuid]/admin/qr`, `/t/[uuid]/slideshow`.
+- **Route guard**: `app/middleware/auth.global.ts` protects `/dashboard`.
+
+### Legacy Compatibility
+- Old routes (`/`, `/guestbook`, `/admin`) still work with the default tenant.
+- `createEntry()` in `storage.ts` now requires `tenantId` as first parameter.
+- `getDefaultTenantId()` in `server/utils/tenant.ts` returns the first tenant for legacy routes.
+- Legacy admin auth (`useAdmin`, Bearer tokens) still works for `/admin` pages.

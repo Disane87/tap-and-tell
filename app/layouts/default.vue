@@ -4,13 +4,15 @@
  *
  * Contains:
  * - Header with logo, nav links, and theme toggle
+ * - Dashboard link for authenticated users
  * - Main content slot
  * - Toast notifications via Sonner
  */
-import { BookOpen, Home, Settings } from 'lucide-vue-next'
+import { BookOpen, Home, Settings, LayoutDashboard, LogIn } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const route = useRoute()
+const { isAuthenticated } = useAuth()
 
 /**
  * Navigation links.
@@ -53,7 +55,7 @@ function isActive(path: string): boolean {
             <span class="hidden sm:inline">{{ link.label }}</span>
           </NuxtLink>
 
-          <!-- Admin link -->
+          <!-- Admin link (legacy) -->
           <NuxtLink
             to="/admin"
             class="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors"
@@ -64,6 +66,34 @@ function isActive(path: string): boolean {
             <Settings class="h-4 w-4" />
             <span class="hidden sm:inline">Admin</span>
           </NuxtLink>
+
+          <!-- Dashboard link for authenticated users -->
+          <ClientOnly>
+            <NuxtLink
+              v-if="isAuthenticated"
+              to="/dashboard"
+              class="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors"
+              :class="route.path === '/dashboard'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
+            >
+              <LayoutDashboard class="h-4 w-4" />
+              <span class="hidden sm:inline">Dashboard</span>
+            </NuxtLink>
+
+            <!-- Login link for unauthenticated users -->
+            <NuxtLink
+              v-else
+              to="/login"
+              class="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors"
+              :class="route.path === '/login'
+                ? 'bg-primary/10 text-primary'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
+            >
+              <LogIn class="h-4 w-4" />
+              <span class="hidden sm:inline">{{ t('common.login') }}</span>
+            </NuxtLink>
+          </ClientOnly>
 
           <!-- Language switcher -->
           <ClientOnly>
