@@ -3,6 +3,7 @@ import type { CreateGuestEntryInput } from '~~/server/types/guest'
 /**
  * POST /api/entries
  * Creates a new guest entry with name, message, optional photo, and optional answers.
+ * Uses the default tenant for backward compatibility.
  */
 export default defineEventHandler(async (event) => {
   const body = await readBody<CreateGuestEntryInput>(event)
@@ -45,7 +46,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const tenantId = getDefaultTenantId()
+  if (!tenantId) {
+    throw createError({
+      statusCode: 500,
+      message: 'No default tenant configured'
+    })
+  }
+
   const entry = createEntry(
+    tenantId,
     body.name.trim(),
     body.message.trim(),
     body.photo,

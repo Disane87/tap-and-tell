@@ -1,71 +1,107 @@
 import { randomUUID } from 'crypto'
-import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from 'fs'
 import { join } from 'path'
+import { eq, desc, and, inArray } from 'drizzle-orm'
+import { useDb } from '~~/server/database'
+import { entries } from '~~/server/database/schema'
 import type { EntryStatus, GuestEntry } from '~~/server/types/guest'
 
 /**
- * Data directory path. Configurable via DATA_DIR env var.
+ * Data directory path for photo storage.
  */
 const DATA_DIR = process.env.DATA_DIR || '.data'
-const ENTRIES_FILE = join(DATA_DIR, 'entries.json')
 const PHOTOS_DIR = join(DATA_DIR, 'photos')
 
 /**
- * Ensures the data directory and photos subdirectory exist.
+ * Ensures the photos directory exists for a given tenant.
+ *
+ * @param tenantId - The tenant ID for namespaced photo storage.
  */
-function ensureDataDir(): void {
-  if (!existsSync(DATA_DIR)) {
-    mkdirSync(DATA_DIR, { recursive: true })
+function ensurePhotosDir(tenantId?: string): string {
+  const dir = tenantId ? join(PHOTOS_DIR, tenantId) : PHOTOS_DIR
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true })
   }
-  if (!existsSync(PHOTOS_DIR)) {
-    mkdirSync(PHOTOS_DIR, { recursive: true })
-  }
+  return dir
 }
 
 /**
- * Reads all guest entries from the JSON file.
- * Returns empty array if file doesn't exist.
+ * Reads all guest entries from the database for a given tenant.
+ * Returns newest first.
+ *
+ * @param tenantId - The tenant ID to scope entries to.
+ * @returns Array of guest entries sorted newest first.
  */
-export function readEntries(): GuestEntry[] {
-  ensureDataDir()
-  if (!existsSync(ENTRIES_FILE)) {
-    return []
-  }
-  try {
-    const data = readFileSync(ENTRIES_FILE, 'utf-8')
-    return JSON.parse(data) as GuestEntry[]
-  } catch {
-    return []
-  }
+export function readEntries(tenantId?: string): GuestEntry[] {
+  const db = useDb()
+  const conditions = tenantId ? eq(entries.tenantId, tenantId) : undefined
+  const rows = db.select().from(entries).where(conditions).orderBy(desc(entries.createdAt)).all()
+  return rows.map(mapRowToEntry)
 }
 
 /**
- * Writes all guest entries to the JSON file.
+ * Reads only approved guest entries for a tenant.
+ * Entries without a status are treated as approved for backward compatibility.
+ *
+ * @param tenantId - The tenant ID to scope entries to.
+ * @returns Array of approved guest entries.
  */
-export function writeEntries(entries: GuestEntry[]): void {
-  ensureDataDir()
-  writeFileSync(ENTRIES_FILE, JSON.stringify(entries, null, 2), 'utf-8')
+export function readApprovedEntries(tenantId?: string): GuestEntry[] {
+  const db = useDb()
+  const conditions = tenantId
+    ? and(eq(entries.tenantId, tenantId), eq(entries.status, 'approved'))
+    : eq(entries.status, 'approved')
+  const rows = db.select().from(entries).where(conditions).orderBy(desc(entries.createdAt)).all()
+  return rows.map(mapRowToEntry)
+}
+
+/**
+ * Reads entries filtered by status for a tenant.
+ *
+ * @param status - The status to filter by.
+ * @param tenantId - The tenant ID to scope entries to.
+ * @returns Filtered entries.
+ */
+export function readEntriesByStatus(status: EntryStatus, tenantId?: string): GuestEntry[] {
+  const db = useDb()
+  const conditions = tenantId
+    ? and(eq(entries.tenantId, tenantId), eq(entries.status, status))
+    : eq(entries.status, status)
+  const rows = db.select().from(entries).where(conditions).orderBy(desc(entries.createdAt)).all()
+  return rows.map(mapRowToEntry)
 }
 
 /**
  * Finds a single entry by ID.
+ *
+ * @param id - The entry ID.
+ * @returns The entry or undefined if not found.
  */
 export function findEntryById(id: string): GuestEntry | undefined {
-  const entries = readEntries()
-  return entries.find(e => e.id === id)
+  const db = useDb()
+  const row = db.select().from(entries).where(eq(entries.id, id)).get()
+  return row ? mapRowToEntry(row) : undefined
 }
 
 /**
  * Creates a new guest entry with a generated UUID.
  * Optionally saves a photo file and sets the photoUrl.
+ *
+ * @param tenantId - The tenant this entry belongs to.
+ * @param name - Guest name.
+ * @param message - Guest message.
+ * @param photo - Optional base64-encoded photo data.
+ * @param answers - Optional form answers.
+ * @returns The created entry.
  */
 export function createEntry(
+  tenantId: string,
   name: string,
   message: string,
   photo?: string,
   answers?: GuestEntry['answers']
 ): GuestEntry {
-  ensureDataDir()
+  const db = useDb()
   const id = randomUUID()
   let photoUrl: string | undefined
 
@@ -76,62 +112,131 @@ export function createEntry(
       const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
       const base64Data = match[2]
       const filename = `${id}.${ext}`
-      const filePath = join(PHOTOS_DIR, filename)
+      const photosDir = ensurePhotosDir(tenantId)
+      const filePath = join(photosDir, filename)
       writeFileSync(filePath, Buffer.from(base64Data, 'base64'))
-      photoUrl = `/api/photos/${filename}`
+      photoUrl = `/api/photos/${tenantId}/${filename}`
     }
   }
 
-  const entry: GuestEntry = {
+  const now = new Date().toISOString()
+
+  db.insert(entries).values({
+    id,
+    tenantId,
+    name,
+    message,
+    photoUrl: photoUrl || null,
+    answers: answers || null,
+    status: 'pending',
+    createdAt: now
+  }).run()
+
+  return {
     id,
     name,
     message,
     photoUrl,
     answers,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
     status: 'pending'
   }
-
-  const entries = readEntries()
-  entries.unshift(entry) // Newest first
-  writeEntries(entries)
-
-  return entry
 }
 
 /**
  * Deletes an entry by ID. Also removes the associated photo file.
- * Returns true if the entry was found and deleted.
+ *
+ * @param id - The entry ID to delete.
+ * @returns True if the entry was found and deleted.
  */
 export function deleteEntry(id: string): boolean {
-  const entries = readEntries()
-  const index = entries.findIndex(e => e.id === id)
-  if (index === -1) return false
-
-  const entry = entries[index]
+  const db = useDb()
+  const entry = db.select().from(entries).where(eq(entries.id, id)).get()
+  if (!entry) return false
 
   // Delete photo file if exists
   if (entry.photoUrl) {
-    const filename = entry.photoUrl.split('/').pop()
-    if (filename) {
-      const filePath = join(PHOTOS_DIR, filename)
-      if (existsSync(filePath)) {
-        unlinkSync(filePath)
-      }
+    const parts = entry.photoUrl.replace('/api/photos/', '').split('/')
+    let filePath: string
+    if (parts.length === 2) {
+      filePath = join(PHOTOS_DIR, parts[0], parts[1])
+    } else {
+      filePath = join(PHOTOS_DIR, parts[0])
+    }
+    if (existsSync(filePath)) {
+      unlinkSync(filePath)
     }
   }
 
-  entries.splice(index, 1)
-  writeEntries(entries)
+  db.delete(entries).where(eq(entries.id, id)).run()
   return true
 }
 
 /**
- * Gets the file path for a photo by filename.
- * Returns undefined if file doesn't exist.
+ * Updates the moderation status of an entry.
+ *
+ * @param id - The entry ID.
+ * @param status - The new status.
+ * @param rejectionReason - Optional reason for rejection.
+ * @returns The updated entry or undefined if not found.
  */
-export function getPhotoPath(filename: string): string | undefined {
-  const filePath = join(PHOTOS_DIR, filename)
+export function updateEntryStatus(
+  id: string,
+  status: EntryStatus,
+  rejectionReason?: string
+): GuestEntry | undefined {
+  const db = useDb()
+  const existing = db.select().from(entries).where(eq(entries.id, id)).get()
+  if (!existing) return undefined
+
+  db.update(entries)
+    .set({
+      status,
+      rejectionReason: status === 'rejected' ? (rejectionReason || null) : null
+    })
+    .where(eq(entries.id, id))
+    .run()
+
+  const updated = db.select().from(entries).where(eq(entries.id, id)).get()
+  return updated ? mapRowToEntry(updated) : undefined
+}
+
+/**
+ * Updates the status of multiple entries.
+ *
+ * @param ids - The entry IDs.
+ * @param status - The new status.
+ * @returns Number of entries updated.
+ */
+export function bulkUpdateEntryStatus(ids: string[], status: EntryStatus): number {
+  if (ids.length === 0) return 0
+  const db = useDb()
+
+  const result = db.update(entries)
+    .set({
+      status,
+      rejectionReason: status !== 'rejected' ? null : undefined
+    })
+    .where(inArray(entries.id, ids))
+    .run()
+
+  return result.changes
+}
+
+/**
+ * Gets the file path for a photo by filename.
+ * Supports both legacy paths and tenant-namespaced paths.
+ *
+ * @param args - Filename or tenant ID + filename.
+ * @returns The file path or undefined if not found.
+ */
+export function getPhotoPath(...args: string[]): string | undefined {
+  let filePath: string
+  if (args.length === 2) {
+    filePath = join(PHOTOS_DIR, args[0], args[1])
+  } else {
+    filePath = join(PHOTOS_DIR, args[0])
+  }
   if (existsSync(filePath)) {
     return filePath
   }
@@ -140,6 +245,9 @@ export function getPhotoPath(filename: string): string | undefined {
 
 /**
  * Gets the MIME type for a photo based on extension.
+ *
+ * @param filename - The photo filename.
+ * @returns The MIME type string.
  */
 export function getPhotoMimeType(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase()
@@ -159,76 +267,20 @@ export function getPhotoMimeType(filename: string): string {
 }
 
 /**
- * Reads only approved guest entries.
- * Entries without a status are treated as approved (backwards compatibility).
- */
-export function readApprovedEntries(): GuestEntry[] {
-  const entries = readEntries()
-  return entries.filter(e => !e.status || e.status === 'approved')
-}
-
-/**
- * Reads entries by status.
+ * Maps a database row to a GuestEntry interface.
  *
- * @param status - The status to filter by.
+ * @param row - The database row.
+ * @returns A GuestEntry object.
  */
-export function readEntriesByStatus(status: EntryStatus): GuestEntry[] {
-  const entries = readEntries()
-  return entries.filter(e => e.status === status)
-}
-
-/**
- * Updates the status of an entry.
- *
- * @param id - The entry ID.
- * @param status - The new status.
- * @param rejectionReason - Optional reason for rejection.
- * @returns The updated entry or undefined if not found.
- */
-export function updateEntryStatus(
-  id: string,
-  status: EntryStatus,
-  rejectionReason?: string
-): GuestEntry | undefined {
-  const entries = readEntries()
-  const entry = entries.find(e => e.id === id)
-  if (!entry) return undefined
-
-  entry.status = status
-  if (status === 'rejected' && rejectionReason) {
-    entry.rejectionReason = rejectionReason
-  } else {
-    delete entry.rejectionReason
+function mapRowToEntry(row: typeof entries.$inferSelect): GuestEntry {
+  return {
+    id: row.id,
+    name: row.name,
+    message: row.message,
+    photoUrl: row.photoUrl || undefined,
+    answers: row.answers as GuestEntry['answers'],
+    createdAt: row.createdAt,
+    status: row.status as EntryStatus | undefined,
+    rejectionReason: row.rejectionReason || undefined
   }
-
-  writeEntries(entries)
-  return entry
-}
-
-/**
- * Updates the status of multiple entries.
- *
- * @param ids - The entry IDs.
- * @param status - The new status.
- * @returns Number of entries updated.
- */
-export function bulkUpdateEntryStatus(ids: string[], status: EntryStatus): number {
-  const entries = readEntries()
-  let updated = 0
-
-  for (const entry of entries) {
-    if (ids.includes(entry.id)) {
-      entry.status = status
-      if (status !== 'rejected') {
-        delete entry.rejectionReason
-      }
-      updated++
-    }
-  }
-
-  if (updated > 0) {
-    writeEntries(entries)
-  }
-
-  return updated
 }
