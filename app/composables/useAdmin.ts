@@ -1,86 +1,128 @@
+import type { GuestEntry, GuestEntriesResponse } from '~/types/guest'
+
 /**
- * Composable for admin authentication using HMAC-SHA256 tokens.
- *
- * Tokens are stored in `sessionStorage` under the key `admin-token`.
- * Uses module-level `ref()` to avoid SSR hydration mismatches.
- *
- * @returns Reactive auth state and login/logout/check methods.
+ * Module-level state for admin authentication.
+ * Uses plain ref to avoid SSR serialization issues.
  */
-
+const token = ref<string | null>(null)
 const isAuthenticated = ref(false)
-const isLoading = ref(false)
-const error = ref<string | null>(null)
 
-const TOKEN_KEY = 'admin-token'
-
+/**
+ * Composable for admin authentication and entry management.
+ *
+ * Uses sessionStorage to persist the auth token within a browser session.
+ * Token is validated server-side on each admin API request.
+ *
+ * @returns Auth state and methods.
+ */
 export function useAdmin() {
   /**
-   * Authenticates with the admin password.
-   * @param password - The admin password.
-   * @returns `true` if login succeeded.
+   * Initializes auth state from sessionStorage.
+   * Should be called once on admin page mount.
    */
-  async function login(password: string): Promise<boolean> {
-    isLoading.value = true
-    error.value = null
+  function initAuth(): void {
+    if (import.meta.server) return
 
-    try {
-      const response = await $fetch<{ success: boolean; token?: string; error?: string }>(
-        '/api/admin/login',
-        { method: 'POST', body: { password } }
-      )
-
-      if (response.success && response.token) {
-        if (typeof sessionStorage !== 'undefined') {
-          sessionStorage.setItem(TOKEN_KEY, response.token)
-        }
-        isAuthenticated.value = true
-        return true
-      } else {
-        error.value = response.error || 'Login failed'
-        return false
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Login failed'
-      return false
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  /** Clears the stored admin token and resets auth state. */
-  function logout(): void {
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem(TOKEN_KEY)
-    }
-    isAuthenticated.value = false
-  }
-
-  /** Checks whether a valid token exists in sessionStorage. */
-  function checkAuth(): void {
-    if (typeof sessionStorage !== 'undefined') {
-      const token = sessionStorage.getItem(TOKEN_KEY)
-      isAuthenticated.value = !!token
+    const stored = sessionStorage.getItem('admin_token')
+    if (stored) {
+      token.value = stored
+      isAuthenticated.value = true
     }
   }
 
   /**
-   * Retrieves the stored Bearer token for authenticated API calls.
-   * @returns The token string, or `null` if not authenticated.
+   * Attempts to log in with the provided password.
+   *
+   * @param password - The admin password.
+   * @returns True if login succeeded.
    */
-  function getToken(): string | null {
-    if (typeof sessionStorage !== 'undefined') {
-      return sessionStorage.getItem(TOKEN_KEY)
+  async function login(password: string): Promise<boolean> {
+    try {
+      const response = await $fetch<{ success: boolean; token?: string }>('/api/admin/login', {
+        method: 'POST',
+        body: { password }
+      })
+
+      if (response.success && response.token) {
+        token.value = response.token
+        isAuthenticated.value = true
+        if (import.meta.client) {
+          sessionStorage.setItem('admin_token', response.token)
+        }
+        return true
+      }
+      return false
+    } catch {
+      return false
     }
-    return null
+  }
+
+  /**
+   * Logs out by clearing the token.
+   */
+  function logout(): void {
+    token.value = null
+    isAuthenticated.value = false
+    if (import.meta.client) {
+      sessionStorage.removeItem('admin_token')
+    }
+  }
+
+  /**
+   * Fetches all entries with admin authentication.
+   *
+   * @returns Array of entries or null on failure.
+   */
+  async function fetchEntries(): Promise<GuestEntry[] | null> {
+    if (!token.value) return null
+
+    try {
+      const response = await $fetch<GuestEntriesResponse>('/api/admin/entries', {
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
+      })
+
+      if (response.success && response.data) {
+        return response.data
+      }
+      return null
+    } catch {
+      // Token might be expired
+      logout()
+      return null
+    }
+  }
+
+  /**
+   * Deletes an entry with admin authentication.
+   *
+   * @param id - The entry ID to delete.
+   * @returns True if deletion succeeded.
+   */
+  async function deleteEntry(id: string): Promise<boolean> {
+    if (!token.value) return false
+
+    try {
+      await $fetch(`/api/admin/entries/${id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token.value}`
+        }
+      })
+      return true
+    } catch {
+      return false
+    }
   }
 
   return {
+    token: readonly(token),
     isAuthenticated: readonly(isAuthenticated),
-    isLoading: readonly(isLoading),
-    error: readonly(error),
+    initAuth,
     login,
     logout,
-    checkAuth,
-    getToken
+    fetchEntries,
+    deleteEntry
   }
 }

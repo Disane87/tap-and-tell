@@ -1,87 +1,98 @@
 /**
- * Composable for managing the Dawn (light) / Dusk (dark) / System theme.
- *
- * Uses a module-level `ref()` instead of `useState()` to avoid SSR payload
- * serialization and hydration mismatches when reading `localStorage`.
- *
- * @returns Reactive theme state and control methods.
+ * Theme mode options.
  */
+export type ThemeMode = 'light' | 'dark' | 'system'
 
-type ThemeMode = 'light' | 'dark' | 'system'
-
+/**
+ * Module-level state for theme.
+ * Uses plain ref to avoid SSR hydration issues with useState.
+ */
 const theme = ref<ThemeMode>('system')
 const isDark = ref(false)
 
 /**
- * Resolves whether dark mode is active based on the current theme setting.
- * @param mode - The theme mode to resolve.
- * @returns `true` if dark mode should be applied.
+ * Composable for managing the application theme.
+ *
+ * Supports light, dark, and system preference modes.
+ * Persists preference to localStorage.
+ * Uses three-layer initialization to prevent FOUC:
+ * 1. Inline script in head (nuxt.config.ts)
+ * 2. This composable syncs state on client
+ * 3. ClientOnly wrapper on ThemeToggle
+ *
+ * @returns Theme state and setter.
  */
-function resolveDark(mode: ThemeMode): boolean {
-  if (mode === 'dark') return true
-  if (mode === 'light') return false
-  return typeof window !== 'undefined'
-    ? window.matchMedia('(prefers-color-scheme: dark)').matches
-    : false
-}
-
-/** Applies or removes the `dark` class on the document root element. */
-function applyTheme(): void {
-  if (typeof document === 'undefined') return
-  isDark.value = resolveDark(theme.value)
-  if (isDark.value) {
-    document.documentElement.classList.add('dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-  }
-}
-
 export function useTheme() {
   /**
-   * Sets the active theme mode and persists it to localStorage.
-   * @param newTheme - The theme to apply.
+   * Applies the dark class to the document based on current settings.
    */
-  function setTheme(newTheme: ThemeMode): void {
-    theme.value = newTheme
-    applyTheme()
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('theme', newTheme)
-    }
-  }
+  function applyTheme(): void {
+    if (import.meta.server) return
 
-  /** Cycles through light → dark → system → light. */
-  function toggleTheme(): void {
-    const order: ThemeMode[] = ['light', 'dark', 'system']
-    const idx = order.indexOf(theme.value)
-    setTheme(order[(idx + 1) % order.length])
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    const shouldBeDark = theme.value === 'dark' || (theme.value === 'system' && prefersDark)
+
+    isDark.value = shouldBeDark
+
+    if (shouldBeDark) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
   }
 
   /**
-   * Initializes theme from localStorage and sets up a system preference listener.
-   * Safe to call multiple times.
+   * Sets the theme mode and persists to localStorage.
+   *
+   * @param mode - The theme mode to set.
+   */
+  function setTheme(mode: ThemeMode): void {
+    theme.value = mode
+    if (import.meta.client) {
+      localStorage.setItem('theme', mode)
+      applyTheme()
+    }
+  }
+
+  /**
+   * Cycles through theme modes: light -> dark -> system -> light
+   */
+  function cycleTheme(): void {
+    const modes: ThemeMode[] = ['light', 'dark', 'system']
+    const currentIndex = modes.indexOf(theme.value)
+    const nextIndex = (currentIndex + 1) % modes.length
+    setTheme(modes[nextIndex])
+  }
+
+  /**
+   * Initializes theme from localStorage and sets up system preference listener.
+   * Should be called once on client mount.
    */
   function initTheme(): void {
-    if (typeof localStorage !== 'undefined') {
-      const stored = localStorage.getItem('theme') as ThemeMode | null
-      if (stored && ['light', 'dark', 'system'].includes(stored)) {
-        theme.value = stored
-      }
+    if (import.meta.server) return
+
+    // Read from localStorage
+    const stored = localStorage.getItem('theme') as ThemeMode | null
+    if (stored && ['light', 'dark', 'system'].includes(stored)) {
+      theme.value = stored
     }
+
+    // Apply immediately
     applyTheme()
 
-    if (typeof window !== 'undefined') {
-      window.matchMedia('(prefers-color-scheme: dark)')
-        .addEventListener('change', () => {
-          if (theme.value === 'system') applyTheme()
-        })
-    }
+    // Listen for system preference changes
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+      if (theme.value === 'system') {
+        applyTheme()
+      }
+    })
   }
 
   return {
     theme: readonly(theme),
     isDark: readonly(isDark),
     setTheme,
-    toggleTheme,
+    cycleTheme,
     initTheme
   }
 }

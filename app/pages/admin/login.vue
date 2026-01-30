@@ -2,27 +2,46 @@
 /**
  * Admin login page.
  *
- * Simple password form that authenticates via the admin API.
- * On success, redirects to the admin dashboard.
+ * Simple password form that authenticates against the admin API.
+ * Redirects to admin dashboard on successful login.
  */
 import { toast } from 'vue-sonner'
 
-const { isAuthenticated, isLoading, error, login, checkAuth } = useAdmin()
+const { isAuthenticated, login, initAuth } = useAdmin()
 const router = useRouter()
-const password = ref('')
 
+const password = ref('')
+const loading = ref(false)
+const error = ref('')
+
+/**
+ * Handles login form submission.
+ */
 async function handleLogin(): Promise<void> {
-  if (!password.value.trim()) return
+  if (!password.value.trim()) {
+    error.value = 'Passwort erforderlich'
+    return
+  }
+
+  loading.value = true
+  error.value = ''
 
   const success = await login(password.value)
+
   if (success) {
-    toast.success('Logged in')
+    toast.success('Angemeldet!')
     router.push('/admin')
+  } else {
+    error.value = 'Falsches Passwort'
+    toast.error('Anmeldung fehlgeschlagen')
   }
+
+  loading.value = false
 }
 
 onMounted(() => {
-  checkAuth()
+  initAuth()
+  // Redirect if already authenticated
   if (isAuthenticated.value) {
     router.push('/admin')
   }
@@ -30,27 +49,32 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-[80vh] max-w-sm items-center justify-center px-4">
-    <Card class="w-full">
-      <CardHeader>
-        <CardTitle class="font-display text-xl">Admin Login</CardTitle>
-        <CardDescription>Enter the admin password to continue.</CardDescription>
+  <div class="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4">
+    <Card class="w-full max-w-sm">
+      <CardHeader class="text-center">
+        <CardTitle class="font-display text-2xl">Admin Login</CardTitle>
+        <CardDescription>
+          Melde dich an um Einträge zu verwalten.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form class="space-y-4" @submit.prevent="handleLogin">
           <div class="space-y-2">
-            <Label for="admin-password">Password</Label>
+            <Label for="password">Passwort</Label>
             <Input
-              id="admin-password"
+              id="password"
               v-model="password"
               type="password"
-              placeholder="Enter password"
-              :disabled="isLoading"
+              placeholder="Admin-Passwort"
+              :class="{ 'border-destructive': error }"
+              :disabled="loading"
             />
+            <p v-if="error" class="text-sm text-destructive">
+              {{ error }}
+            </p>
           </div>
-          <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
-          <Button type="submit" class="w-full" :disabled="isLoading">
-            {{ isLoading ? 'Logging in...' : 'Login' }}
+          <Button type="submit" class="w-full" :disabled="loading">
+            {{ loading ? 'Wird angemeldet...' : 'Anmelden' }}
           </Button>
         </form>
       </CardContent>

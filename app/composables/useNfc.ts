@@ -1,42 +1,50 @@
 /**
- * Composable for detecting NFC entry context from URL query parameters.
- *
- * NFC tags are programmed with URLs like `/?source=nfc&event=Birthday`.
- * This composable extracts that context and provides a welcome message.
- *
- * @returns NFC context object and a computed welcome message.
+ * NFC context information extracted from URL query params.
  */
-
-interface NfcContext {
+export interface NfcContext {
+  /** Whether the user arrived via NFC tap. */
   isNfcEntry: boolean
+  /** Optional event name from the NFC tag. */
   eventName: string | null
-  source: string | null
 }
 
+/**
+ * Composable for detecting NFC context from URL query parameters.
+ *
+ * NFC tags can encode URLs like: https://app.com/?source=nfc&event=Wedding
+ * This composable extracts that context for personalized messaging.
+ *
+ * @returns NFC context and welcome message.
+ */
 export function useNfc() {
   const route = useRoute()
 
-  /** Reactive NFC context derived from URL query parameters. */
+  /**
+   * NFC context extracted from query params.
+   */
   const nfcContext = computed<NfcContext>(() => {
-    const source = (route.query.source as string) || null
-    const eventName = (route.query.event as string) || null
+    const source = route.query.source
+    const event = route.query.event
 
     return {
       isNfcEntry: source === 'nfc',
-      eventName,
-      source
+      eventName: typeof event === 'string' ? event : null
     }
   })
 
-  /** Context-aware welcome message based on NFC entry. */
+  /**
+   * Personalized welcome message based on NFC context.
+   */
   const welcomeMessage = computed<string>(() => {
+    if (!nfcContext.value.isNfcEntry) {
+      return 'Welcome! Leave a message in our guestbook.'
+    }
+
     if (nfcContext.value.eventName) {
-      return `Welcome to ${nfcContext.value.eventName}!`
+      return `Welcome to ${nfcContext.value.eventName}! Leave a message in our guestbook.`
     }
-    if (nfcContext.value.isNfcEntry) {
-      return 'Welcome! Thanks for tapping.'
-    }
-    return 'Welcome!'
+
+    return 'You tapped in! Leave a message in our guestbook.'
   })
 
   return {

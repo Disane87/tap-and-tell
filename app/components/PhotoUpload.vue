@@ -1,111 +1,176 @@
 <script setup lang="ts">
 /**
- * Photo upload component with camera capture and file picker.
+ * Photo upload component with preview and drag-and-drop support.
  *
- * Encodes selected images as base64 data URIs for submission.
- * Validates file type (image/* only) and resets input for re-selection.
+ * Accepts images up to 5MB, converts to base64 for submission.
+ * Emits the base64 string to parent via v-model.
  *
- * @emits update:modelValue - The base64-encoded image string or null.
+ * @model modelValue - Base64-encoded image string or null.
  */
-import { Camera, Upload, X } from 'lucide-vue-next'
+import { Camera, X, Upload } from 'lucide-vue-next'
 
 const props = defineProps<{
   modelValue: string | null
+  error?: string
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | null]
 }>()
 
-const cameraInput = ref<HTMLInputElement | null>(null)
+const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
-/** Opens the device camera for photo capture. */
-function openCamera(): void {
-  cameraInput.value?.click()
+/**
+ * Maximum file size in bytes (5MB).
+ */
+const MAX_SIZE = 5 * 1024 * 1024
+
+/**
+ * Handles file selection from input or drop.
+ */
+function handleFile(file: File): void {
+  if (!file.type.startsWith('image/')) {
+    return
+  }
+
+  if (file.size > MAX_SIZE) {
+    return
+  }
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    emit('update:modelValue', e.target?.result as string)
+  }
+  reader.readAsDataURL(file)
 }
 
-/** Opens the file picker for gallery selection. */
+/**
+ * Opens the file picker dialog.
+ */
 function openFilePicker(): void {
   fileInput.value?.click()
 }
 
 /**
- * Reads the selected file and emits it as a base64 data URI.
- * @param event - The file input change event.
+ * Handles file input change event.
  */
-function handleFileChange(event: Event): void {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
-
-  if (!file.type.startsWith('image/')) {
-    target.value = ''
-    return
+function onFileChange(event: Event): void {
+  const input = event.target as HTMLInputElement
+  if (input.files?.[0]) {
+    handleFile(input.files[0])
   }
-
-  const reader = new FileReader()
-  reader.onload = () => {
-    emit('update:modelValue', reader.result as string)
-  }
-  reader.readAsDataURL(file)
-
-  // Reset so the same file can be re-selected
-  target.value = ''
 }
 
-/** Removes the current photo. */
+/**
+ * Handles drag enter event.
+ */
+function onDragEnter(e: DragEvent): void {
+  e.preventDefault()
+  isDragging.value = true
+}
+
+/**
+ * Handles drag leave event.
+ */
+function onDragLeave(e: DragEvent): void {
+  e.preventDefault()
+  isDragging.value = false
+}
+
+/**
+ * Handles drag over event.
+ */
+function onDragOver(e: DragEvent): void {
+  e.preventDefault()
+}
+
+/**
+ * Handles drop event.
+ */
+function onDrop(e: DragEvent): void {
+  e.preventDefault()
+  isDragging.value = false
+
+  if (e.dataTransfer?.files?.[0]) {
+    handleFile(e.dataTransfer.files[0])
+  }
+}
+
+/**
+ * Removes the current photo.
+ */
 function removePhoto(): void {
   emit('update:modelValue', null)
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
 }
 </script>
 
 <template>
-  <div class="flex flex-col items-center gap-3">
-    <!-- Hidden file inputs -->
-    <input
-      ref="cameraInput"
-      type="file"
-      accept="image/*"
-      capture="environment"
-      class="hidden"
-      @change="handleFileChange"
+  <div class="space-y-2">
+    <!-- Preview -->
+    <div
+      v-if="modelValue"
+      class="relative aspect-square w-full overflow-hidden rounded-xl bg-muted"
     >
+      <img
+        :src="modelValue"
+        alt="Photo preview"
+        class="h-full w-full object-cover"
+      >
+      <button
+        type="button"
+        class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
+        @click="removePhoto"
+      >
+        <X class="h-4 w-4" />
+      </button>
+    </div>
+
+    <!-- Upload area -->
+    <div
+      v-else
+      class="relative aspect-square w-full cursor-pointer rounded-xl border-2 border-dashed transition-colors"
+      :class="[
+        isDragging ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50',
+        error ? 'border-destructive' : ''
+      ]"
+      @click="openFilePicker"
+      @dragenter="onDragEnter"
+      @dragleave="onDragLeave"
+      @dragover="onDragOver"
+      @drop="onDrop"
+    >
+      <div class="flex h-full flex-col items-center justify-center gap-3 p-6 text-center">
+        <div class="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <Camera v-if="!isDragging" class="h-6 w-6 text-muted-foreground" />
+          <Upload v-else class="h-6 w-6 text-primary" />
+        </div>
+        <div>
+          <p class="text-sm font-medium text-foreground">
+            {{ isDragging ? 'Drop your photo here' : 'Add a photo' }}
+          </p>
+          <p class="mt-1 text-xs text-muted-foreground">
+            Tap or drag & drop (max 5MB)
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden file input -->
     <input
       ref="fileInput"
       type="file"
       accept="image/*"
       class="hidden"
-      @change="handleFileChange"
+      @change="onFileChange"
     >
 
-    <!-- Photo preview -->
-    <div v-if="props.modelValue" class="relative">
-      <img
-        :src="props.modelValue"
-        alt="Photo preview"
-        class="photo-frame h-32 w-32 object-cover"
-      >
-      <button
-        type="button"
-        class="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow-sm"
-        aria-label="Remove photo"
-        @click="removePhoto"
-      >
-        <X class="h-3 w-3" />
-      </button>
-    </div>
-
-    <!-- Upload buttons -->
-    <div v-else class="flex gap-2">
-      <Button type="button" variant="outline" size="sm" @click="openCamera">
-        <Camera class="mr-1.5 h-4 w-4" />
-        Camera
-      </Button>
-      <Button type="button" variant="outline" size="sm" @click="openFilePicker">
-        <Upload class="mr-1.5 h-4 w-4" />
-        Upload
-      </Button>
-    </div>
+    <!-- Error message -->
+    <p v-if="error" class="text-sm text-destructive">
+      {{ error }}
+    </p>
   </div>
 </template>

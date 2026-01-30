@@ -1,108 +1,140 @@
-import type { CreateGuestEntryInput, GuestAnswers, FavoriteSong, FavoriteVideo } from '~/types/guest'
+import type { GuestAnswers, CreateGuestEntryInput, FavoriteSong, FavoriteVideo } from '~/types/guest'
 
 /**
- * Composable for managing the multi-step guest entry wizard form.
- *
- * Manages 4 steps: Basics → Favorites → Fun → Message.
- * Steps 1 & 4 have required fields; steps 2 & 3 are optional.
- *
- * Uses module-level `ref()` to avoid SSR payload serialization.
- *
- * @returns Form state, validation, navigation, and submission helpers.
+ * Form submission status.
  */
+export type FormStatus = 'idle' | 'submitting' | 'success' | 'error'
 
-const TOTAL_STEPS = 4
-const MAX_NAME_LENGTH = 100
-const MAX_MESSAGE_LENGTH = 1000
-const MAX_TEXT_LENGTH = 500
-
-type FormStatus = 'idle' | 'submitting' | 'success' | 'error'
-
-interface WizardFormState {
+/**
+ * Form state for the 4-step wizard.
+ */
+export interface GuestFormState {
+  // Step 1: Basics (required)
   name: string
   photo: string | null
+
+  // Step 2: Favorites (optional)
   favoriteColor: string
   favoriteFood: string
   favoriteMovie: string
-  songTitle: string
-  songArtist: string
-  songUrl: string
-  videoTitle: string
-  videoUrl: string
+  favoriteSongTitle: string
+  favoriteSongArtist: string
+  favoriteSongUrl: string
+  favoriteVideoTitle: string
+  favoriteVideoUrl: string
+
+  // Step 3: Fun Facts (optional)
   superpower: string
   hiddenTalent: string
   desertIslandItems: string
   coffeeOrTea: 'coffee' | 'tea' | null
   nightOwlOrEarlyBird: 'night_owl' | 'early_bird' | null
   beachOrMountains: 'beach' | 'mountains' | null
-  bestMemory: string
-  howWeMet: string
+
+  // Step 4: Message (required)
   message: string
+  howWeMet: string
+  bestMemory: string
 }
 
-interface FormValidation {
-  name: string | null
-  photo: string | null
-  message: string | null
+/**
+ * Per-field validation errors.
+ */
+export interface FormErrors {
+  name?: string
+  photo?: string
+  message?: string
+  general?: string
 }
 
-function createInitialState(): WizardFormState {
+/**
+ * Default empty form state.
+ */
+function getDefaultState(): GuestFormState {
   return {
     name: '',
     photo: null,
     favoriteColor: '',
     favoriteFood: '',
     favoriteMovie: '',
-    songTitle: '',
-    songArtist: '',
-    songUrl: '',
-    videoTitle: '',
-    videoUrl: '',
+    favoriteSongTitle: '',
+    favoriteSongArtist: '',
+    favoriteSongUrl: '',
+    favoriteVideoTitle: '',
+    favoriteVideoUrl: '',
     superpower: '',
     hiddenTalent: '',
     desertIslandItems: '',
     coffeeOrTea: null,
     nightOwlOrEarlyBird: null,
     beachOrMountains: null,
-    bestMemory: '',
+    message: '',
     howWeMet: '',
-    message: ''
+    bestMemory: ''
   }
 }
 
-const currentStep = ref(0)
-const direction = ref<'forward' | 'backward'>('forward')
-const formState = ref<WizardFormState>(createInitialState())
-const validation = ref<FormValidation>({ name: null, photo: null, message: null })
+/**
+ * Module-level shared state for the form wizard.
+ * This ensures all components share the same form state.
+ */
+const formState = reactive<GuestFormState>(getDefaultState())
+const errors = reactive<FormErrors>({})
 const status = ref<FormStatus>('idle')
-const errorMessage = ref<string | null>(null)
+const currentStep = ref(1)
+const totalSteps = 4
 
-/** Step labels for the progress indicator. */
-const stepLabels = ['Basics', 'Favorites', 'Fun', 'Message']
-
+/**
+ * Composable for the 4-step guest form wizard.
+ *
+ * Steps:
+ * 1. Basics - Name (required) and Photo (optional)
+ * 2. Favorites - Color, Food, Movie, Song, Video (all optional)
+ * 3. Fun Facts - Toggles and free text (all optional)
+ * 4. Message - Message (required), How We Met, Best Memory (optional)
+ *
+ * State is shared across all components via module-level refs.
+ *
+ * @returns Form state, validation, step navigation, and submission helpers.
+ */
 export function useGuestForm() {
-  /** Validates the current step's required fields. */
+  /**
+   * Validates the current step.
+   * Step 1: name required, photo size limit.
+   * Step 4: message required.
+   *
+   * @returns True if current step is valid.
+   */
   function validateCurrentStep(): boolean {
-    validation.value = { name: null, photo: null, message: null }
+    // Clear previous errors
+    errors.name = undefined
+    errors.photo = undefined
+    errors.message = undefined
+    errors.general = undefined
 
-    if (currentStep.value === 0) {
-      if (!formState.value.name.trim()) {
-        validation.value.name = 'Name is required'
+    if (currentStep.value === 1) {
+      if (!formState.name.trim()) {
+        errors.name = 'Name is required'
         return false
       }
-      if (formState.value.name.length > MAX_NAME_LENGTH) {
-        validation.value.name = `Name must be ${MAX_NAME_LENGTH} characters or less`
+      if (formState.name.length > 100) {
+        errors.name = 'Name must be 100 characters or less'
+        return false
+      }
+      // Photo size validation (5MB = ~6.67MB base64)
+      if (formState.photo && formState.photo.length > 7_000_000) {
+        errors.photo = 'Photo must be 5MB or less'
         return false
       }
     }
 
-    if (currentStep.value === 3) {
-      if (!formState.value.message.trim()) {
-        validation.value.message = 'Message is required'
+    if (currentStep.value === 4) {
+      if (!formState.message.trim()) {
+        errors.message = 'Message is required'
         return false
       }
-      if (formState.value.message.length > MAX_MESSAGE_LENGTH) {
-        validation.value.message = `Message must be ${MAX_MESSAGE_LENGTH} characters or less`
+      if (formState.message.length > 1000) {
+        errors.message = 'Message must be 1000 characters or less'
         return false
       }
     }
@@ -110,136 +142,182 @@ export function useGuestForm() {
     return true
   }
 
-  /** Validates all required fields across all steps. */
+  /**
+   * Validates the entire form (all required fields).
+   *
+   * @returns True if form is valid for submission.
+   */
   function validate(): boolean {
-    validation.value = { name: null, photo: null, message: null }
+    errors.name = undefined
+    errors.photo = undefined
+    errors.message = undefined
+    errors.general = undefined
+
     let valid = true
 
-    if (!formState.value.name.trim()) {
-      validation.value.name = 'Name is required'
+    if (!formState.name.trim()) {
+      errors.name = 'Name is required'
+      valid = false
+    } else if (formState.name.length > 100) {
+      errors.name = 'Name must be 100 characters or less'
       valid = false
     }
-    if (!formState.value.message.trim()) {
-      validation.value.message = 'Message is required'
+
+    if (formState.photo && formState.photo.length > 7_000_000) {
+      errors.photo = 'Photo must be 5MB or less'
+      valid = false
+    }
+
+    if (!formState.message.trim()) {
+      errors.message = 'Message is required'
+      valid = false
+    } else if (formState.message.length > 1000) {
+      errors.message = 'Message must be 1000 characters or less'
       valid = false
     }
 
     return valid
   }
 
-  /** Advances to the next step if validation passes. */
-  function nextStep(): void {
-    if (!validateCurrentStep()) return
-    if (currentStep.value < TOTAL_STEPS - 1) {
-      direction.value = 'forward'
+  /**
+   * Moves to the next step if current step is valid.
+   *
+   * @returns True if navigation succeeded.
+   */
+  function nextStep(): boolean {
+    if (!validateCurrentStep()) return false
+    if (currentStep.value < totalSteps) {
       currentStep.value++
+      return true
     }
+    return false
   }
 
-  /** Goes back to the previous step. */
+  /**
+   * Moves to the previous step.
+   */
   function prevStep(): void {
-    if (currentStep.value > 0) {
-      direction.value = 'backward'
+    if (currentStep.value > 1) {
       currentStep.value--
     }
   }
 
   /**
-   * Jumps to a specific step.
-   * @param step - The target step index (0-based).
+   * Goes to a specific step.
+   * Only allows going back, or forward if current step is valid.
    */
   function goToStep(step: number): void {
-    if (step >= 0 && step < TOTAL_STEPS) {
-      direction.value = step > currentStep.value ? 'forward' : 'backward'
+    if (step < 1 || step > totalSteps) return
+    if (step < currentStep.value) {
+      currentStep.value = step
+    } else if (step > currentStep.value && validateCurrentStep()) {
       currentStep.value = step
     }
   }
 
-  /** Assembles the API submission payload from the current form state. */
-  function getSubmitData(): CreateGuestEntryInput {
-    const s = formState.value
+  /**
+   * Builds the GuestAnswers object from form state.
+   */
+  function buildAnswers(): GuestAnswers | undefined {
     const answers: GuestAnswers = {}
 
-    if (s.favoriteColor.trim()) answers.favoriteColor = s.favoriteColor.trim()
-    if (s.favoriteFood.trim()) answers.favoriteFood = s.favoriteFood.trim()
-    if (s.favoriteMovie.trim()) answers.favoriteMovie = s.favoriteMovie.trim()
+    // Favorites
+    if (formState.favoriteColor.trim()) answers.favoriteColor = formState.favoriteColor.trim()
+    if (formState.favoriteFood.trim()) answers.favoriteFood = formState.favoriteFood.trim()
+    if (formState.favoriteMovie.trim()) answers.favoriteMovie = formState.favoriteMovie.trim()
 
-    if (s.songTitle.trim()) {
-      const song: FavoriteSong = { type: 'song', title: s.songTitle.trim() }
-      if (s.songArtist.trim()) song.artist = s.songArtist.trim()
-      if (s.songUrl.trim()) song.url = s.songUrl.trim()
+    if (formState.favoriteSongTitle.trim()) {
+      const song: FavoriteSong = { title: formState.favoriteSongTitle.trim() }
+      if (formState.favoriteSongArtist.trim()) song.artist = formState.favoriteSongArtist.trim()
+      if (formState.favoriteSongUrl.trim()) song.url = formState.favoriteSongUrl.trim()
       answers.favoriteSong = song
     }
 
-    if (s.videoTitle.trim()) {
-      const video: FavoriteVideo = { type: 'video', title: s.videoTitle.trim() }
-      if (s.videoUrl.trim()) video.url = s.videoUrl.trim()
+    if (formState.favoriteVideoTitle.trim()) {
+      const video: FavoriteVideo = { title: formState.favoriteVideoTitle.trim() }
+      if (formState.favoriteVideoUrl.trim()) video.url = formState.favoriteVideoUrl.trim()
       answers.favoriteVideo = video
     }
 
-    if (s.superpower.trim()) answers.superpower = s.superpower.trim()
-    if (s.hiddenTalent.trim()) answers.hiddenTalent = s.hiddenTalent.trim()
-    if (s.desertIslandItems.trim()) answers.desertIslandItems = s.desertIslandItems.trim()
-    if (s.coffeeOrTea) answers.coffeeOrTea = s.coffeeOrTea
-    if (s.nightOwlOrEarlyBird) answers.nightOwlOrEarlyBird = s.nightOwlOrEarlyBird
-    if (s.beachOrMountains) answers.beachOrMountains = s.beachOrMountains
-    if (s.bestMemory.trim()) answers.bestMemory = s.bestMemory.trim()
-    if (s.howWeMet.trim()) answers.howWeMet = s.howWeMet.trim()
+    // Fun Facts
+    if (formState.superpower.trim()) answers.superpower = formState.superpower.trim()
+    if (formState.hiddenTalent.trim()) answers.hiddenTalent = formState.hiddenTalent.trim()
+    if (formState.desertIslandItems.trim()) answers.desertIslandItems = formState.desertIslandItems.trim()
+    if (formState.coffeeOrTea) answers.coffeeOrTea = formState.coffeeOrTea
+    if (formState.nightOwlOrEarlyBird) answers.nightOwlOrEarlyBird = formState.nightOwlOrEarlyBird
+    if (formState.beachOrMountains) answers.beachOrMountains = formState.beachOrMountains
 
-    const hasAnswers = Object.keys(answers).length > 0
+    // Our Story
+    if (formState.howWeMet.trim()) answers.howWeMet = formState.howWeMet.trim()
+    if (formState.bestMemory.trim()) answers.bestMemory = formState.bestMemory.trim()
 
+    return Object.keys(answers).length > 0 ? answers : undefined
+  }
+
+  /**
+   * Gets the data ready for API submission.
+   */
+  function getSubmitData(): CreateGuestEntryInput {
     return {
-      name: s.name.trim(),
-      message: s.message.trim(),
-      photo: s.photo || undefined,
-      answers: hasAnswers ? answers : undefined
+      name: formState.name.trim(),
+      message: formState.message.trim(),
+      photo: formState.photo || undefined,
+      answers: buildAnswers()
     }
   }
 
-  /** Resets the entire form to its initial state. */
-  function reset(): void {
-    currentStep.value = 0
-    direction.value = 'forward'
-    formState.value = createInitialState()
-    validation.value = { name: null, photo: null, message: null }
-    status.value = 'idle'
-    errorMessage.value = null
+  /**
+   * Sets the form status.
+   */
+  function setStatus(newStatus: FormStatus): void {
+    status.value = newStatus
   }
 
   /**
-   * Sets the form submission status.
-   * @param s - The new status value.
+   * Sets a general error message.
    */
-  function setStatus(s: FormStatus): void {
-    status.value = s
-  }
-
-  /**
-   * Sets an error message and marks the form as errored.
-   * @param msg - The error message to display.
-   */
-  function setError(msg: string): void {
+  function setError(message: string): void {
+    errors.general = message
     status.value = 'error'
-    errorMessage.value = msg
+  }
+
+  /**
+   * Resets the form to initial state.
+   */
+  function reset(): void {
+    Object.assign(formState, getDefaultState())
+    errors.name = undefined
+    errors.photo = undefined
+    errors.message = undefined
+    errors.general = undefined
+    status.value = 'idle'
+    currentStep.value = 1
+  }
+
+  /**
+   * Checks if a step has required fields filled.
+   */
+  function isStepComplete(step: number): boolean {
+    if (step === 1) return !!formState.name.trim()
+    if (step === 4) return !!formState.message.trim()
+    return true // Steps 2 and 3 are optional
   }
 
   return {
-    currentStep: readonly(currentStep),
-    direction: readonly(direction),
     formState,
-    validation: readonly(validation),
+    errors,
     status: readonly(status),
-    errorMessage: readonly(errorMessage),
-    totalSteps: TOTAL_STEPS,
-    stepLabels,
+    currentStep: readonly(currentStep),
+    totalSteps,
     validateCurrentStep,
     validate,
     nextStep,
     prevStep,
     goToStep,
     getSubmitData,
-    reset,
     setStatus,
-    setError
+    setError,
+    reset,
+    isStepComplete
   }
 }

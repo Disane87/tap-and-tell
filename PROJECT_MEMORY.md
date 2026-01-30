@@ -47,3 +47,13 @@ and avoid repeating documented issues.
 ### Default Admin Password
 - **Issue**: `ADMIN_PASSWORD` defaults to `'admin123'` and `TOKEN_SECRET` defaults to `'tap-and-tell-secret'` when environment variables are not set.
 - **Rule**: Always set `ADMIN_PASSWORD` and `TOKEN_SECRET` environment variables in production.
+
+### Nuxt Component Auto-Import Naming in Subdirectories
+- **Problem**: Components in subdirectories like `components/form/StepBasics.vue` are auto-imported with the directory as prefix: `FormStepBasics`, not `StepBasics`. Using the wrong name causes "Failed to resolve component" errors.
+- **Fix**: Always use the full prefixed name when referencing components from subdirectories. E.g., `<FormStepBasics />` not `<StepBasics />`.
+- **Rule**: Components in `components/foo/Bar.vue` must be referenced as `<FooBar />` in templates.
+
+### Composable State Sharing Across Components
+- **Problem**: When multiple components call `useMyComposable()` and the state (reactive/ref) is defined INSIDE the function, each component gets its own separate copy of state. This breaks shared state patterns like form wizards where multiple step components need to access the same data.
+- **Fix**: Define state variables at MODULE LEVEL (outside the function) so they are shared across all calls.
+- **Rule**: For composables that need shared state across components, always define `ref()` and `reactive()` at module level, not inside the composable function. See `useGuests`, `useTheme`, `useGuestForm` for examples.

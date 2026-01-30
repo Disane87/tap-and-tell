@@ -2,17 +2,19 @@
 /**
  * Landing page with swipeable entry view.
  *
- * Slide 0: Intro — gradient background, household title, CTA button.
+ * Slide 0: Intro — gradient background, title, CTA button.
  * Slides 1+: Individual guest entries displayed fullscreen.
  *
  * The form wizard opens as a full-screen bottom sheet.
  * After successful submission, navigates to the first entry slide.
- *
- * No header navigation — chromeless design matching the Freundebuch aesthetic.
  */
 import { useSwipe } from '@vueuse/core'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
+
+definePageMeta({
+  layout: false
+})
 
 const { nfcContext, welcomeMessage } = useNfc()
 const { entries, fetchEntries, createEntry } = useGuests()
@@ -23,23 +25,31 @@ const currentSlide = ref(0)
 const slideDirection = ref<'forward' | 'backward'>('forward')
 const swiperEl = ref<HTMLElement | null>(null)
 
-/** Total slides: 1 intro + N entries. */
+/**
+ * Total slides: 1 intro + N entries.
+ */
 const totalSlides = computed(() => 1 + entries.value.length)
 
 const hasEntries = computed(() => entries.value.length > 0)
 
-/** The current entry being displayed (null on intro slide). */
+/**
+ * The current entry being displayed (null on intro slide).
+ */
 const currentEntry = computed(() => {
   if (currentSlide.value === 0) return null
   return entries.value[currentSlide.value - 1] ?? null
 })
 
-/** Transition name based on slide direction. */
+/**
+ * Transition name based on slide direction.
+ */
 const transitionName = computed(() =>
   slideDirection.value === 'forward' ? 'slide-left' : 'slide-right'
 )
 
-/** Navigate to next slide. */
+/**
+ * Navigate to next slide.
+ */
 function nextSlide(): void {
   if (currentSlide.value < totalSlides.value - 1) {
     slideDirection.value = 'forward'
@@ -47,7 +57,9 @@ function nextSlide(): void {
   }
 }
 
-/** Navigate to previous slide. */
+/**
+ * Navigate to previous slide.
+ */
 function prevSlide(): void {
   if (currentSlide.value > 0) {
     slideDirection.value = 'backward'
@@ -83,15 +95,15 @@ async function handleSubmit(): Promise<void> {
 
   if (entry) {
     setStatus('success')
-    toast.success('Entry added!')
+    toast.success('Eintrag hinzugefügt!')
     sheetOpen.value = false
     reset()
     // Navigate to the newly added entry (first in list)
     slideDirection.value = 'forward'
     currentSlide.value = 1
   } else {
-    setError('Failed to submit. Please try again.')
-    toast.error('Something went wrong.')
+    setError('Fehler beim Speichern. Bitte versuche es erneut.')
+    toast.error('Etwas ist schiefgelaufen.')
   }
 }
 
@@ -121,17 +133,24 @@ onUnmounted(() => {
       >
         <div class="info-card mx-auto max-w-sm text-center">
           <h1 class="font-handwritten text-5xl text-foreground">
-            Marc's Freundebuch
+            Tap & Tell
           </h1>
           <p v-if="nfcContext.isNfcEntry" class="mt-3 text-sm text-muted-foreground">
             {{ welcomeMessage }}
           </p>
           <p v-else class="mt-3 text-sm text-muted-foreground">
-            Leave a message and tell us about yourself.
+            Hinterlasse eine Nachricht und erzähl uns etwas über dich.
           </p>
           <Button class="mt-6 w-full" size="lg" @click="sheetOpen = true">
             Reinschreiben
           </Button>
+          <NuxtLink
+            v-if="hasEntries"
+            to="/guestbook"
+            class="mt-3 block text-sm text-muted-foreground underline hover:text-foreground"
+          >
+            Alle Einträge ansehen
+          </NuxtLink>
         </div>
       </div>
 
@@ -192,15 +211,18 @@ onUnmounted(() => {
     <Sheet v-model:open="sheetOpen">
       <SheetContent side="bottom" class="form-sheet-content overflow-y-auto">
         <SheetHeader>
-          <SheetTitle class="font-display text-xl">Leave a Message</SheetTitle>
+          <SheetTitle class="font-display text-xl">Eintrag hinzufügen</SheetTitle>
           <SheetDescription>
-            Fill out the form to add your entry.
+            Füll das Formular aus um deinen Eintrag hinzuzufügen.
           </SheetDescription>
         </SheetHeader>
         <div class="mt-4 pb-8">
           <FormWizard @submit="handleSubmit" />
-          <p v-if="status === 'submitting'" class="mt-3 text-center text-sm text-muted-foreground animate-gentle-pulse">
-            Submitting...
+          <p
+            v-if="status === 'submitting'"
+            class="mt-3 animate-gentle-pulse text-center text-sm text-muted-foreground"
+          >
+            Wird gespeichert...
           </p>
         </div>
       </SheetContent>

@@ -1,89 +1,92 @@
 <script setup lang="ts">
 /**
- * Step 3 of the guest wizard: Fun Facts (all optional).
+ * Step 3: Fun Facts - Toggles and free text (all optional).
  *
- * Fields: Superpower, Hidden Talent, Desert Island Items,
- * and three binary toggles (Coffee/Tea, Night Owl/Early Bird, Beach/Mountains).
+ * Uses the shared form state from useGuestForm composable.
  */
+const { formState } = useGuestForm()
 
-defineProps<{
-  superpower: string
-  hiddenTalent: string
-  desertIslandItems: string
-  coffeeOrTea: 'coffee' | 'tea' | null
-  nightOwlOrEarlyBird: 'night_owl' | 'early_bird' | null
-  beachOrMountains: 'beach' | 'mountains' | null
-}>()
+const coffeeTeaOptions = [
+  { value: 'coffee', label: '☕ Coffee' },
+  { value: 'tea', label: '🍵 Tea' }
+]
 
-defineEmits<{
-  'update:superpower': [value: string]
-  'update:hiddenTalent': [value: string]
-  'update:desertIslandItems': [value: string]
-  'update:coffeeOrTea': [value: 'coffee' | 'tea' | null]
-  'update:nightOwlOrEarlyBird': [value: 'night_owl' | 'early_bird' | null]
-  'update:beachOrMountains': [value: 'beach' | 'mountains' | null]
-}>()
+const owlBirdOptions = [
+  { value: 'night_owl', label: '🦉 Night Owl' },
+  { value: 'early_bird', label: '🐦 Early Bird' }
+]
+
+const beachMountainOptions = [
+  { value: 'beach', label: '🏖️ Beach' },
+  { value: 'mountains', label: '⛰️ Mountains' }
+]
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div class="space-y-2">
-      <Label for="superpower">If you had a superpower?</Label>
-      <Input
-        id="superpower"
-        :model-value="superpower"
-        placeholder="e.g. Time travel"
-        @update:model-value="$emit('update:superpower', $event)"
-      />
+  <div class="space-y-6">
+    <div class="text-center">
+      <h2 class="font-display text-xl font-semibold text-foreground">
+        Fun Facts
+      </h2>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Erzähl uns etwas Lustiges über dich!
+      </p>
     </div>
 
-    <div class="space-y-2">
-      <Label for="hidden-talent">Hidden Talent</Label>
-      <Input
-        id="hidden-talent"
-        :model-value="hiddenTalent"
-        placeholder="e.g. Juggling"
-        @update:model-value="$emit('update:hiddenTalent', $event)"
-      />
-    </div>
-
-    <div class="space-y-2">
-      <Label for="desert-island">Desert Island Items</Label>
-      <Input
-        id="desert-island"
-        :model-value="desertIslandItems"
-        placeholder="3 things you'd bring"
-        @update:model-value="$emit('update:desertIslandItems', $event)"
-      />
-    </div>
-
+    <!-- Coffee or Tea -->
     <div class="space-y-2">
       <Label>Coffee or Tea?</Label>
       <FormToggleChoice
-        :model-value="coffeeOrTea"
-        :option-a="{ label: 'Coffee', value: 'coffee' }"
-        :option-b="{ label: 'Tea', value: 'tea' }"
-        @update:model-value="$emit('update:coffeeOrTea', $event as any)"
+        v-model="formState.coffeeOrTea"
+        :options="coffeeTeaOptions"
       />
     </div>
 
+    <!-- Night Owl or Early Bird -->
     <div class="space-y-2">
       <Label>Night Owl or Early Bird?</Label>
       <FormToggleChoice
-        :model-value="nightOwlOrEarlyBird"
-        :option-a="{ label: 'Night Owl', value: 'night_owl' }"
-        :option-b="{ label: 'Early Bird', value: 'early_bird' }"
-        @update:model-value="$emit('update:nightOwlOrEarlyBird', $event as any)"
+        v-model="formState.nightOwlOrEarlyBird"
+        :options="owlBirdOptions"
       />
     </div>
 
+    <!-- Beach or Mountains -->
     <div class="space-y-2">
       <Label>Beach or Mountains?</Label>
       <FormToggleChoice
-        :model-value="beachOrMountains"
-        :option-a="{ label: 'Beach', value: 'beach' }"
-        :option-b="{ label: 'Mountains', value: 'mountains' }"
-        @update:model-value="$emit('update:beachOrMountains', $event as any)"
+        v-model="formState.beachOrMountains"
+        :options="beachMountainOptions"
+      />
+    </div>
+
+    <!-- Superpower -->
+    <div class="space-y-2">
+      <Label for="superpower">Deine Superpower</Label>
+      <Input
+        id="superpower"
+        v-model="formState.superpower"
+        placeholder="z.B. Empathie"
+      />
+    </div>
+
+    <!-- Hidden Talent -->
+    <div class="space-y-2">
+      <Label for="hiddenTalent">Verstecktes Talent</Label>
+      <Input
+        id="hiddenTalent"
+        v-model="formState.hiddenTalent"
+        placeholder="z.B. Origami"
+      />
+    </div>
+
+    <!-- Desert Island Items -->
+    <div class="space-y-2">
+      <Label for="desertIslandItems">3 Dinge auf einer einsamen Insel</Label>
+      <Input
+        id="desertIslandItems"
+        v-model="formState.desertIslandItems"
+        placeholder="z.B. Buch, Kaffee, Decke"
       />
     </div>
   </div>

@@ -1,52 +1,53 @@
 import type { GuestEntry, CreateGuestEntryInput, GuestEntriesResponse, GuestEntryResponse } from '~/types/guest'
 
 /**
- * Composable for managing guest entries (CRUD operations).
- *
- * Provides reactive state for entries, loading, and error, plus
- * `fetchEntries`, `createEntry`, and `deleteEntry` methods that
- * call the `/api/entries` server routes.
- *
- * Uses module-level `ref()` instead of `useState()` to avoid SSR
- * payload serialization and potential hydration mismatches.
- *
- * @returns Reactive guest entries state and mutation functions.
+ * Module-level state for guest entries.
+ * Shared across all components without SSR serialization issues.
  */
-
-// Module-level refs — NOT useState() — avoids SSR payload serialization
 const entries = ref<GuestEntry[]>([])
-const isLoading = ref(false)
+const loading = ref(false)
 const error = ref<string | null>(null)
 
+/**
+ * Composable for managing guest entries (CRUD operations).
+ *
+ * Provides reactive state and methods for fetching, creating, and deleting entries.
+ * State is shared across all components via module-level refs.
+ *
+ * @returns Reactive entries array and CRUD methods.
+ */
 export function useGuests() {
-  /** Fetches all guest entries from the server and updates reactive state. */
+  /**
+   * Fetches all guest entries from the API.
+   * Updates the shared entries array.
+   */
   async function fetchEntries(): Promise<void> {
-    isLoading.value = true
+    loading.value = true
     error.value = null
 
     try {
       const response = await $fetch<GuestEntriesResponse>('/api/entries')
-
       if (response.success && response.data) {
         entries.value = response.data
       } else {
-        throw new Error(response.error || 'Failed to fetch entries')
+        error.value = response.error || 'Failed to fetch entries'
       }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to fetch entries'
-      console.error('Failed to fetch entries:', err)
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to fetch entries'
     } finally {
-      isLoading.value = false
+      loading.value = false
     }
   }
 
   /**
-   * Creates a new guest entry via `POST /api/entries`.
-   * @param input - The guest entry data (name, message, optional photo).
-   * @returns The created entry, or `null` if creation failed.
+   * Creates a new guest entry.
+   * Adds the entry to the start of the array on success.
+   *
+   * @param input - Entry data including name, message, optional photo and answers.
+   * @returns The created entry or null on failure.
    */
   async function createEntry(input: CreateGuestEntryInput): Promise<GuestEntry | null> {
-    isLoading.value = true
+    loading.value = true
     error.value = null
 
     try {
@@ -56,52 +57,40 @@ export function useGuests() {
       })
 
       if (response.success && response.data) {
-        entries.value = [response.data, ...entries.value]
+        entries.value.unshift(response.data)
         return response.data
       } else {
-        throw new Error(response.error || 'Failed to create entry')
+        error.value = response.error || 'Failed to create entry'
+        return null
       }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to create entry'
-      console.error('Failed to create entry:', err)
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : 'Failed to create entry'
       return null
     } finally {
-      isLoading.value = false
+      loading.value = false
     }
   }
 
   /**
-   * Deletes a guest entry by ID via `DELETE /api/entries/:id`.
+   * Deletes a guest entry by ID.
+   * Removes the entry from the array on success.
+   *
    * @param id - The entry ID to delete.
-   * @returns `true` if deleted successfully, `false` otherwise.
+   * @returns True if deleted successfully.
    */
   async function deleteEntry(id: string): Promise<boolean> {
-    isLoading.value = true
-    error.value = null
-
     try {
-      const response = await $fetch<{ success: boolean }>(`/api/entries/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (response.success) {
-        entries.value = entries.value.filter(e => e.id !== id)
-        return true
-      } else {
-        throw new Error('Failed to delete entry')
-      }
-    } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Failed to delete entry'
-      console.error('Failed to delete entry:', err)
+      await $fetch(`/api/entries/${id}`, { method: 'DELETE' })
+      entries.value = entries.value.filter(e => e.id !== id)
+      return true
+    } catch {
       return false
-    } finally {
-      isLoading.value = false
     }
   }
 
   return {
     entries: readonly(entries),
-    isLoading: readonly(isLoading),
+    loading: readonly(loading),
     error: readonly(error),
     fetchEntries,
     createEntry,

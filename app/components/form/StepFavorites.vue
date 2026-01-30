@@ -1,98 +1,87 @@
 <script setup lang="ts">
 /**
- * Step 2 of the guest wizard: Favorites (all optional).
+ * Step 2: Favorites - Color, Food, Movie, Song, Video (all optional).
  *
- * Fields: Color, Food, Movie, Song (title/artist/URL), Video (title/URL).
+ * Uses the shared form state from useGuestForm composable.
  */
-
-defineProps<{
-  favoriteColor: string
-  favoriteFood: string
-  favoriteMovie: string
-  songTitle: string
-  songArtist: string
-  songUrl: string
-  videoTitle: string
-  videoUrl: string
-}>()
-
-defineEmits<{
-  'update:favoriteColor': [value: string]
-  'update:favoriteFood': [value: string]
-  'update:favoriteMovie': [value: string]
-  'update:songTitle': [value: string]
-  'update:songArtist': [value: string]
-  'update:songUrl': [value: string]
-  'update:videoTitle': [value: string]
-  'update:videoUrl': [value: string]
-}>()
+const { formState } = useGuestForm()
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="space-y-6">
+    <div class="text-center">
+      <h2 class="font-display text-xl font-semibold text-foreground">
+        Deine Favoriten
+      </h2>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Was magst du am liebsten? Alles optional!
+      </p>
+    </div>
+
+    <!-- Color -->
     <div class="space-y-2">
-      <Label for="fav-color">Favorite Color</Label>
+      <Label for="favoriteColor">Lieblingsfarbe</Label>
       <Input
-        id="fav-color"
-        :model-value="favoriteColor"
-        placeholder="e.g. Sunset Orange"
-        @update:model-value="$emit('update:favoriteColor', $event)"
+        id="favoriteColor"
+        v-model="formState.favoriteColor"
+        placeholder="z.B. Mintgrün"
       />
     </div>
 
+    <!-- Food -->
     <div class="space-y-2">
-      <Label for="fav-food">Favorite Food</Label>
+      <Label for="favoriteFood">Lieblingsessen</Label>
       <Input
-        id="fav-food"
-        :model-value="favoriteFood"
-        placeholder="e.g. Homemade pasta"
-        @update:model-value="$emit('update:favoriteFood', $event)"
+        id="favoriteFood"
+        v-model="formState.favoriteFood"
+        placeholder="z.B. Ramen"
       />
     </div>
 
+    <!-- Movie -->
     <div class="space-y-2">
-      <Label for="fav-movie">Favorite Movie</Label>
+      <Label for="favoriteMovie">Lieblingsfilm</Label>
       <Input
-        id="fav-movie"
-        :model-value="favoriteMovie"
-        placeholder="e.g. The Grand Budapest Hotel"
-        @update:model-value="$emit('update:favoriteMovie', $event)"
+        id="favoriteMovie"
+        v-model="formState.favoriteMovie"
+        placeholder="z.B. Interstellar"
       />
     </div>
 
-    <!-- Song Card -->
-    <div class="rounded-lg border border-border/60 p-4 space-y-3">
-      <Label class="text-sm font-semibold">Favorite Song</Label>
-      <Input
-        :model-value="songTitle"
-        placeholder="Song title"
-        @update:model-value="$emit('update:songTitle', $event)"
-      />
-      <Input
-        :model-value="songArtist"
-        placeholder="Artist"
-        @update:model-value="$emit('update:songArtist', $event)"
-      />
-      <Input
-        :model-value="songUrl"
-        placeholder="Link (Spotify, YouTube, etc.)"
-        @update:model-value="$emit('update:songUrl', $event)"
-      />
+    <!-- Song -->
+    <div class="section-card space-y-3">
+      <p class="text-sm font-medium text-foreground">Lieblingssong</p>
+      <div class="space-y-2">
+        <Input
+          v-model="formState.favoriteSongTitle"
+          placeholder="Titel"
+        />
+        <Input
+          v-model="formState.favoriteSongArtist"
+          placeholder="Künstler (optional)"
+        />
+        <Input
+          v-model="formState.favoriteSongUrl"
+          placeholder="Spotify/YouTube Link (optional)"
+          type="url"
+        />
+      </div>
     </div>
 
-    <!-- Video Card -->
-    <div class="rounded-lg border border-border/60 p-4 space-y-3">
-      <Label class="text-sm font-semibold">Favorite Video</Label>
-      <Input
-        :model-value="videoTitle"
-        placeholder="Video title"
-        @update:model-value="$emit('update:videoTitle', $event)"
-      />
-      <Input
-        :model-value="videoUrl"
-        placeholder="Link (YouTube, etc.)"
-        @update:model-value="$emit('update:videoUrl', $event)"
-      />
+    <!-- Video -->
+    <div class="section-card space-y-3">
+      <p class="text-sm font-medium text-foreground">Lieblingsvideo</p>
+      <div class="space-y-2">
+        <Input
+          v-model="formState.favoriteVideoTitle"
+          placeholder="Titel"
+        />
+        <Input
+          v-model="formState.favoriteVideoUrl"
+          placeholder="YouTube Link (optional)"
+          type="url"
+        />
+      </div>
     </div>
   </div>
 </template>

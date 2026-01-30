@@ -1,59 +1,64 @@
 <script setup lang="ts">
 /**
- * Step 4 of the guest wizard: Our Story and Message (message required).
+ * Step 4: Message - Message (required), How We Met, Best Memory (optional).
  *
- * Fields: Best Memory (optional), How We Met (optional), Message to Host (required).
+ * Uses the shared form state from useGuestForm composable.
  */
-
-defineProps<{
-  bestMemory: string
-  howWeMet: string
-  message: string
-  messageError: string | null
-}>()
-
-defineEmits<{
-  'update:bestMemory': [value: string]
-  'update:howWeMet': [value: string]
-  'update:message': [value: string]
-}>()
+const { formState, errors } = useGuestForm()
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div class="space-y-2">
-      <Label for="best-memory">Best Memory Together</Label>
-      <Textarea
-        id="best-memory"
-        :model-value="bestMemory"
-        placeholder="A favorite moment you shared..."
-        rows="2"
-        @update:model-value="$emit('update:bestMemory', $event)"
-      />
+  <div class="space-y-6">
+    <div class="text-center">
+      <h2 class="font-display text-xl font-semibold text-foreground">
+        Deine Nachricht
+      </h2>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Hinterlasse einen persönlichen Gruß!
+      </p>
     </div>
 
+    <!-- Message -->
     <div class="space-y-2">
-      <Label for="how-we-met">How We Met</Label>
+      <Label for="message">Nachricht *</Label>
       <Textarea
-        id="how-we-met"
-        :model-value="howWeMet"
-        placeholder="The story of how you met..."
-        rows="2"
-        @update:model-value="$emit('update:howWeMet', $event)"
-      />
-    </div>
-
-    <div class="space-y-2">
-      <Label for="guest-message">Your Message *</Label>
-      <Textarea
-        id="guest-message"
-        :model-value="message"
-        placeholder="Leave a message for the host..."
+        id="message"
+        v-model="formState.message"
+        placeholder="Schreib etwas Nettes..."
+        :class="{ 'border-destructive': errors.message }"
         rows="4"
-        :class="{ 'border-destructive': messageError }"
-        @update:model-value="$emit('update:message', $event)"
+        maxlength="1000"
       />
-      <p v-if="messageError" class="text-sm text-destructive">{{ messageError }}</p>
+      <div class="flex justify-between">
+        <p v-if="errors.message" class="text-sm text-destructive">
+          {{ errors.message }}
+        </p>
+        <p class="ml-auto text-xs text-muted-foreground">
+          {{ formState.message.length }} / 1000
+        </p>
+      </div>
+    </div>
+
+    <!-- How We Met -->
+    <div class="space-y-2">
+      <Label for="howWeMet">Wie haben wir uns kennengelernt?</Label>
+      <Textarea
+        id="howWeMet"
+        v-model="formState.howWeMet"
+        placeholder="Erzähl unsere Geschichte..."
+        rows="3"
+      />
+    </div>
+
+    <!-- Best Memory -->
+    <div class="space-y-2">
+      <Label for="bestMemory">Beste Erinnerung</Label>
+      <Textarea
+        id="bestMemory"
+        v-model="formState.bestMemory"
+        placeholder="Was ist deine liebste Erinnerung mit mir?"
+        rows="3"
+      />
     </div>
   </div>
 </template>

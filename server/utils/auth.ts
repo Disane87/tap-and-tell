@@ -1,66 +1,83 @@
-/**
- * Admin authentication utilities using HMAC-SHA256 tokens.
- * @module server/utils/auth
- */
-import { createHmac } from 'crypto'
-import type { H3Event } from 'h3'
+import { createHmac, timingSafeEqual } from 'crypto'
 
+/**
+ * Admin password from environment. CHANGE IN PRODUCTION!
+ */
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123'
+
+/**
+ * Token signing secret from environment. CHANGE IN PRODUCTION!
+ */
 const TOKEN_SECRET = process.env.TOKEN_SECRET || 'tap-and-tell-secret'
 
 /**
- * Verifies an admin token by checking its HMAC signature and expiry (24 hours).
- * @param token - The base64-encoded token string.
- * @returns `true` if the token is valid and not expired.
+ * Token expiry duration (24 hours in milliseconds).
  */
-export function verifyToken(token: string): boolean {
-  try {
-    const decoded = Buffer.from(token, 'base64').toString('utf-8')
-    const [timestamp, random, signature] = decoded.split(':')
+const TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000
 
-    if (!timestamp || !random || !signature) {
-      return false
-    }
-
-    const expectedSignature = createHmac('sha256', TOKEN_SECRET)
-      .update(`${timestamp}:${random}`)
-      .digest('hex')
-
-    if (signature !== expectedSignature) {
-      return false
-    }
-
-    // Token expires after 24 hours
-    const tokenTime = parseInt(timestamp, 10)
-    const now = Date.now()
-    const twentyFourHours = 24 * 60 * 60 * 1000
-
-    return now - tokenTime < twentyFourHours
-  } catch {
-    return false
-  }
+/**
+ * Validates the admin password.
+ */
+export function validatePassword(password: string): boolean {
+  // Use timing-safe comparison to prevent timing attacks
+  const expected = Buffer.from(ADMIN_PASSWORD)
+  const actual = Buffer.from(password)
+  if (expected.length !== actual.length) return false
+  return timingSafeEqual(expected, actual)
 }
 
 /**
- * Middleware guard that extracts and verifies a Bearer token from the
- * `Authorization` header. Throws a 401 error if the token is missing or invalid.
- * @param event - The H3 event to authenticate.
+ * Generates a signed admin token with expiry timestamp.
+ * Format: base64(timestamp).signature
  */
-export function requireAuth(event: H3Event): void {
-  const authHeader = getHeader(event, 'authorization')
+export function generateToken(): string {
+  const expiry = Date.now() + TOKEN_EXPIRY_MS
+  const payload = Buffer.from(expiry.toString()).toString('base64')
+  const signature = createHmac('sha256', TOKEN_SECRET)
+    .update(payload)
+    .digest('hex')
+  return `${payload}.${signature}`
+}
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    throw createError({
-      statusCode: 401,
-      message: 'Unauthorized'
-    })
+/**
+ * Validates an admin token.
+ * Checks signature and expiry.
+ */
+export function validateToken(token: string): boolean {
+  const parts = token.split('.')
+  if (parts.length !== 2) return false
+
+  const [payload, signature] = parts
+
+  // Verify signature
+  const expectedSig = createHmac('sha256', TOKEN_SECRET)
+    .update(payload)
+    .digest('hex')
+
+  const sigBuffer = Buffer.from(signature, 'hex')
+  const expectedBuffer = Buffer.from(expectedSig, 'hex')
+
+  if (sigBuffer.length !== expectedBuffer.length) return false
+  if (!timingSafeEqual(sigBuffer, expectedBuffer)) return false
+
+  // Check expiry
+  try {
+    const expiry = parseInt(Buffer.from(payload, 'base64').toString(), 10)
+    if (isNaN(expiry) || Date.now() > expiry) return false
+  } catch {
+    return false
   }
 
-  const token = authHeader.slice(7)
+  return true
+}
 
-  if (!verifyToken(token)) {
-    throw createError({
-      statusCode: 401,
-      message: 'Invalid or expired token'
-    })
-  }
+/**
+ * Extracts and validates the Bearer token from an Authorization header.
+ * Returns true if valid, false otherwise.
+ */
+export function validateAuthHeader(authHeader: string | null): boolean {
+  if (!authHeader) return false
+  const match = authHeader.match(/^Bearer\s+(.+)$/)
+  if (!match) return false
+  return validateToken(match[1])
 }
