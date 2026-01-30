@@ -1,53 +1,46 @@
 <script setup lang="ts">
 /**
- * Wizard Step 1: Name and Photo (both encouraged, name required).
+ * Step 1 of the guest wizard: Name (required) and Photo (optional).
+ *
+ * @props name / photo - Bound form values.
+ * @props nameError / photoError - Validation error messages.
+ * @emits update:name / update:photo - Two-way binding for form fields.
  */
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import type { FormValidation } from '~/composables/useGuestForm'
 
-interface Props {
+defineProps<{
   name: string
   photo: string | null
-  validation: FormValidation
-  disabled?: boolean
-}
+  nameError: string | null
+  photoError: string | null
+}>()
 
-defineProps<Props>()
-
-const emit = defineEmits<{
-  (e: 'update:name', value: string): void
-  (e: 'update:photo', value: string | null): void
+defineEmits<{
+  'update:name': [value: string]
+  'update:photo': [value: string | null]
 }>()
 </script>
 
 <template>
-  <div class="space-y-5">
-    <div>
-      <Label for="guest-name" class="mb-1.5 block text-sm font-medium">
-        Your Name <span class="text-destructive">*</span>
-      </Label>
+  <div class="space-y-6">
+    <div class="space-y-2">
+      <Label for="guest-name">Your Name *</Label>
       <Input
         id="guest-name"
         :model-value="name"
         placeholder="What should we call you?"
-        :disabled="disabled"
-        @update:model-value="emit('update:name', $event as string)"
+        :class="{ 'border-destructive': nameError }"
+        @update:model-value="$emit('update:name', $event)"
       />
-      <p v-if="validation.name" class="mt-1 text-sm text-destructive">
-        {{ validation.name }}
-      </p>
+      <p v-if="nameError" class="text-sm text-destructive">{{ nameError }}</p>
     </div>
 
-    <div>
-      <Label class="mb-1.5 block text-sm font-medium">Your Photo</Label>
-      <p class="mb-2 text-xs text-muted-foreground">Take a selfie or upload a photo</p>
+    <div class="space-y-2">
+      <Label>Photo (optional)</Label>
       <PhotoUpload
-        :photo="photo"
-        :disabled="disabled"
-        :error="validation.photo"
-        @update:photo="emit('update:photo', $event)"
+        :model-value="photo"
+        @update:model-value="$emit('update:photo', $event)"
       />
+      <p v-if="photoError" class="text-sm text-destructive">{{ photoError }}</p>
     </div>
   </div>
 </template>

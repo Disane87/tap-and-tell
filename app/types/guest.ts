@@ -1,45 +1,53 @@
-/** Favorite song media reference. */
+/**
+ * TypeScript type definitions for guest entries and API contracts.
+ * @module types/guest
+ */
+
+/** A media reference for a guest's favorite song. */
 export interface FavoriteSong {
-  type: 'spotify' | 'apple_music' | 'youtube' | 'text'
+  type: 'song'
   title: string
   artist?: string
   url?: string
 }
 
-/** Favorite video media reference. */
+/** A media reference for a guest's favorite video. */
 export interface FavoriteVideo {
-  type: 'youtube' | 'vimeo' | 'text'
+  type: 'video'
   title: string
   url?: string
   videoId?: string
 }
 
-/** All optional Freundebuch (friendship book) answers. */
+/**
+ * Extended Freundebuch-style answers a guest may provide.
+ * All fields are optional.
+ */
 export interface GuestAnswers {
-  // Personal Favorites
+  /** Favorites */
   favoriteColor?: string
   favoriteFood?: string
   favoriteMovie?: string
   favoriteSong?: FavoriteSong
   favoriteVideo?: FavoriteVideo
 
-  // Fun Questions
+  /** Fun questions */
   superpower?: string
   hiddenTalent?: string
   desertIslandItems?: string
 
-  // Quick Toggles
+  /** Binary toggle choices */
   coffeeOrTea?: 'coffee' | 'tea'
   nightOwlOrEarlyBird?: 'night_owl' | 'early_bird'
   beachOrMountains?: 'beach' | 'mountains'
 
-  // Connection
+  /** Connection */
   bestMemory?: string
   howWeMet?: string
   messageToHost?: string
 }
 
-/** A persisted guest book entry. */
+/** A persisted guest entry with all metadata. */
 export interface GuestEntry {
   id: string
   name: string
@@ -49,22 +57,22 @@ export interface GuestEntry {
   answers?: GuestAnswers
 }
 
-/** Payload for creating a new guest entry via `POST /api/entries`. */
+/** The payload sent to `POST /api/entries` when creating a new entry. */
 export interface CreateGuestEntryInput {
   name: string
   message: string
-  photo?: string // Base64 encoded image
+  photo?: string | null
   answers?: GuestAnswers
 }
 
-/** API response wrapper for a single guest entry. */
+/** API response for a single guest entry. */
 export interface GuestEntryResponse {
   success: boolean
   data?: GuestEntry
   error?: string
 }
 
-/** API response wrapper for a list of guest entries. */
+/** API response for a list of guest entries. */
 export interface GuestEntriesResponse {
   success: boolean
   data?: GuestEntry[]

@@ -1,25 +1,30 @@
 <script setup lang="ts">
-import { Sonner } from '@/components/ui/sonner'
-
-const { isDark } = useTheme()
-const sonnerTheme = computed(() => isDark.value ? 'dark' : 'light')
+/**
+ * Default layout with an optional frosted-glass header.
+ *
+ * The header is hidden on the landing page and guestbook
+ * (chromeless mode) to allow full-bleed gradient backgrounds.
+ * Admin pages show the full header with navigation.
+ */
 
 const route = useRoute()
-/** Whether the current page hides the header (landing page and guestbook for normal users). */
-const isChromeless = computed(() => route.path === '/' || route.path === '/guestbook')
-/** Whether the current page needs full-viewport layout (no container padding). */
-const isFullViewport = computed(() => route.path === '/' || route.path === '/guestbook')
+
+/** Routes that should render without the header navigation. */
+const isChromeless = computed(() => {
+  const path = route.path
+  return path === '/' || path === '/guestbook'
+})
 </script>
 
 <template>
-  <div class="transition-theme min-h-screen bg-background">
+  <div class="transition-theme min-h-screen">
     <header
       v-if="!isChromeless"
-      class="border-b border-border/60 bg-card/80 backdrop-blur-sm"
+      class="sticky top-0 z-50 border-b border-border/60 bg-card/80 backdrop-blur-sm"
     >
-      <div class="container mx-auto flex h-16 items-center justify-between px-4">
-        <NuxtLink to="/" class="font-display text-xl font-semibold tracking-tight text-foreground">
-          Tap & Tell
+      <div class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
+        <NuxtLink to="/" class="font-display text-lg font-semibold">
+          Tap &amp; Tell
         </NuxtLink>
         <nav class="flex items-center gap-4">
           <NuxtLink
@@ -41,10 +46,10 @@ const isFullViewport = computed(() => route.path === '/' || route.path === '/gue
       </div>
     </header>
 
-    <main :class="isFullViewport ? '' : 'container mx-auto px-4 py-8'">
+    <main>
       <slot />
     </main>
 
-    <Sonner position="top-center" :theme="sonnerTheme" />
+    <Toaster position="top-center" :expand="false" rich-colors />
   </div>
 </template>

@@ -1,63 +1,57 @@
 <script setup lang="ts">
+/**
+ * Guestbook page — swipeable single-entry viewer.
+ *
+ * Displays entries one at a time with swipe (mobile) and arrow key/button
+ * navigation (desktop). No header — chromeless design.
+ *
+ * This page can be navigated to directly or from the landing page.
+ */
 import { useSwipe } from '@vueuse/core'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import type { GuestEntry } from '~/types/guest'
 
-const { entries, isLoading, error, fetchEntries } = useGuests()
+const { entries, isLoading, fetchEntries } = useGuests()
 
 const currentIndex = ref(0)
-const direction = ref<'left' | 'right'>('left')
-const swipeTarget = ref<HTMLElement | null>(null)
+const slideDirection = ref<'forward' | 'backward'>('forward')
+const swiperEl = ref<HTMLElement | null>(null)
 
-/** Computed transition name based on navigation direction. */
+const selectedEntry = ref<GuestEntry | null>(null)
+const sheetOpen = ref(false)
+
+const hasEntries = computed(() => entries.value.length > 0)
+const currentEntry = computed(() => entries.value[currentIndex.value] ?? null)
+
 const transitionName = computed(() =>
-  direction.value === 'left' ? 'slide-entry-left' : 'slide-entry-right'
+  slideDirection.value === 'forward' ? 'slide-left' : 'slide-right'
 )
 
-/** The currently displayed entry, or null if no entries exist. */
-const currentEntry = computed(() =>
-  entries.value.length > 0 ? entries.value[currentIndex.value] : null
-)
-
-/**
- * Navigate to the next entry in the guestbook.
- * Sets direction to 'left' for the slide-out animation.
- */
-function nextEntry() {
+function nextEntry(): void {
   if (currentIndex.value < entries.value.length - 1) {
-    direction.value = 'left'
+    slideDirection.value = 'forward'
     currentIndex.value++
   }
 }
 
-/**
- * Navigate to the previous entry in the guestbook.
- * Sets direction to 'right' for the slide-out animation.
- */
-function prevEntry() {
+function prevEntry(): void {
   if (currentIndex.value > 0) {
-    direction.value = 'right'
+    slideDirection.value = 'backward'
     currentIndex.value--
   }
 }
 
-/** Handle keyboard arrow key navigation. */
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-    e.preventDefault()
-    nextEntry()
-  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-    e.preventDefault()
-    prevEntry()
-  }
-}
-
-// Swipe detection via VueUse
-useSwipe(swipeTarget, {
-  onSwipeEnd(_e, swipeDirection) {
-    if (swipeDirection === 'left') nextEntry()
-    if (swipeDirection === 'right') prevEntry()
+useSwipe(swiperEl, {
+  onSwipeEnd(_e, direction) {
+    if (direction === 'left') nextEntry()
+    if (direction === 'right') prevEntry()
   }
 })
+
+function handleKeydown(e: KeyboardEvent): void {
+  if (e.key === 'ArrowRight') nextEntry()
+  if (e.key === 'ArrowLeft') prevEntry()
+}
 
 onMounted(() => {
   fetchEntries()
@@ -67,92 +61,85 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
 })
-
-// Clamp currentIndex if entries change
-watch(() => entries.value.length, (len) => {
-  if (currentIndex.value >= len && len > 0) {
-    currentIndex.value = len - 1
-  }
-})
 </script>
 
 <template>
-  <div class="guestbook-viewer">
-    <!-- Minimal top bar with counter -->
-    <div class="flex items-center justify-center px-4 py-3">
-      <p v-if="entries.length > 0" class="text-xs text-muted-foreground">
-        {{ currentIndex + 1 }} / {{ entries.length }}
-      </p>
-    </div>
-
-    <!-- Loading state -->
-    <div v-if="isLoading" class="flex flex-1 items-center justify-center">
-      <div class="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-    </div>
-
-    <!-- Error state -->
-    <div v-else-if="error" class="flex flex-1 items-center justify-center px-4">
-      <div class="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-        <p class="text-destructive">{{ error }}</p>
-        <Button variant="outline" class="mt-4" @click="fetchEntries">
-          Try Again
-        </Button>
-      </div>
+  <div
+    ref="swiperEl"
+    class="relative min-h-screen overflow-hidden"
+    style="touch-action: pan-y;"
+  >
+    <!-- Loading -->
+    <div
+      v-if="isLoading && !hasEntries"
+      class="landing-gradient flex min-h-screen items-center justify-center"
+    >
+      <p class="animate-gentle-pulse text-muted-foreground">Loading entries...</p>
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="entries.length === 0" class="flex flex-1 items-center justify-center px-4">
-      <div class="text-center">
-        <p class="text-lg text-muted-foreground">No messages yet.</p>
-        <p class="mt-1 text-sm text-muted-foreground">Be the first to leave one!</p>
-      </div>
+    <div
+      v-else-if="!hasEntries"
+      class="landing-gradient flex min-h-screen flex-col items-center justify-center gap-4 px-6"
+    >
+      <p class="text-center text-muted-foreground">No entries yet.</p>
+      <NuxtLink to="/">
+        <Button>Leave the first entry</Button>
+      </NuxtLink>
     </div>
 
-    <!-- Swipeable entry viewport -->
+    <!-- Entry viewer -->
     <template v-else>
-      <div ref="swipeTarget" class="entry-viewport">
-        <Transition :name="transitionName" mode="out-in">
-          <GuestEntryFullView
-            v-if="currentEntry"
-            :key="currentEntry.id"
-            :entry="currentEntry"
-          />
-        </Transition>
+      <Transition :name="transitionName" mode="out-in">
+        <div :key="currentIndex" class="min-h-screen">
+          <GuestEntryFullView v-if="currentEntry" :entry="currentEntry" />
+        </div>
+      </Transition>
 
-        <!-- Desktop navigation arrows -->
-        <button
-          v-if="entries.length > 1 && currentIndex > 0"
-          class="nav-arrow nav-arrow-left rounded-full bg-card/80 p-2 shadow-lg backdrop-blur-sm transition-opacity hover:bg-card"
-          aria-label="Previous entry"
-          @click="prevEntry"
-        >
-          <ChevronLeft class="h-6 w-6 text-foreground" />
-        </button>
-        <button
-          v-if="entries.length > 1 && currentIndex < entries.length - 1"
-          class="nav-arrow nav-arrow-right rounded-full bg-card/80 p-2 shadow-lg backdrop-blur-sm transition-opacity hover:bg-card"
-          aria-label="Next entry"
-          @click="nextEntry"
-        >
-          <ChevronRight class="h-6 w-6 text-foreground" />
-        </button>
-      </div>
+      <!-- Navigation arrows (desktop) -->
+      <button
+        v-if="currentIndex > 0"
+        class="nav-arrow nav-arrow-left hidden md:flex"
+        aria-label="Previous entry"
+        @click="prevEntry"
+      >
+        <ChevronLeft class="h-5 w-5" />
+      </button>
+      <button
+        v-if="currentIndex < entries.length - 1"
+        class="nav-arrow nav-arrow-right hidden md:flex"
+        aria-label="Next entry"
+        @click="nextEntry"
+      >
+        <ChevronRight class="h-5 w-5" />
+      </button>
 
-      <!-- Mobile pagination dots (capped at 10 to avoid overflow) -->
-      <div v-if="entries.length > 1 && entries.length <= 10" class="flex justify-center gap-1.5 py-3 md:hidden">
-        <div
-          v-for="(_, i) in entries"
-          :key="i"
-          class="h-1.5 rounded-full transition-all duration-200"
-          :class="i === currentIndex
-            ? 'w-6 bg-primary'
-            : 'w-1.5 bg-muted-foreground/30'"
-        />
-      </div>
-      <!-- Text counter for many entries on mobile -->
-      <div v-else-if="entries.length > 10" class="py-3 text-center text-xs text-muted-foreground md:hidden">
+      <!-- Entry counter -->
+      <div class="fixed right-4 top-4 z-20 rounded-full bg-card/80 px-3 py-1 text-xs text-muted-foreground backdrop-blur-sm">
         {{ currentIndex + 1 }} / {{ entries.length }}
       </div>
+
+      <!-- Pagination dots -->
+      <div
+        v-if="entries.length > 1"
+        class="fixed bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-1.5"
+      >
+        <button
+          v-for="(_, i) in entries"
+          :key="i"
+          class="pagination-dot"
+          :class="{ active: currentIndex === i }"
+          :aria-label="`Go to entry ${i + 1}`"
+          @click="slideDirection = i > currentIndex ? 'forward' : 'backward'; currentIndex = i"
+        />
+      </div>
     </template>
+
+    <!-- Detail sheet (optional, for tapping on entry for more details) -->
+    <EntrySheet
+      :entry="selectedEntry"
+      :open="sheetOpen"
+      @update:open="sheetOpen = $event"
+    />
   </div>
 </template>

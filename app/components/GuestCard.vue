@@ -1,77 +1,78 @@
 <script setup lang="ts">
+/**
+ * Polaroid-inspired guest entry card for the guestbook grid.
+ *
+ * Displays photo, name (handwritten font), truncated message, date,
+ * and up to 3 answer preview badges. Emits a click event to open
+ * the full entry detail sheet.
+ *
+ * @emits click - When the card is clicked.
+ */
 import type { GuestEntry } from '~/types/guest'
 
-interface Props {
+const props = defineProps<{
   entry: GuestEntry
-}
-
-defineProps<Props>()
-
-const emit = defineEmits<{
-  (e: 'click', entry: GuestEntry): void
 }>()
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
+defineEmits<{
+  click: []
+}>()
+
+/** Formats an ISO date string to a short human-readable format. */
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
+    year: 'numeric'
   })
 }
 
-/** Builds up to 3 preview badges from the entry's answers. */
-function getAnswerBadges(entry: GuestEntry): { icon: string; text: string }[] {
-  const badges: { icon: string; text: string }[] = []
-  const a = entry.answers
+/** Generates up to 3 answer preview badges from entry answers. */
+const answerBadges = computed(() => {
+  const badges: string[] = []
+  const a = props.entry.answers
   if (!a) return badges
 
-  if (a.coffeeOrTea) badges.push({ icon: a.coffeeOrTea === 'coffee' ? '☕' : '🍵', text: a.coffeeOrTea === 'coffee' ? 'Coffee' : 'Tea' })
-  if (a.beachOrMountains) badges.push({ icon: a.beachOrMountains === 'beach' ? '🏖️' : '🏔️', text: a.beachOrMountains === 'beach' ? 'Beach' : 'Mountains' })
-  if (a.nightOwlOrEarlyBird) badges.push({ icon: a.nightOwlOrEarlyBird === 'night_owl' ? '🌙' : '🌅', text: a.nightOwlOrEarlyBird === 'night_owl' ? 'Night Owl' : 'Early Bird' })
-  if (a.favoriteSong) badges.push({ icon: '🎵', text: a.favoriteSong.title })
-  if (a.favoriteColor) badges.push({ icon: '🎨', text: a.favoriteColor })
-  if (a.superpower) badges.push({ icon: '⚡', text: a.superpower })
+  if (a.coffeeOrTea) badges.push(a.coffeeOrTea === 'coffee' ? '☕ Coffee' : '🍵 Tea')
+  if (a.favoriteSong?.title) badges.push(`🎵 ${a.favoriteSong.title}`)
+  if (a.favoriteColor) badges.push(`🎨 ${a.favoriteColor}`)
+  if (a.superpower) badges.push(`⚡ ${a.superpower}`)
+  if (a.nightOwlOrEarlyBird) badges.push(a.nightOwlOrEarlyBird === 'night_owl' ? '🦉 Night Owl' : '🐦 Early Bird')
+  if (a.beachOrMountains) badges.push(a.beachOrMountains === 'beach' ? '🏖️ Beach' : '⛰️ Mountains')
 
   return badges.slice(0, 3)
-}
+})
 </script>
 
 <template>
-  <div
-    class="card-polaroid cursor-pointer overflow-hidden border border-border/40"
-    @click="emit('click', entry)"
+  <button
+    class="card-polaroid w-full cursor-pointer text-left"
+    @click="$emit('click')"
   >
-    <div v-if="entry.photoUrl" class="photo-frame aspect-video w-full overflow-hidden">
+    <div v-if="entry.photoUrl" class="mb-3">
       <img
         :src="entry.photoUrl"
         :alt="`Photo by ${entry.name}`"
-        class="h-full w-full object-cover transition-transform duration-300 ease-out hover:scale-105"
-        loading="lazy"
+        class="photo-frame aspect-square w-full object-cover"
       >
     </div>
-    <div class="p-4 pb-3">
-      <div class="flex items-center justify-between">
-        <h3 class="font-handwritten text-xl font-semibold text-foreground">{{ entry.name }}</h3>
-        <time class="text-xs text-muted-foreground">
-          {{ formatDate(entry.createdAt) }}
-        </time>
-      </div>
-      <p class="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-        {{ entry.message }}
-      </p>
-
-      <!-- Answer badges -->
-      <div v-if="getAnswerBadges(entry).length" class="mt-3 flex flex-wrap gap-1.5">
-        <span
-          v-for="badge in getAnswerBadges(entry)"
-          :key="badge.text"
-          class="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs text-muted-foreground"
-        >
-          <span>{{ badge.icon }}</span>
-          <span class="max-w-[100px] truncate">{{ badge.text }}</span>
-        </span>
-      </div>
+    <h3 class="font-handwritten text-2xl text-foreground">
+      {{ entry.name }}
+    </h3>
+    <p class="mt-1 line-clamp-3 text-sm text-muted-foreground">
+      {{ entry.message }}
+    </p>
+    <div v-if="answerBadges.length > 0" class="mt-2 flex flex-wrap gap-1">
+      <span
+        v-for="badge in answerBadges"
+        :key="badge"
+        class="answer-badge"
+      >
+        {{ badge }}
+      </span>
     </div>
-  </div>
+    <p class="mt-2 text-xs text-muted-foreground/70">
+      {{ formatDate(entry.createdAt) }}
+    </p>
+  </button>
 </template>

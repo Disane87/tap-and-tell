@@ -1,77 +1,75 @@
 /**
- * Composable for admin panel authentication.
+ * Composable for admin authentication using HMAC-SHA256 tokens.
  *
- * Manages login/logout via `POST /api/admin/login` with HMAC-SHA256 tokens
- * stored in `sessionStorage`. Provides reactive auth state and a `getToken()`
- * helper for attaching Bearer tokens to admin API requests.
+ * Tokens are stored in `sessionStorage` under the key `admin-token`.
+ * Uses module-level `ref()` to avoid SSR hydration mismatches.
  *
- * Uses module-level `ref()` instead of `useState()` to avoid SSR hydration
- * mismatches when `checkAuth()` reads from `sessionStorage` on the client.
- *
- * @returns Reactive auth state and login/logout/checkAuth/getToken functions.
+ * @returns Reactive auth state and login/logout/check methods.
  */
 
-// Module-level refs — NOT useState() — avoids SSR payload serialization
 const isAuthenticated = ref(false)
 const isLoading = ref(false)
 const error = ref<string | null>(null)
 
+const TOKEN_KEY = 'admin-token'
+
 export function useAdmin() {
   /**
-   * Authenticates with the admin API using a password.
-   * @param password - The admin password to verify.
-   * @returns `true` if authentication succeeded.
+   * Authenticates with the admin password.
+   * @param password - The admin password.
+   * @returns `true` if login succeeded.
    */
   async function login(password: string): Promise<boolean> {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await $fetch<{ success: boolean; token?: string; error?: string }>('/api/admin/login', {
-        method: 'POST',
-        body: { password }
-      })
+      const response = await $fetch<{ success: boolean; token?: string; error?: string }>(
+        '/api/admin/login',
+        { method: 'POST', body: { password } }
+      )
 
       if (response.success && response.token) {
-        if (import.meta.client) {
-          sessionStorage.setItem('admin-token', response.token)
+        if (typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem(TOKEN_KEY, response.token)
         }
         isAuthenticated.value = true
         return true
       } else {
-        error.value = response.error || 'Invalid password'
+        error.value = response.error || 'Login failed'
         return false
       }
     } catch (err) {
-      error.value = 'Authentication failed'
+      error.value = err instanceof Error ? err.message : 'Login failed'
       return false
     } finally {
       isLoading.value = false
     }
   }
 
-  /** Clears the admin session token and marks as unauthenticated. */
+  /** Clears the stored admin token and resets auth state. */
   function logout(): void {
-    if (import.meta.client) {
-      sessionStorage.removeItem('admin-token')
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem(TOKEN_KEY)
     }
     isAuthenticated.value = false
   }
 
-  /** Checks whether a valid admin token exists in sessionStorage. */
-  function checkAuth(): boolean {
-    if (import.meta.client) {
-      const token = sessionStorage.getItem('admin-token')
+  /** Checks whether a valid token exists in sessionStorage. */
+  function checkAuth(): void {
+    if (typeof sessionStorage !== 'undefined') {
+      const token = sessionStorage.getItem(TOKEN_KEY)
       isAuthenticated.value = !!token
-      return !!token
     }
-    return false
   }
 
-  /** Returns the current admin Bearer token, or `null` if not authenticated. */
+  /**
+   * Retrieves the stored Bearer token for authenticated API calls.
+   * @returns The token string, or `null` if not authenticated.
+   */
   function getToken(): string | null {
-    if (import.meta.client) {
-      return sessionStorage.getItem('admin-token')
+    if (typeof sessionStorage !== 'undefined') {
+      return sessionStorage.getItem(TOKEN_KEY)
     }
     return null
   }

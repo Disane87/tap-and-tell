@@ -1,34 +1,35 @@
-/** NFC context parsed from URL query parameters. */
-export interface NfcContext {
+/**
+ * Composable for detecting NFC entry context from URL query parameters.
+ *
+ * NFC tags are programmed with URLs like `/?source=nfc&event=Birthday`.
+ * This composable extracts that context and provides a welcome message.
+ *
+ * @returns NFC context object and a computed welcome message.
+ */
+
+interface NfcContext {
   isNfcEntry: boolean
   eventName: string | null
   source: string | null
 }
 
-/**
- * Composable for detecting NFC entry context from URL query parameters.
- *
- * NFC tags are programmed to open URLs like `/?source=nfc&event=Birthday`.
- * This composable reads those params and provides reactive NFC state
- * and a context-aware welcome message.
- *
- * @returns Reactive NFC context and a computed welcome message.
- */
 export function useNfc() {
   const route = useRoute()
 
+  /** Reactive NFC context derived from URL query parameters. */
   const nfcContext = computed<NfcContext>(() => {
-    const source = route.query.source as string | undefined
-    const event = route.query.event as string | undefined
+    const source = (route.query.source as string) || null
+    const eventName = (route.query.event as string) || null
 
     return {
       isNfcEntry: source === 'nfc',
-      eventName: event || null,
-      source: source || null
+      eventName,
+      source
     }
   })
 
-  const welcomeMessage = computed(() => {
+  /** Context-aware welcome message based on NFC entry. */
+  const welcomeMessage = computed<string>(() => {
     if (nfcContext.value.eventName) {
       return `Welcome to ${nfcContext.value.eventName}!`
     }
@@ -39,7 +40,7 @@ export function useNfc() {
   })
 
   return {
-    nfcContext: readonly(nfcContext),
+    nfcContext,
     welcomeMessage
   }
 }
