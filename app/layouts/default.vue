@@ -1,44 +1,70 @@
 <script setup lang="ts">
 /**
- * Default layout with an optional frosted-glass header.
+ * Default layout with header navigation and theme toggle.
  *
- * The header is hidden on the landing page and guestbook
- * (chromeless mode) to allow full-bleed gradient backgrounds.
- * Admin pages show the full header with navigation.
+ * Contains:
+ * - Header with logo, nav links, and theme toggle
+ * - Main content slot
+ * - Toast notifications via Sonner
  */
+import { BookOpen, Home, Settings } from 'lucide-vue-next'
 
 const route = useRoute()
 
-/** Routes that should render without the header navigation. */
-const isChromeless = computed(() => {
-  const path = route.path
-  return path === '/' || path === '/guestbook'
-})
+/**
+ * Navigation links.
+ */
+const navLinks = [
+  { to: '/', label: 'Home', icon: Home },
+  { to: '/guestbook', label: 'Guestbook', icon: BookOpen }
+]
+
+/**
+ * Checks if a link is active.
+ */
+function isActive(path: string): boolean {
+  return route.path === path
+}
 </script>
 
 <template>
-  <div class="transition-theme min-h-screen">
-    <header
-      v-if="!isChromeless"
-      class="sticky top-0 z-50 border-b border-border/60 bg-card/80 backdrop-blur-sm"
-    >
+  <div class="min-h-screen bg-background">
+    <!-- Header -->
+    <header class="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
       <div class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
-        <NuxtLink to="/" class="font-display text-lg font-semibold">
-          Tap &amp; Tell
+        <!-- Logo -->
+        <NuxtLink to="/" class="font-handwritten text-xl text-foreground">
+          Tap & Tell
         </NuxtLink>
-        <nav class="flex items-center gap-4">
+
+        <!-- Navigation -->
+        <nav class="flex items-center gap-1">
           <NuxtLink
-            to="/"
-            class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            v-for="link in navLinks"
+            :key="link.to"
+            :to="link.to"
+            class="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors"
+            :class="isActive(link.to)
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
           >
-            Home
+            <component :is="link.icon" class="h-4 w-4" />
+            <span class="hidden sm:inline">{{ link.label }}</span>
           </NuxtLink>
+
+          <!-- Admin link -->
           <NuxtLink
-            to="/guestbook"
-            class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            to="/admin"
+            class="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors"
+            :class="route.path.startsWith('/admin')
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
           >
-            Guestbook
+            <Settings class="h-4 w-4" />
+            <span class="hidden sm:inline">Admin</span>
           </NuxtLink>
+
+          <!-- Theme toggle -->
           <ClientOnly>
             <ThemeToggle />
           </ClientOnly>
@@ -46,10 +72,9 @@ const isChromeless = computed(() => {
       </div>
     </header>
 
+    <!-- Main content -->
     <main>
       <slot />
     </main>
-
-    <Toaster position="top-center" :expand="false" rich-colors />
   </div>
 </template>

@@ -60,21 +60,3 @@ export interface CreateGuestEntryInput {
   photo?: string // Base64-encoded image data
   answers?: GuestAnswers
 }
-
-/**
- * API response for a single entry.
- */
-export interface GuestEntryResponse {
-  success: boolean
-  data?: GuestEntry
-  error?: string
-}
-
-/**
- * API response for multiple entries.
- */
-export interface GuestEntriesResponse {
-  success: boolean
-  data?: GuestEntry[]
-  error?: string
-}

@@ -1,9 +1,16 @@
-import { requireAuth } from '../../../../utils/auth'
-import { deleteEntry } from '../../../../utils/storage'
+/**
+ * DELETE /api/admin/entries/:id
+ * Deletes a guest entry by ID. Requires admin authentication.
+ */
+export default defineEventHandler((event) => {
+  const authHeader = getHeader(event, 'Authorization')
 
-/** DELETE /api/admin/entries/:id — Deletes an entry (admin auth required). */
-export default defineEventHandler(async (event) => {
-  requireAuth(event)
+  if (!validateAuthHeader(authHeader ?? null)) {
+    throw createError({
+      statusCode: 401,
+      message: 'Unauthorized'
+    })
+  }
 
   const id = getRouterParam(event, 'id')
 
@@ -14,29 +21,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  try {
-    const deleted = await deleteEntry(id)
+  const deleted = deleteEntry(id)
 
-    if (!deleted) {
-      throw createError({
-        statusCode: 404,
-        message: 'Entry not found'
-      })
-    }
-
-    return {
-      success: true,
-      message: 'Entry deleted successfully'
-    }
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
-
-    console.error('Failed to delete entry:', error)
+  if (!deleted) {
     throw createError({
-      statusCode: 500,
-      message: 'Failed to delete entry'
+      statusCode: 404,
+      message: 'Entry not found'
     })
+  }
+
+  return {
+    success: true
   }
 })

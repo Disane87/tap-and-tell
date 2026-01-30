@@ -1,7 +1,9 @@
-import { deleteEntry } from '../../../utils/storage'
-
-/** DELETE /api/entries/:id — Deletes a guest entry and its photo. */
-export default defineEventHandler(async (event) => {
+/**
+ * DELETE /api/entries/:id
+ * Deletes a guest entry by ID.
+ * NOTE: This endpoint is currently unprotected. Use /api/admin/entries/:id for authenticated deletion.
+ */
+export default defineEventHandler((event) => {
   const id = getRouterParam(event, 'id')
 
   if (!id) {
@@ -11,29 +13,16 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  try {
-    const deleted = await deleteEntry(id)
+  const deleted = deleteEntry(id)
 
-    if (!deleted) {
-      throw createError({
-        statusCode: 404,
-        message: 'Guest entry not found'
-      })
-    }
-
-    return {
-      success: true,
-      message: 'Entry deleted successfully'
-    }
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
-
-    console.error('Failed to delete entry:', error)
+  if (!deleted) {
     throw createError({
-      statusCode: 500,
-      message: 'Failed to delete guest entry'
+      statusCode: 404,
+      message: 'Entry not found'
     })
+  }
+
+  return {
+    success: true
   }
 })

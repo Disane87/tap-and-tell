@@ -1,134 +1,158 @@
-/**
- * Server-side file storage utilities for guest entries and photos.
- *
- * Entries are stored as JSON in `.data/entries.json`.
- * Photos are stored as files in `.data/photos/`.
- * @module server/utils/storage
- */
-import { promises as fs } from 'fs'
+import { randomUUID } from 'crypto'
+import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'fs'
 import { join } from 'path'
-import type { GuestEntry } from '../../app/types/guest'
+import type { GuestEntry } from '~~/server/types/guest'
 
+/**
+ * Data directory path. Configurable via DATA_DIR env var.
+ */
 const DATA_DIR = process.env.DATA_DIR || '.data'
-const ENTRIES_FILE = 'entries.json'
-const PHOTOS_DIR = 'photos'
+const ENTRIES_FILE = join(DATA_DIR, 'entries.json')
+const PHOTOS_DIR = join(DATA_DIR, 'photos')
 
-/** Ensures the data and photos directories exist, creating them if necessary. */
-async function ensureDataDir(): Promise<void> {
-  const dataPath = join(process.cwd(), DATA_DIR)
-  const photosPath = join(dataPath, PHOTOS_DIR)
-
-  try {
-    await fs.access(dataPath)
-  } catch {
-    await fs.mkdir(dataPath, { recursive: true })
+/**
+ * Ensures the data directory and photos subdirectory exist.
+ */
+function ensureDataDir(): void {
+  if (!existsSync(DATA_DIR)) {
+    mkdirSync(DATA_DIR, { recursive: true })
   }
-
-  try {
-    await fs.access(photosPath)
-  } catch {
-    await fs.mkdir(photosPath, { recursive: true })
+  if (!existsSync(PHOTOS_DIR)) {
+    mkdirSync(PHOTOS_DIR, { recursive: true })
   }
 }
 
-/** Returns the absolute path to the entries JSON file. */
-async function getEntriesFilePath(): Promise<string> {
-  await ensureDataDir()
-  return join(process.cwd(), DATA_DIR, ENTRIES_FILE)
-}
-
-/** Reads all guest entries from the JSON file. Returns `[]` if the file doesn't exist. */
-export async function getEntries(): Promise<GuestEntry[]> {
-  const filePath = await getEntriesFilePath()
-
+/**
+ * Reads all guest entries from the JSON file.
+ * Returns empty array if file doesn't exist.
+ */
+export function readEntries(): GuestEntry[] {
+  ensureDataDir()
+  if (!existsSync(ENTRIES_FILE)) {
+    return []
+  }
   try {
-    const data = await fs.readFile(filePath, 'utf-8')
+    const data = readFileSync(ENTRIES_FILE, 'utf-8')
     return JSON.parse(data) as GuestEntry[]
   } catch {
     return []
   }
 }
 
-/** Overwrites the entries JSON file with the given array. */
-export async function saveEntries(entries: GuestEntry[]): Promise<void> {
-  const filePath = await getEntriesFilePath()
-  await fs.writeFile(filePath, JSON.stringify(entries, null, 2), 'utf-8')
+/**
+ * Writes all guest entries to the JSON file.
+ */
+export function writeEntries(entries: GuestEntry[]): void {
+  ensureDataDir()
+  writeFileSync(ENTRIES_FILE, JSON.stringify(entries, null, 2), 'utf-8')
 }
 
-/** Prepends a new entry to the entries list (newest-first order). */
-export async function addEntry(entry: GuestEntry): Promise<GuestEntry> {
-  const entries = await getEntries()
-  entries.unshift(entry) // Add to beginning for newest-first order
-  await saveEntries(entries)
+/**
+ * Finds a single entry by ID.
+ */
+export function findEntryById(id: string): GuestEntry | undefined {
+  const entries = readEntries()
+  return entries.find(e => e.id === id)
+}
+
+/**
+ * Creates a new guest entry with a generated UUID.
+ * Optionally saves a photo file and sets the photoUrl.
+ */
+export function createEntry(
+  name: string,
+  message: string,
+  photo?: string,
+  answers?: GuestEntry['answers']
+): GuestEntry {
+  ensureDataDir()
+  const id = randomUUID()
+  let photoUrl: string | undefined
+
+  // Save photo if provided (base64 data)
+  if (photo) {
+    const match = photo.match(/^data:image\/(\w+);base64,(.+)$/)
+    if (match) {
+      const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
+      const base64Data = match[2]
+      const filename = `${id}.${ext}`
+      const filePath = join(PHOTOS_DIR, filename)
+      writeFileSync(filePath, Buffer.from(base64Data, 'base64'))
+      photoUrl = `/api/photos/${filename}`
+    }
+  }
+
+  const entry: GuestEntry = {
+    id,
+    name,
+    message,
+    photoUrl,
+    answers,
+    createdAt: new Date().toISOString()
+  }
+
+  const entries = readEntries()
+  entries.unshift(entry) // Newest first
+  writeEntries(entries)
+
   return entry
 }
 
 /**
- * Retrieves a single guest entry by its ID.
- * @param id - The entry ID to look up.
- * @returns The matching entry, or `null` if not found.
+ * Deletes an entry by ID. Also removes the associated photo file.
+ * Returns true if the entry was found and deleted.
  */
-export async function getEntryById(id: string): Promise<GuestEntry | null> {
-  const entries = await getEntries()
-  return entries.find(e => e.id === id) || null
-}
-
-/**
- * Deletes a guest entry and its associated photo file.
- * @param id - The entry ID to delete.
- * @returns `true` if the entry was found and deleted, `false` if not found.
- */
-export async function deleteEntry(id: string): Promise<boolean> {
-  const entries = await getEntries()
+export function deleteEntry(id: string): boolean {
+  const entries = readEntries()
   const index = entries.findIndex(e => e.id === id)
-
-  if (index === -1) {
-    return false
-  }
+  if (index === -1) return false
 
   const entry = entries[index]
 
-  // Delete associated photo if exists
+  // Delete photo file if exists
   if (entry.photoUrl) {
-    try {
-      const photoPath = join(process.cwd(), DATA_DIR, PHOTOS_DIR, entry.photoUrl.split('/').pop()!)
-      await fs.unlink(photoPath)
-    } catch {
-      // Photo might not exist, ignore
+    const filename = entry.photoUrl.split('/').pop()
+    if (filename) {
+      const filePath = join(PHOTOS_DIR, filename)
+      if (existsSync(filePath)) {
+        unlinkSync(filePath)
+      }
     }
   }
 
   entries.splice(index, 1)
-  await saveEntries(entries)
+  writeEntries(entries)
   return true
 }
 
 /**
- * Saves a base64-encoded image to disk and returns its API URL.
- * @param base64Data - The full data URI (e.g. `data:image/jpeg;base64,...`).
- * @param entryId - The entry ID used as the filename stem.
- * @returns The URL path for retrieving the photo (e.g. `/api/photos/123.jpg`).
+ * Gets the file path for a photo by filename.
+ * Returns undefined if file doesn't exist.
  */
-export async function savePhoto(base64Data: string, entryId: string): Promise<string> {
-  await ensureDataDir()
-
-  // Extract the base64 content and file type
-  const matches = base64Data.match(/^data:image\/([\w+]+);base64,(.+)$/)
-  if (!matches) {
-    throw new Error('Invalid base64 image format')
+export function getPhotoPath(filename: string): string | undefined {
+  const filePath = join(PHOTOS_DIR, filename)
+  if (existsSync(filePath)) {
+    return filePath
   }
-
-  const extension = matches[1] === 'jpeg' ? 'jpg' : matches[1]
-  const imageData = matches[2]
-  const fileName = `${entryId}.${extension}`
-  const filePath = join(process.cwd(), DATA_DIR, PHOTOS_DIR, fileName)
-
-  await fs.writeFile(filePath, imageData, 'base64')
-
-  return `/api/photos/${fileName}`
+  return undefined
 }
 
-/** Generates a unique ID using the current timestamp and a random suffix. */
-export function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
+/**
+ * Gets the MIME type for a photo based on extension.
+ */
+export function getPhotoMimeType(filename: string): string {
+  const ext = filename.split('.').pop()?.toLowerCase()
+  switch (ext) {
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg'
+    case 'png':
+      return 'image/png'
+    case 'gif':
+      return 'image/gif'
+    case 'webp':
+      return 'image/webp'
+    default:
+      return 'application/octet-stream'
+  }
 }

@@ -1,36 +1,36 @@
 <script setup lang="ts">
 /**
- * Three-mode theme toggle: Light → Dark → System.
- * Cycles through modes on each click.
- * Wrapped in <ClientOnly> by the layout to prevent hydration mismatch.
+ * Theme toggle button that cycles through light/dark/system modes.
+ *
+ * Must be wrapped in <ClientOnly> to prevent SSR hydration issues.
  */
 import { Sun, Moon, Monitor } from 'lucide-vue-next'
 
-const { theme, toggleTheme } = useTheme()
+const { theme, cycleTheme } = useTheme()
 
-const icon = computed(() => {
+/**
+ * Icon and label based on current theme.
+ */
+const themeInfo = computed(() => {
   switch (theme.value) {
-    case 'light': return Sun
-    case 'dark': return Moon
-    default: return Monitor
-  }
-})
-
-const label = computed(() => {
-  switch (theme.value) {
-    case 'light': return 'Switch to dark mode'
-    case 'dark': return 'Switch to system mode'
-    default: return 'Switch to light mode'
+    case 'light':
+      return { icon: Sun, label: 'Light mode' }
+    case 'dark':
+      return { icon: Moon, label: 'Dark mode' }
+    default:
+      return { icon: Monitor, label: 'System theme' }
   }
 })
 </script>
 
 <template>
   <button
-    :aria-label="label"
-    class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
-    @click="toggleTheme"
+    type="button"
+    class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+    :aria-label="themeInfo.label"
+    :title="themeInfo.label"
+    @click="cycleTheme"
   >
-    <component :is="icon" class="h-4 w-4" />
+    <component :is="themeInfo.icon" class="h-5 w-5" />
   </button>
 </template>

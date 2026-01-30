@@ -1,46 +1,45 @@
 <script setup lang="ts">
 /**
- * Step 1 of the guest wizard: Name (required) and Photo (optional).
+ * Step 1: Basics - Name (required) and Photo (optional).
  *
- * @props name / photo - Bound form values.
- * @props nameError / photoError - Validation error messages.
- * @emits update:name / update:photo - Two-way binding for form fields.
+ * Uses the shared form state from useGuestForm composable.
  */
-
-defineProps<{
-  name: string
-  photo: string | null
-  nameError: string | null
-  photoError: string | null
-}>()
-
-defineEmits<{
-  'update:name': [value: string]
-  'update:photo': [value: string | null]
-}>()
+const { formState, errors } = useGuestForm()
 </script>
 
 <template>
   <div class="space-y-6">
-    <div class="space-y-2">
-      <Label for="guest-name">Your Name *</Label>
-      <Input
-        id="guest-name"
-        :model-value="name"
-        placeholder="What should we call you?"
-        :class="{ 'border-destructive': nameError }"
-        @update:model-value="$emit('update:name', $event)"
-      />
-      <p v-if="nameError" class="text-sm text-destructive">{{ nameError }}</p>
+    <div class="text-center">
+      <h2 class="font-display text-xl font-semibold text-foreground">
+        Wer bist du?
+      </h2>
+      <p class="mt-1 text-sm text-muted-foreground">
+        Sag uns deinen Namen und zeig dich von deiner besten Seite.
+      </p>
     </div>
 
+    <!-- Name input -->
     <div class="space-y-2">
-      <Label>Photo (optional)</Label>
-      <PhotoUpload
-        :model-value="photo"
-        @update:model-value="$emit('update:photo', $event)"
+      <Label for="name">Name *</Label>
+      <Input
+        id="name"
+        v-model="formState.name"
+        placeholder="Dein Name"
+        :class="{ 'border-destructive': errors.name }"
+        maxlength="100"
       />
-      <p v-if="photoError" class="text-sm text-destructive">{{ photoError }}</p>
+      <p v-if="errors.name" class="text-sm text-destructive">
+        {{ errors.name }}
+      </p>
+    </div>
+
+    <!-- Photo upload -->
+    <div class="space-y-2">
+      <Label>Foto (optional)</Label>
+      <PhotoUpload
+        v-model="formState.photo"
+        :error="errors.photo"
+      />
     </div>
   </div>
 </template>

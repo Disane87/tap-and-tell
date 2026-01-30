@@ -2,8 +2,8 @@
 /**
  * Bottom sheet displaying a full guest entry with all Freundebuch answers.
  *
- * Sections: photo, name/date, message, favorites, fun facts, our story.
- * Uses shadcn-vue Sheet with max-height 85vh and overflow scrolling.
+ * Used on the guestbook grid page when clicking a card.
+ * For full-screen entry view, use GuestEntryFullView instead.
  *
  * @props entry - The guest entry to display (null hides the sheet).
  * @props open - Whether the sheet is visible.
@@ -21,9 +21,11 @@ defineEmits<{
   'update:open': [value: boolean]
 }>()
 
-/** Formats an ISO date string to a full human-readable format. */
+/**
+ * Formats an ISO date string to a full human-readable format.
+ */
 function formatFullDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
+  return new Date(iso).toLocaleDateString('de-DE', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -63,7 +65,7 @@ function formatFullDate(iso: string): string {
 
         <!-- Favorites Section -->
         <div v-if="entry.answers && (entry.answers.favoriteColor || entry.answers.favoriteFood || entry.answers.favoriteMovie || entry.answers.favoriteSong || entry.answers.favoriteVideo)">
-          <h4 class="font-display mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h4 class="section-title">
             Favorites
           </h4>
           <div class="space-y-2">
@@ -121,7 +123,7 @@ function formatFullDate(iso: string): string {
 
         <!-- Fun Facts Section -->
         <div v-if="entry.answers && (entry.answers.superpower || entry.answers.hiddenTalent || entry.answers.desertIslandItems || entry.answers.coffeeOrTea || entry.answers.nightOwlOrEarlyBird || entry.answers.beachOrMountains)">
-          <h4 class="font-display mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h4 class="section-title">
             Fun Facts
           </h4>
           <div class="space-y-2">
@@ -153,7 +155,7 @@ function formatFullDate(iso: string): string {
 
         <!-- Our Story Section -->
         <div v-if="entry.answers && (entry.answers.bestMemory || entry.answers.howWeMet)">
-          <h4 class="font-display mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <h4 class="section-title">
             Our Story
           </h4>
           <div class="space-y-2">

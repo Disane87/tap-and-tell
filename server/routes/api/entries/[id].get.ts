@@ -1,7 +1,8 @@
-import { getEntryById } from '../../../utils/storage'
-
-/** GET /api/entries/:id — Returns a single guest entry by ID. */
-export default defineEventHandler(async (event) => {
+/**
+ * GET /api/entries/:id
+ * Returns a single guest entry by ID.
+ */
+export default defineEventHandler((event) => {
   const id = getRouterParam(event, 'id')
 
   if (!id) {
@@ -11,29 +12,17 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  try {
-    const entry = await getEntryById(id)
+  const entry = findEntryById(id)
 
-    if (!entry) {
-      throw createError({
-        statusCode: 404,
-        message: 'Guest entry not found'
-      })
-    }
-
-    return {
-      success: true,
-      data: entry
-    }
-  } catch (error: unknown) {
-    if (error && typeof error === 'object' && 'statusCode' in error) {
-      throw error
-    }
-
-    console.error('Failed to get entry:', error)
+  if (!entry) {
     throw createError({
-      statusCode: 500,
-      message: 'Failed to retrieve guest entry'
+      statusCode: 404,
+      message: 'Entry not found'
     })
+  }
+
+  return {
+    success: true,
+    data: entry
   }
 })
