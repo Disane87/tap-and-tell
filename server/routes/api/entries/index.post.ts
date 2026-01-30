@@ -55,7 +55,8 @@ export default defineEventHandler(async (event) => {
       name: body.name.trim(),
       message: body.message.trim(),
       photoUrl,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      answers: body.answers || undefined
     }
 
     const savedEntry = await addEntry(entry)
