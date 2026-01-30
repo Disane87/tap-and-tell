@@ -99,6 +99,26 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 - Mark completed steps with ✔ inside the plan file
 - If new tasks arise, add them to an existing plan or create a new numbered plan file
 
+## General Rules
+
+### Communication
+- **Respond in German** — all explanations, questions, and summaries should be in German
+- **Code comments and JSDoc in English** — keep code documentation in English for consistency
+- **Commit messages in English** — use conventional commit style in English
+
+### Internationalization (i18n)
+- **All user-facing text must be translatable** — never use hardcoded strings in components or pages. Use i18n translation keys (e.g., `$t('form.submit')`) for all labels, buttons, messages, placeholders, and error texts
+- **Supported languages**: English (default) and German
+- Use `@nuxtjs/i18n` for translation management
+
+### Icons
+- **Use Iconify** — prefer `@iconify/vue` for all icons. Access any icon set via Iconify (e.g., `lucide`, `heroicons`, `mdi`)
+
+### Workflow
+- **Present a plan before major changes** — for non-trivial features or refactors, outline the approach before implementing
+- **Write tests proactively** — add unit tests for new composables, utilities, and critical logic without being asked
+- **Verify builds after changes** — run `pnpm build` after completing work to ensure no regressions
+
 ## Process Rules
 
 - Read `PROJECT_MEMORY.md` before implementing changes — it contains known issues and hard constraints
@@ -107,3 +127,10 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 - JSDoc is required on all functions, composables, utilities, and server handlers — describe intention, inputs, outputs, and side effects
 - Load external fonts via `<link>` tags, not CSS `@import` (Tailwind v4 `@theme` conflict)
 - Wrap components depending on client-only state in `<ClientOnly>`
+- Create reusable UI components under `app/components/ui/` following shadcn-vue conventions
+- Use Tailwind CSS utility classes for styling; avoid custom CSS unless necessary
+- Follow TypeScript best practices; avoid `any` type
+- Write modular, reusable code; avoid duplication
+- Ensure accessibility (a11y) best practices are followed in all UI components
+- Write unit tests for critical logic in composables and utilities
+- Document API routes with JSDoc comments describing request/response formats

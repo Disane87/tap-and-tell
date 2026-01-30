@@ -11,58 +11,58 @@ const { formState } = useGuestForm()
   <div class="space-y-6">
     <div class="text-center">
       <h2 class="font-display text-xl font-semibold text-foreground">
-        Deine Favoriten
+        {{ $t('form.favorites.title') }}
       </h2>
       <p class="mt-1 text-sm text-muted-foreground">
-        Was magst du am liebsten? Alles optional!
+        {{ $t('form.favorites.subtitle') }}
       </p>
     </div>
 
     <!-- Color -->
     <div class="space-y-2">
-      <Label for="favoriteColor">Lieblingsfarbe</Label>
+      <Label for="favoriteColor">{{ $t('form.favorites.color') }}</Label>
       <Input
         id="favoriteColor"
         v-model="formState.favoriteColor"
-        placeholder="z.B. Mintgrün"
+        :placeholder="$t('form.favorites.colorPlaceholder')"
       />
     </div>
 
     <!-- Food -->
     <div class="space-y-2">
-      <Label for="favoriteFood">Lieblingsessen</Label>
+      <Label for="favoriteFood">{{ $t('form.favorites.food') }}</Label>
       <Input
         id="favoriteFood"
         v-model="formState.favoriteFood"
-        placeholder="z.B. Ramen"
+        :placeholder="$t('form.favorites.foodPlaceholder')"
       />
     </div>
 
     <!-- Movie -->
     <div class="space-y-2">
-      <Label for="favoriteMovie">Lieblingsfilm</Label>
+      <Label for="favoriteMovie">{{ $t('form.favorites.movie') }}</Label>
       <Input
         id="favoriteMovie"
         v-model="formState.favoriteMovie"
-        placeholder="z.B. Interstellar"
+        :placeholder="$t('form.favorites.moviePlaceholder')"
       />
     </div>
 
     <!-- Song -->
     <div class="section-card space-y-3">
-      <p class="text-sm font-medium text-foreground">Lieblingssong</p>
+      <p class="text-sm font-medium text-foreground">{{ $t('form.favorites.song') }}</p>
       <div class="space-y-2">
         <Input
           v-model="formState.favoriteSongTitle"
-          placeholder="Titel"
+          :placeholder="$t('form.favorites.songTitle')"
         />
         <Input
           v-model="formState.favoriteSongArtist"
-          placeholder="Künstler (optional)"
+          :placeholder="$t('form.favorites.songArtist')"
         />
         <Input
           v-model="formState.favoriteSongUrl"
-          placeholder="Spotify/YouTube Link (optional)"
+          :placeholder="$t('form.favorites.songUrl')"
           type="url"
         />
       </div>
@@ -70,15 +70,15 @@ const { formState } = useGuestForm()
 
     <!-- Video -->
     <div class="section-card space-y-3">
-      <p class="text-sm font-medium text-foreground">Lieblingsvideo</p>
+      <p class="text-sm font-medium text-foreground">{{ $t('form.favorites.video') }}</p>
       <div class="space-y-2">
         <Input
           v-model="formState.favoriteVideoTitle"
-          placeholder="Titel"
+          :placeholder="$t('form.favorites.videoTitle')"
         />
         <Input
           v-model="formState.favoriteVideoUrl"
-          placeholder="YouTube Link (optional)"
+          :placeholder="$t('form.favorites.videoUrl')"
           type="url"
         />
       </div>

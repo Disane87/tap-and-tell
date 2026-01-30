@@ -2,25 +2,45 @@
 /**
  * Admin dashboard for managing guest entries.
  *
- * Displays all entries with delete functionality.
+ * Displays all entries with moderation and delete functionality.
  * Requires authentication - redirects to login if not authenticated.
  */
-import { Trash2, LogOut } from 'lucide-vue-next'
+import { Trash2, LogOut, QrCode, Check, X, Clock, CheckCircle, XCircle } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
-import type { GuestEntry } from '~/types/guest'
+import type { EntryStatus, GuestEntry } from '~/types/guest'
 
-const { isAuthenticated, initAuth, logout, fetchEntries, deleteEntry } = useAdmin()
+const { t, locale } = useI18n()
+const { isAuthenticated, initAuth, logout, fetchEntries, deleteEntry, updateEntryStatus, bulkUpdateStatus } = useAdmin()
 const router = useRouter()
 
 const entries = ref<GuestEntry[]>([])
 const loading = ref(true)
-const deleteConfirmId = ref<string | null>(null)
+const selectedIds = ref<Set<string>>(new Set())
+const activeTab = ref<'all' | EntryStatus>('all')
+
+/**
+ * Filtered entries based on active tab.
+ */
+const filteredEntries = computed(() => {
+  if (activeTab.value === 'all') return entries.value
+  return entries.value.filter(e => (e.status || 'pending') === activeTab.value)
+})
+
+/**
+ * Count of entries by status.
+ */
+const statusCounts = computed(() => ({
+  all: entries.value.length,
+  pending: entries.value.filter(e => e.status === 'pending' || !e.status).length,
+  approved: entries.value.filter(e => e.status === 'approved').length,
+  rejected: entries.value.filter(e => e.status === 'rejected').length
+}))
 
 /**
  * Formats an ISO date string to a short format.
  */
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('de-DE', {
+  return new Date(iso).toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -48,11 +68,66 @@ async function handleDelete(id: string): Promise<void> {
   const success = await deleteEntry(id)
   if (success) {
     entries.value = entries.value.filter(e => e.id !== id)
-    toast.success('Eintrag gelöscht')
+    selectedIds.value.delete(id)
+    toast.success(t('admin.deleteSuccess'))
   } else {
-    toast.error('Löschen fehlgeschlagen')
+    toast.error(t('admin.deleteFailed'))
   }
-  deleteConfirmId.value = null
+}
+
+/**
+ * Updates an entry's moderation status.
+ */
+async function handleStatusUpdate(id: string, status: EntryStatus): Promise<void> {
+  const updated = await updateEntryStatus(id, status)
+  if (updated) {
+    const index = entries.value.findIndex(e => e.id === id)
+    if (index !== -1) {
+      entries.value[index] = updated
+    }
+    toast.success(t(`admin.moderation.${status}Success`))
+  } else {
+    toast.error(t('admin.moderation.updateFailed'))
+  }
+}
+
+/**
+ * Handles bulk status update.
+ */
+async function handleBulkAction(status: EntryStatus): Promise<void> {
+  const ids = Array.from(selectedIds.value)
+  if (ids.length === 0) return
+
+  const count = await bulkUpdateStatus(ids, status)
+  if (count > 0) {
+    await loadEntries()
+    selectedIds.value.clear()
+    toast.success(t('admin.moderation.bulkSuccess', { count }))
+  } else {
+    toast.error(t('admin.moderation.updateFailed'))
+  }
+}
+
+/**
+ * Toggles entry selection.
+ */
+function toggleSelection(id: string): void {
+  if (selectedIds.value.has(id)) {
+    selectedIds.value.delete(id)
+  } else {
+    selectedIds.value.add(id)
+  }
+}
+
+/**
+ * Toggles all visible entries selection.
+ */
+function toggleSelectAll(): void {
+  if (selectedIds.value.size === filteredEntries.value.length) {
+    selectedIds.value.clear()
+  } else {
+    selectedIds.value = new Set(filteredEntries.value.map(e => e.id))
+  }
 }
 
 /**
@@ -60,8 +135,22 @@ async function handleDelete(id: string): Promise<void> {
  */
 function handleLogout(): void {
   logout()
-  toast.success('Abgemeldet')
+  toast.success(t('admin.logoutSuccess'))
   router.push('/admin/login')
+}
+
+/**
+ * Gets the status color class.
+ */
+function getStatusColor(status?: EntryStatus): string {
+  switch (status) {
+    case 'approved':
+      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+    case 'rejected':
+      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+    default:
+      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+  }
 }
 
 onMounted(async () => {
@@ -78,24 +167,75 @@ onMounted(async () => {
 <template>
   <div class="mx-auto max-w-4xl px-4 py-8">
     <!-- Header -->
-    <div class="mb-8 flex items-center justify-between">
+    <div class="mb-6 flex items-center justify-between">
       <div>
         <h1 class="font-display text-2xl font-semibold text-foreground">
-          Admin Dashboard
+          {{ $t('admin.title') }}
         </h1>
         <p class="text-sm text-muted-foreground">
-          {{ entries.length }} {{ entries.length === 1 ? 'Eintrag' : 'Einträge' }}
+          {{ entries.length }} {{ entries.length === 1 ? $t('common.entry') : $t('common.entries') }}
         </p>
       </div>
-      <Button variant="outline" @click="handleLogout">
-        <LogOut class="mr-2 h-4 w-4" />
-        Abmelden
+      <div class="flex items-center gap-2">
+        <NuxtLink to="/admin/qr">
+          <Button variant="outline" size="sm">
+            <QrCode class="mr-2 h-4 w-4" />
+            {{ $t('admin.qr.title') }}
+          </Button>
+        </NuxtLink>
+        <Button variant="outline" size="sm" @click="handleLogout">
+          <LogOut class="mr-2 h-4 w-4" />
+          {{ $t('common.logout') }}
+        </Button>
+      </div>
+    </div>
+
+    <!-- Status Tabs -->
+    <div class="mb-6 flex flex-wrap gap-2">
+      <Button
+        v-for="tab in (['all', 'pending', 'approved', 'rejected'] as const)"
+        :key="tab"
+        :variant="activeTab === tab ? 'default' : 'outline'"
+        size="sm"
+        @click="activeTab = tab; selectedIds.clear()"
+      >
+        <Clock v-if="tab === 'pending'" class="mr-1.5 h-3.5 w-3.5" />
+        <CheckCircle v-else-if="tab === 'approved'" class="mr-1.5 h-3.5 w-3.5" />
+        <XCircle v-else-if="tab === 'rejected'" class="mr-1.5 h-3.5 w-3.5" />
+        {{ $t(`admin.moderation.tabs.${tab}`) }}
+        <Badge variant="secondary" class="ml-2">{{ statusCounts[tab] }}</Badge>
       </Button>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div v-if="selectedIds.size > 0" class="mb-4 flex items-center gap-2 rounded-lg bg-muted p-3">
+      <span class="text-sm text-muted-foreground">
+        {{ $t('admin.moderation.selected', { count: selectedIds.size }) }}
+      </span>
+      <div class="ml-auto flex gap-2">
+        <Button size="sm" variant="outline" @click="handleBulkAction('approved')">
+          <Check class="mr-1.5 h-3.5 w-3.5" />
+          {{ $t('admin.moderation.approveAll') }}
+        </Button>
+        <Button size="sm" variant="outline" @click="handleBulkAction('rejected')">
+          <X class="mr-1.5 h-3.5 w-3.5" />
+          {{ $t('admin.moderation.rejectAll') }}
+        </Button>
+      </div>
+    </div>
+
+    <!-- Select All -->
+    <div v-if="!loading && filteredEntries.length > 0" class="mb-4 flex items-center gap-2">
+      <Checkbox
+        :checked="selectedIds.size === filteredEntries.length && filteredEntries.length > 0"
+        @update:checked="toggleSelectAll"
+      />
+      <span class="text-sm text-muted-foreground">{{ $t('admin.moderation.selectAll') }}</span>
     </div>
 
     <!-- Loading state -->
     <div v-if="loading" class="flex justify-center py-12">
-      <p class="animate-gentle-pulse text-muted-foreground">Lädt...</p>
+      <p class="animate-gentle-pulse text-muted-foreground">{{ $t('common.loading') }}</p>
     </div>
 
     <!-- Empty state -->
@@ -103,13 +243,28 @@ onMounted(async () => {
       v-else-if="entries.length === 0"
       class="py-12 text-center"
     >
-      <p class="text-muted-foreground">Keine Einträge vorhanden.</p>
+      <p class="text-muted-foreground">{{ $t('admin.noEntries') }}</p>
+    </div>
+
+    <!-- No results for current filter -->
+    <div
+      v-else-if="filteredEntries.length === 0"
+      class="py-12 text-center"
+    >
+      <p class="text-muted-foreground">{{ $t('admin.moderation.noEntries') }}</p>
     </div>
 
     <!-- Entry list -->
     <div v-else class="space-y-4">
-      <Card v-for="entry in entries" :key="entry.id">
+      <Card v-for="entry in filteredEntries" :key="entry.id">
         <CardContent class="flex items-start gap-4 p-4">
+          <!-- Checkbox -->
+          <Checkbox
+            :checked="selectedIds.has(entry.id)"
+            @update:checked="toggleSelection(entry.id)"
+            class="mt-5"
+          />
+
           <!-- Photo -->
           <div
             v-if="entry.photoUrl"
@@ -134,39 +289,72 @@ onMounted(async () => {
           <div class="min-w-0 flex-1">
             <div class="flex items-start justify-between gap-2">
               <div>
-                <h3 class="font-handwritten text-xl text-foreground">
-                  {{ entry.name }}
-                </h3>
+                <div class="flex items-center gap-2">
+                  <h3 class="font-handwritten text-xl text-foreground">
+                    {{ entry.name }}
+                  </h3>
+                  <span
+                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                    :class="getStatusColor(entry.status)"
+                  >
+                    {{ $t(`admin.moderation.status.${entry.status || 'pending'}`) }}
+                  </span>
+                </div>
                 <p class="text-xs text-muted-foreground">
                   {{ formatDate(entry.createdAt) }}
                 </p>
               </div>
 
-              <!-- Delete button -->
-              <AlertDialog>
-                <AlertDialogTrigger as-child>
-                  <Button variant="ghost" size="icon" class="text-muted-foreground hover:text-destructive">
-                    <Trash2 class="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Eintrag löschen?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Der Eintrag von "{{ entry.name }}" wird unwiderruflich gelöscht.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                    <AlertDialogAction
-                      class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      @click="handleDelete(entry.id)"
-                    >
-                      Löschen
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <!-- Action buttons -->
+              <div class="flex items-center gap-1">
+                <!-- Approve button -->
+                <Button
+                  v-if="entry.status !== 'approved'"
+                  variant="ghost"
+                  size="icon"
+                  class="text-green-600 hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/30"
+                  @click="handleStatusUpdate(entry.id, 'approved')"
+                >
+                  <Check class="h-4 w-4" />
+                </Button>
+
+                <!-- Reject button -->
+                <Button
+                  v-if="entry.status !== 'rejected'"
+                  variant="ghost"
+                  size="icon"
+                  class="text-red-600 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30"
+                  @click="handleStatusUpdate(entry.id, 'rejected')"
+                >
+                  <X class="h-4 w-4" />
+                </Button>
+
+                <!-- Delete button -->
+                <AlertDialog>
+                  <AlertDialogTrigger as-child>
+                    <Button variant="ghost" size="icon" class="text-muted-foreground hover:text-destructive">
+                      <Trash2 class="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{{ $t('admin.deleteEntry') }}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {{ $t('admin.deleteConfirm', { name: entry.name }) }}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{{ $t('common.cancel') }}</AlertDialogCancel>
+                      <AlertDialogAction
+                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        @click="handleDelete(entry.id)"
+                      >
+                        {{ $t('common.delete') }}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
 
             <p class="mt-1 line-clamp-2 text-sm text-foreground">

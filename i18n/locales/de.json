@@ -1,0 +1,228 @@
+{
+  "common": {
+    "loading": "Lädt...",
+    "saving": "Wird gespeichert...",
+    "entry": "Eintrag",
+    "entries": "Einträge",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "submit": "Absenden",
+    "logout": "Abmelden",
+    "login": "Anmelden",
+    "optional": "optional",
+    "required": "erforderlich"
+  },
+  "landing": {
+    "title": "Tap & Tell",
+    "subtitle": "Hinterlasse eine Nachricht und erzähl uns etwas über dich.",
+    "cta": "Reinschreiben",
+    "viewAll": "Alle Einträge ansehen"
+  },
+  "form": {
+    "addEntry": "Eintrag hinzufügen",
+    "addEntryDescription": "Füll das Formular aus um deinen Eintrag hinzuzufügen.",
+    "step": "Schritt {current} von {total}: {label}",
+    "steps": {
+      "basics": "Basics",
+      "favorites": "Favoriten",
+      "funFacts": "Fun Facts",
+      "message": "Nachricht"
+    },
+    "basics": {
+      "title": "Wer bist du?",
+      "subtitle": "Sag uns deinen Namen und zeig dich von deiner besten Seite.",
+      "name": "Name",
+      "namePlaceholder": "Dein Name",
+      "photo": "Foto"
+    },
+    "favorites": {
+      "title": "Deine Favoriten",
+      "subtitle": "Was magst du am liebsten? Alles optional!",
+      "color": "Lieblingsfarbe",
+      "colorPlaceholder": "z.B. Mintgrün",
+      "food": "Lieblingsessen",
+      "foodPlaceholder": "z.B. Ramen",
+      "movie": "Lieblingsfilm",
+      "moviePlaceholder": "z.B. Interstellar",
+      "song": "Lieblingssong",
+      "songTitle": "Titel",
+      "songArtist": "Künstler (optional)",
+      "songUrl": "Spotify/YouTube Link (optional)",
+      "video": "Lieblingsvideo",
+      "videoTitle": "Titel",
+      "videoUrl": "YouTube Link (optional)"
+    },
+    "funFacts": {
+      "title": "Fun Facts",
+      "subtitle": "Erzähl uns etwas Lustiges über dich!",
+      "coffeeOrTea": "Kaffee oder Tee?",
+      "coffee": "Kaffee",
+      "tea": "Tee",
+      "nightOwlOrEarlyBird": "Nachteule oder Frühaufsteher?",
+      "nightOwl": "Nachteule",
+      "earlyBird": "Frühaufsteher",
+      "beachOrMountains": "Strand oder Berge?",
+      "beach": "Strand",
+      "mountains": "Berge",
+      "superpower": "Deine Superpower",
+      "superpowerPlaceholder": "z.B. Empathie",
+      "hiddenTalent": "Verstecktes Talent",
+      "hiddenTalentPlaceholder": "z.B. Origami",
+      "desertIsland": "3 Dinge auf einer einsamen Insel",
+      "desertIslandPlaceholder": "z.B. Buch, Kaffee, Decke"
+    },
+    "message": {
+      "title": "Deine Nachricht",
+      "subtitle": "Hinterlasse einen persönlichen Gruß!",
+      "message": "Nachricht",
+      "messagePlaceholder": "Schreib etwas Nettes...",
+      "howWeMet": "Wie haben wir uns kennengelernt?",
+      "howWeMetPlaceholder": "Erzähl unsere Geschichte...",
+      "bestMemory": "Beste Erinnerung",
+      "bestMemoryPlaceholder": "Was ist deine liebste Erinnerung mit mir?"
+    }
+  },
+  "guestbook": {
+    "title": "Gästebuch",
+    "empty": "Noch keine Einträge vorhanden.",
+    "createFirst": "Ersten Eintrag erstellen",
+    "searchPlaceholder": "Nach Namen suchen...",
+    "sortNewest": "Neueste zuerst",
+    "sortOldest": "Älteste zuerst",
+    "clearFilters": "Filter zurücksetzen",
+    "noResults": "Keine Einträge gefunden.",
+    "of": "von",
+    "exportPdf": "PDF exportieren"
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "login": {
+      "title": "Admin Login",
+      "description": "Melde dich an um Einträge zu verwalten.",
+      "password": "Passwort",
+      "passwordPlaceholder": "Admin-Passwort",
+      "passwordRequired": "Passwort erforderlich",
+      "wrongPassword": "Falsches Passwort",
+      "loggingIn": "Wird angemeldet...",
+      "loginButton": "Anmelden",
+      "loginSuccess": "Angemeldet!",
+      "loginFailed": "Anmeldung fehlgeschlagen"
+    },
+    "logoutSuccess": "Abgemeldet",
+    "noEntries": "Keine Einträge vorhanden.",
+    "deleteEntry": "Eintrag löschen?",
+    "deleteConfirm": "Der Eintrag von \"{name}\" wird unwiderruflich gelöscht.",
+    "deleteSuccess": "Eintrag gelöscht",
+    "deleteFailed": "Löschen fehlgeschlagen",
+    "qr": {
+      "title": "QR-Code Generator",
+      "description": "Erstelle einen QR-Code für Gäste ohne NFC.",
+      "eventName": "Event-Name (optional)",
+      "eventPlaceholder": "z.B. Geburtstagsfeier 2024",
+      "eventHint": "Wird als Willkommensnachricht angezeigt, wenn Gäste den Code scannen.",
+      "urlPreview": "URL-Vorschau",
+      "copied": "URL kopiert!",
+      "copyFailed": "URL konnte nicht kopiert werden",
+      "generateFailed": "QR-Code konnte nicht erstellt werden",
+      "instructions": "So geht's:",
+      "instruction1": "Lade den QR-Code als PNG oder SVG herunter",
+      "instruction2": "Drucke ihn aus und platziere ihn dort, wo Gäste ihn scannen können",
+      "instruction3": "Gäste scannen mit der Handy-Kamera, um das Gästebuch zu öffnen",
+      "backToAdmin": "Zurück zum Admin"
+    },
+    "moderation": {
+      "tabs": {
+        "all": "Alle",
+        "pending": "Ausstehend",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt"
+      },
+      "status": {
+        "pending": "Ausstehend",
+        "approved": "Genehmigt",
+        "rejected": "Abgelehnt"
+      },
+      "selected": "{count} ausgewählt",
+      "selectAll": "Alle auswählen",
+      "approveAll": "Alle genehmigen",
+      "rejectAll": "Alle ablehnen",
+      "approvedSuccess": "Eintrag genehmigt",
+      "rejectedSuccess": "Eintrag abgelehnt",
+      "pendingSuccess": "Eintrag auf ausstehend gesetzt",
+      "updateFailed": "Status konnte nicht aktualisiert werden",
+      "bulkSuccess": "{count} Einträge aktualisiert",
+      "noEntries": "Keine Einträge in dieser Kategorie."
+    }
+  },
+  "toast": {
+    "entryAdded": "Eintrag hinzugefügt!",
+    "saveFailed": "Etwas ist schiefgelaufen.",
+    "saveError": "Fehler beim Speichern. Bitte versuche es erneut."
+  },
+  "nav": {
+    "home": "Start",
+    "guestbook": "Gästebuch",
+    "admin": "Admin",
+    "slideshow": "Diashow",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "goToSlide": "Zu Folie {number}"
+  },
+  "slideshow": {
+    "exit": "Beenden",
+    "settings": "Einstellungen",
+    "interval": "Intervall"
+  },
+  "photo": {
+    "upload": "Foto hochladen",
+    "change": "Ändern",
+    "remove": "Entfernen",
+    "addPhoto": "Foto hinzufügen",
+    "dropHere": "Foto hier ablegen",
+    "hint": "Tippen oder per Drag & Drop (max 10MB)",
+    "compressing": "Wird komprimiert..."
+  },
+  "errors": {
+    "nameRequired": "Name ist erforderlich",
+    "messageRequired": "Nachricht ist erforderlich"
+  },
+  "entry": {
+    "subtitle": "Digitaler Gästebuch-Eintrag",
+    "likeEntry": "Gefällt mir",
+    "comment": "Kommentieren",
+    "photoBy": "Foto von {name}",
+    "sections": {
+      "favorites": "Favoriten",
+      "funFacts": "Fun Facts",
+      "ourStory": "Unsere Geschichte",
+      "date": "Datum"
+    },
+    "labels": {
+      "color": "Farbe:",
+      "food": "Essen:",
+      "movie": "Film:",
+      "song": "Song:",
+      "video": "Video:",
+      "superpower": "Superpower:",
+      "hiddenTalent": "Verstecktes Talent:",
+      "desertIsland": "Einsame Insel Gegenstände:",
+      "howWeMet": "Wie wir uns kennengelernt haben:",
+      "bestMemory": "Beste Erinnerung:",
+      "by": "von"
+    },
+    "actions": {
+      "listen": "Anhören",
+      "watch": "Ansehen"
+    },
+    "badges": {
+      "coffee": "Kaffee",
+      "tea": "Tee",
+      "nightOwl": "Nachteule",
+      "earlyBird": "Frühaufsteher",
+      "beach": "Strand",
+      "mountains": "Berge"
+    }
+  }
+}

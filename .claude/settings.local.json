@@ -5,7 +5,10 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm dlx:*)",
       "Bash(timeout 15 pnpm dev:*)",
-      "Bash(pnpm dev:*)"
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm run dev)",
+      "Bash(timeout:*)"
     ]
   }
 }

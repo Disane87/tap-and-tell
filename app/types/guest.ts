@@ -40,6 +40,11 @@ export interface GuestAnswers {
 }
 
 /**
+ * Entry moderation status.
+ */
+export type EntryStatus = 'pending' | 'approved' | 'rejected'
+
+/**
  * A single guestbook entry stored in the database.
  */
 export interface GuestEntry {
@@ -49,6 +54,8 @@ export interface GuestEntry {
   photoUrl?: string
   answers?: GuestAnswers
   createdAt: string
+  status?: EntryStatus
+  rejectionReason?: string
 }
 
 /**

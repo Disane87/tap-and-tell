@@ -12,6 +12,8 @@
 import { ExternalLink } from 'lucide-vue-next'
 import type { GuestEntry } from '~/types/guest'
 
+const { locale } = useI18n()
+
 defineProps<{
   entry: GuestEntry | null
   open: boolean
@@ -25,7 +27,7 @@ defineEmits<{
  * Formats an ISO date string to a full human-readable format.
  */
 function formatFullDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('de-DE', {
+  return new Date(iso).toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -53,7 +55,7 @@ function formatFullDate(iso: string): string {
         <div v-if="entry.photoUrl" class="flex justify-center">
           <img
             :src="entry.photoUrl"
-            :alt="`Photo by ${entry.name}`"
+            :alt="$t('entry.photoBy', { name: entry.name })"
             class="photo-frame max-h-64 rounded-xl object-cover"
           >
         </div>
@@ -66,19 +68,19 @@ function formatFullDate(iso: string): string {
         <!-- Favorites Section -->
         <div v-if="entry.answers && (entry.answers.favoriteColor || entry.answers.favoriteFood || entry.answers.favoriteMovie || entry.answers.favoriteSong || entry.answers.favoriteVideo)">
           <h4 class="section-title">
-            Favorites
+            {{ $t('entry.sections.favorites') }}
           </h4>
           <div class="space-y-2">
             <div v-if="entry.answers.favoriteColor" class="flex items-center gap-2 text-sm">
-              <span class="text-muted-foreground">Color:</span>
+              <span class="text-muted-foreground">{{ $t('entry.labels.color') }}</span>
               <span>{{ entry.answers.favoriteColor }}</span>
             </div>
             <div v-if="entry.answers.favoriteFood" class="flex items-center gap-2 text-sm">
-              <span class="text-muted-foreground">Food:</span>
+              <span class="text-muted-foreground">{{ $t('entry.labels.food') }}</span>
               <span>{{ entry.answers.favoriteFood }}</span>
             </div>
             <div v-if="entry.answers.favoriteMovie" class="flex items-center gap-2 text-sm">
-              <span class="text-muted-foreground">Movie:</span>
+              <span class="text-muted-foreground">{{ $t('entry.labels.movie') }}</span>
               <span>{{ entry.answers.favoriteMovie }}</span>
             </div>
             <div
@@ -89,7 +91,7 @@ function formatFullDate(iso: string): string {
                 🎵 {{ entry.answers.favoriteSong.title }}
               </p>
               <p v-if="entry.answers.favoriteSong.artist" class="text-xs text-muted-foreground">
-                by {{ entry.answers.favoriteSong.artist }}
+                {{ $t('entry.labels.by') }} {{ entry.answers.favoriteSong.artist }}
               </p>
               <a
                 v-if="entry.answers.favoriteSong.url"
@@ -98,7 +100,7 @@ function formatFullDate(iso: string): string {
                 rel="noopener noreferrer"
                 class="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
-                Listen <ExternalLink class="h-3 w-3" />
+                {{ $t('entry.actions.listen') }} <ExternalLink class="h-3 w-3" />
               </a>
             </div>
             <div
@@ -115,7 +117,7 @@ function formatFullDate(iso: string): string {
                 rel="noopener noreferrer"
                 class="mt-1 inline-flex items-center gap-1 text-xs text-primary hover:underline"
               >
-                Watch <ExternalLink class="h-3 w-3" />
+                {{ $t('entry.actions.watch') }} <ExternalLink class="h-3 w-3" />
               </a>
             </div>
           </div>
@@ -124,30 +126,30 @@ function formatFullDate(iso: string): string {
         <!-- Fun Facts Section -->
         <div v-if="entry.answers && (entry.answers.superpower || entry.answers.hiddenTalent || entry.answers.desertIslandItems || entry.answers.coffeeOrTea || entry.answers.nightOwlOrEarlyBird || entry.answers.beachOrMountains)">
           <h4 class="section-title">
-            Fun Facts
+            {{ $t('entry.sections.funFacts') }}
           </h4>
           <div class="space-y-2">
             <div v-if="entry.answers.superpower" class="text-sm">
-              <span class="text-muted-foreground">Superpower:</span>
+              <span class="text-muted-foreground">{{ $t('entry.labels.superpower') }}</span>
               {{ entry.answers.superpower }}
             </div>
             <div v-if="entry.answers.hiddenTalent" class="text-sm">
-              <span class="text-muted-foreground">Hidden Talent:</span>
+              <span class="text-muted-foreground">{{ $t('entry.labels.hiddenTalent') }}</span>
               {{ entry.answers.hiddenTalent }}
             </div>
             <div v-if="entry.answers.desertIslandItems" class="text-sm">
-              <span class="text-muted-foreground">Desert Island Items:</span>
+              <span class="text-muted-foreground">{{ $t('entry.labels.desertIsland') }}</span>
               {{ entry.answers.desertIslandItems }}
             </div>
             <div class="flex flex-wrap gap-2">
               <span v-if="entry.answers.coffeeOrTea" class="answer-badge">
-                {{ entry.answers.coffeeOrTea === 'coffee' ? '☕ Coffee' : '🍵 Tea' }}
+                {{ entry.answers.coffeeOrTea === 'coffee' ? `☕ ${$t('entry.badges.coffee')}` : `🍵 ${$t('entry.badges.tea')}` }}
               </span>
               <span v-if="entry.answers.nightOwlOrEarlyBird" class="answer-badge">
-                {{ entry.answers.nightOwlOrEarlyBird === 'night_owl' ? '🦉 Night Owl' : '🐦 Early Bird' }}
+                {{ entry.answers.nightOwlOrEarlyBird === 'night_owl' ? `🦉 ${$t('entry.badges.nightOwl')}` : `🐦 ${$t('entry.badges.earlyBird')}` }}
               </span>
               <span v-if="entry.answers.beachOrMountains" class="answer-badge">
-                {{ entry.answers.beachOrMountains === 'beach' ? '🏖️ Beach' : '⛰️ Mountains' }}
+                {{ entry.answers.beachOrMountains === 'beach' ? `🏖️ ${$t('entry.badges.beach')}` : `⛰️ ${$t('entry.badges.mountains')}` }}
               </span>
             </div>
           </div>
@@ -156,15 +158,15 @@ function formatFullDate(iso: string): string {
         <!-- Our Story Section -->
         <div v-if="entry.answers && (entry.answers.bestMemory || entry.answers.howWeMet)">
           <h4 class="section-title">
-            Our Story
+            {{ $t('entry.sections.ourStory') }}
           </h4>
           <div class="space-y-2">
             <div v-if="entry.answers.howWeMet" class="text-sm">
-              <span class="text-muted-foreground">How We Met:</span>
+              <span class="text-muted-foreground">{{ $t('entry.labels.howWeMet') }}</span>
               <p class="mt-0.5 whitespace-pre-wrap">{{ entry.answers.howWeMet }}</p>
             </div>
             <div v-if="entry.answers.bestMemory" class="text-sm">
-              <span class="text-muted-foreground">Best Memory:</span>
+              <span class="text-muted-foreground">{{ $t('entry.labels.bestMemory') }}</span>
               <p class="mt-0.5 whitespace-pre-wrap">{{ entry.answers.bestMemory }}</p>
             </div>
           </div>

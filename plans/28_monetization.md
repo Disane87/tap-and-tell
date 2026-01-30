@@ -1,5 +1,4 @@
 # Monetization Strategy
-
 Revenue model for Tap & Tell SaaS.
 
 ## Pricing Tiers
@@ -93,7 +92,6 @@ GET  /api/billing/subscription  # Get current subscription
 ```
 
 ## Implementation Steps
-
 1. Create Stripe account and get API keys
 2. Define products and prices in Stripe
 3. Add subscription schema to database

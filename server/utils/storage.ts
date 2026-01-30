@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'fs'
 import { join } from 'path'
-import type { GuestEntry } from '~~/server/types/guest'
+import type { EntryStatus, GuestEntry } from '~~/server/types/guest'
 
 /**
  * Data directory path. Configurable via DATA_DIR env var.
@@ -88,7 +88,8 @@ export function createEntry(
     message,
     photoUrl,
     answers,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    status: 'pending'
   }
 
   const entries = readEntries()
@@ -155,4 +156,79 @@ export function getPhotoMimeType(filename: string): string {
     default:
       return 'application/octet-stream'
   }
+}
+
+/**
+ * Reads only approved guest entries.
+ * Entries without a status are treated as approved (backwards compatibility).
+ */
+export function readApprovedEntries(): GuestEntry[] {
+  const entries = readEntries()
+  return entries.filter(e => !e.status || e.status === 'approved')
+}
+
+/**
+ * Reads entries by status.
+ *
+ * @param status - The status to filter by.
+ */
+export function readEntriesByStatus(status: EntryStatus): GuestEntry[] {
+  const entries = readEntries()
+  return entries.filter(e => e.status === status)
+}
+
+/**
+ * Updates the status of an entry.
+ *
+ * @param id - The entry ID.
+ * @param status - The new status.
+ * @param rejectionReason - Optional reason for rejection.
+ * @returns The updated entry or undefined if not found.
+ */
+export function updateEntryStatus(
+  id: string,
+  status: EntryStatus,
+  rejectionReason?: string
+): GuestEntry | undefined {
+  const entries = readEntries()
+  const entry = entries.find(e => e.id === id)
+  if (!entry) return undefined
+
+  entry.status = status
+  if (status === 'rejected' && rejectionReason) {
+    entry.rejectionReason = rejectionReason
+  } else {
+    delete entry.rejectionReason
+  }
+
+  writeEntries(entries)
+  return entry
+}
+
+/**
+ * Updates the status of multiple entries.
+ *
+ * @param ids - The entry IDs.
+ * @param status - The new status.
+ * @returns Number of entries updated.
+ */
+export function bulkUpdateEntryStatus(ids: string[], status: EntryStatus): number {
+  const entries = readEntries()
+  let updated = 0
+
+  for (const entry of entries) {
+    if (ids.includes(entry.id)) {
+      entry.status = status
+      if (status !== 'rejected') {
+        delete entry.rejectionReason
+      }
+      updated++
+    }
+  }
+
+  if (updated > 0) {
+    writeEntries(entries)
+  }
+
+  return updated
 }

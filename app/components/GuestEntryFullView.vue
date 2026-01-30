@@ -14,6 +14,8 @@
 import { ExternalLink, Heart, MessageCircle } from 'lucide-vue-next'
 import type { GuestEntry } from '~/types/guest'
 
+const { t, locale } = useI18n()
+
 const props = defineProps<{
   entry: GuestEntry
 }>()
@@ -22,7 +24,7 @@ const props = defineProps<{
  * Formats an ISO date string to a full German date format.
  */
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('de-DE', {
+  return new Date(iso).toLocaleDateString(locale.value === 'de' ? 'de-DE' : 'en-US', {
     day: 'numeric',
     month: 'long',
     year: 'numeric'
@@ -63,7 +65,7 @@ const quickBadges = computed(() => {
   if (a.favoriteFood) badges.push({ text: `🍜 ${a.favoriteFood}`, class: 'badge-yellow' })
   if (a.favoriteMovie) badges.push({ text: `🎬 ${a.favoriteMovie}`, class: 'badge-indigo' })
   if (a.superpower) badges.push({ text: `🦸 ${a.superpower}`, class: 'badge-pink' })
-  if (a.coffeeOrTea) badges.push({ text: a.coffeeOrTea === 'coffee' ? '☕ Coffee' : '🍵 Tea', class: '' })
+  if (a.coffeeOrTea) badges.push({ text: a.coffeeOrTea === 'coffee' ? `☕ ${t('entry.badges.coffee')}` : `🍵 ${t('entry.badges.tea')}`, class: '' })
 
   return badges.slice(0, 5)
 })
@@ -76,9 +78,9 @@ const toggleBadges = computed(() => {
   const a = props.entry.answers
   if (!a) return badges
 
-  if (a.coffeeOrTea) badges.push({ text: a.coffeeOrTea === 'coffee' ? '☕ Coffee' : '🍵 Tea', class: '' })
-  if (a.nightOwlOrEarlyBird) badges.push({ text: a.nightOwlOrEarlyBird === 'night_owl' ? '🦉 Night Owl' : '🐦 Early Bird', class: 'badge-blue' })
-  if (a.beachOrMountains) badges.push({ text: a.beachOrMountains === 'beach' ? '🏖️ Beach' : '⛰️ Mountains', class: 'badge-orange' })
+  if (a.coffeeOrTea) badges.push({ text: a.coffeeOrTea === 'coffee' ? `☕ ${t('entry.badges.coffee')}` : `🍵 ${t('entry.badges.tea')}`, class: '' })
+  if (a.nightOwlOrEarlyBird) badges.push({ text: a.nightOwlOrEarlyBird === 'night_owl' ? `🦉 ${t('entry.badges.nightOwl')}` : `🐦 ${t('entry.badges.earlyBird')}`, class: 'badge-blue' })
+  if (a.beachOrMountains) badges.push({ text: a.beachOrMountains === 'beach' ? `🏖️ ${t('entry.badges.beach')}` : `⛰️ ${t('entry.badges.mountains')}`, class: 'badge-orange' })
 
   return badges
 })
@@ -134,7 +136,7 @@ const youtubeEmbed = computed(() => {
       <img
         v-if="entry.photoUrl"
         :src="entry.photoUrl"
-        :alt="`Photo by ${entry.name}`"
+        :alt="$t('entry.photoBy', { name: entry.name })"
         class="h-full w-full object-cover"
       >
       <div
@@ -165,7 +167,7 @@ const youtubeEmbed = computed(() => {
             {{ entry.name }}
           </h1>
           <p class="text-sm text-muted-foreground">
-            Digital Guestbook Entry
+            {{ $t('entry.subtitle') }}
           </p>
 
           <!-- Quick badges -->
@@ -193,11 +195,11 @@ const youtubeEmbed = computed(() => {
         <div class="flex items-center gap-3">
           <Button class="flex-1" variant="default">
             <Heart class="mr-2 h-4 w-4" />
-            Like entry
+            {{ $t('entry.likeEntry') }}
           </Button>
           <Button class="flex-1" variant="outline">
             <MessageCircle class="mr-2 h-4 w-4" />
-            Comment
+            {{ $t('entry.comment') }}
           </Button>
         </div>
 
@@ -205,19 +207,19 @@ const youtubeEmbed = computed(() => {
 
         <!-- Favoriten Section -->
         <div v-if="hasFavorites" class="section-card">
-          <p class="section-title">Favoriten</p>
+          <p class="section-title">{{ $t('entry.sections.favorites') }}</p>
           <ul class="space-y-1 text-sm text-foreground">
             <li v-if="entry.answers?.favoriteColor">
-              <span class="font-semibold">Farbe:</span> {{ entry.answers.favoriteColor }}
+              <span class="font-semibold">{{ $t('entry.labels.color') }}</span> {{ entry.answers.favoriteColor }}
             </li>
             <li v-if="entry.answers?.favoriteFood">
-              <span class="font-semibold">Essen:</span> {{ entry.answers.favoriteFood }}
+              <span class="font-semibold">{{ $t('entry.labels.food') }}</span> {{ entry.answers.favoriteFood }}
             </li>
             <li v-if="entry.answers?.favoriteMovie">
-              <span class="font-semibold">Film:</span> {{ entry.answers.favoriteMovie }}
+              <span class="font-semibold">{{ $t('entry.labels.movie') }}</span> {{ entry.answers.favoriteMovie }}
             </li>
             <li v-if="entry.answers?.favoriteSong">
-              <span class="font-semibold">Song:</span>
+              <span class="font-semibold">{{ $t('entry.labels.song') }}</span>
               <a
                 v-if="entry.answers.favoriteSong.url"
                 :href="entry.answers.favoriteSong.url"
@@ -234,7 +236,7 @@ const youtubeEmbed = computed(() => {
               </span>
             </li>
             <li v-if="entry.answers?.favoriteVideo">
-              <span class="font-semibold">Video:</span>
+              <span class="font-semibold">{{ $t('entry.labels.video') }}</span>
               <a
                 v-if="entry.answers.favoriteVideo.url"
                 :href="entry.answers.favoriteVideo.url"
@@ -279,16 +281,16 @@ const youtubeEmbed = computed(() => {
 
         <!-- Fun Facts Section -->
         <div v-if="hasFunFacts" class="section-card">
-          <p class="section-title">Fun Facts</p>
+          <p class="section-title">{{ $t('entry.sections.funFacts') }}</p>
           <ul class="space-y-1 text-sm text-foreground">
             <li v-if="entry.answers?.superpower">
-              <span class="font-semibold">Superpower:</span> {{ entry.answers.superpower }}
+              <span class="font-semibold">{{ $t('entry.labels.superpower') }}</span> {{ entry.answers.superpower }}
             </li>
             <li v-if="entry.answers?.hiddenTalent">
-              <span class="font-semibold">Hidden Talent:</span> {{ entry.answers.hiddenTalent }}
+              <span class="font-semibold">{{ $t('entry.labels.hiddenTalent') }}</span> {{ entry.answers.hiddenTalent }}
             </li>
             <li v-if="entry.answers?.desertIslandItems">
-              <span class="font-semibold">Desert Island Items:</span> {{ entry.answers.desertIslandItems }}
+              <span class="font-semibold">{{ $t('entry.labels.desertIsland') }}</span> {{ entry.answers.desertIslandItems }}
             </li>
           </ul>
 
@@ -307,14 +309,14 @@ const youtubeEmbed = computed(() => {
 
         <!-- Our Story Section -->
         <div v-if="hasOurStory" class="section-card">
-          <p class="section-title">Our Story</p>
+          <p class="section-title">{{ $t('entry.sections.ourStory') }}</p>
           <ul class="space-y-2 text-sm text-foreground">
             <li v-if="entry.answers?.howWeMet">
-              <span class="font-semibold">How We Met:</span>
+              <span class="font-semibold">{{ $t('entry.labels.howWeMet') }}</span>
               <p class="mt-0.5 whitespace-pre-wrap">{{ entry.answers.howWeMet }}</p>
             </li>
             <li v-if="entry.answers?.bestMemory">
-              <span class="font-semibold">Best Memory:</span>
+              <span class="font-semibold">{{ $t('entry.labels.bestMemory') }}</span>
               <p class="mt-0.5 whitespace-pre-wrap">{{ entry.answers.bestMemory }}</p>
             </li>
           </ul>
@@ -322,7 +324,7 @@ const youtubeEmbed = computed(() => {
 
         <!-- Date Section -->
         <div class="section-card">
-          <p class="section-title">Datum</p>
+          <p class="section-title">{{ $t('entry.sections.date') }}</p>
           <p class="text-sm text-foreground">{{ formatDate(entry.createdAt) }}</p>
         </div>
 

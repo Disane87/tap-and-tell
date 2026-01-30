@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tap-and-tell
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    volumes:
+      - tap-and-tell-data:/app/data
+    environment:
+      - NODE_ENV=production
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - TOKEN_SECRET=${TOKEN_SECRET:-change-me-in-production}
+      - DATA_DIR=/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  tap-and-tell-data:
+    driver: local

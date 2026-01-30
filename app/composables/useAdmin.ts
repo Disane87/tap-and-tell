@@ -1,4 +1,4 @@
-import type { GuestEntry, GuestEntriesResponse } from '~/types/guest'
+import type { EntryStatus, GuestEntry, GuestEntriesResponse } from '~/types/guest'
 
 /**
  * Module-level state for admin authentication.
@@ -116,6 +116,73 @@ export function useAdmin() {
     }
   }
 
+  /**
+   * Updates the moderation status of an entry.
+   *
+   * @param id - The entry ID.
+   * @param status - The new status.
+   * @param rejectionReason - Optional reason for rejection.
+   * @returns The updated entry or null on failure.
+   */
+  async function updateEntryStatus(
+    id: string,
+    status: EntryStatus,
+    rejectionReason?: string
+  ): Promise<GuestEntry | null> {
+    if (!token.value) return null
+
+    try {
+      const response = await $fetch<{ success: boolean; data?: GuestEntry }>(
+        `/api/admin/entries/${id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token.value}`
+          },
+          body: { status, rejectionReason }
+        }
+      )
+
+      if (response.success && response.data) {
+        return response.data
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * Bulk updates the moderation status of multiple entries.
+   *
+   * @param ids - The entry IDs.
+   * @param status - The new status.
+   * @returns Number of entries updated or -1 on failure.
+   */
+  async function bulkUpdateStatus(ids: string[], status: EntryStatus): Promise<number> {
+    if (!token.value) return -1
+
+    try {
+      const response = await $fetch<{ success: boolean; data?: { updated: number } }>(
+        '/api/admin/entries/bulk',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token.value}`
+          },
+          body: { ids, status }
+        }
+      )
+
+      if (response.success && response.data) {
+        return response.data.updated
+      }
+      return -1
+    } catch {
+      return -1
+    }
+  }
+
   return {
     token: readonly(token),
     isAuthenticated: readonly(isAuthenticated),
@@ -123,6 +190,8 @@ export function useAdmin() {
     login,
     logout,
     fetchEntries,
-    deleteEntry
+    deleteEntry,
+    updateEntryStatus,
+    bulkUpdateStatus
   }
 }

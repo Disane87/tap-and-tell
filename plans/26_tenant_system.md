@@ -1,12 +1,25 @@
-# Tenant System (Multi-Home SaaS)
+# Multi tenancy support
+To support multiple tenants (e.g., different events or organizations using the same app instance), we will implement the following changes:
 
-Multi-tenant architecture where each tenant is a "home" with their own guestbook.
+## Householding
+Every household (tenant) will have its own isolated set of guestbook entries. Every tenant has an admin.
+On register, there will be a unique tenant identifier (UUID) that determines which tenant the user is interacting with.
+Every tenant will have its own admin and is locked to their own entries.
+
+This will require:
+
+- Add a `tenantId` field to guestbook entries to associate them with a specific tenant.
+- Update the entry creation API to accept a `tenantId` parameter.
+- Modify the frontend to include the `tenantId` when submitting new entries.
+- Update the data storage structure to organize entries by `tenantId`.
+- Update the guestbook display page to filter entries based on the current `tenantId`.
 
 ## Concepts
 
 - **Tenant** = A home/household with their own guestbook
 - **Owner** = The person who created/manages the tenant
 - **Guest** = Visitors who leave entries (no account needed)
+- **Admin** = Creating Household with NFC/QR (internal role for SaaS when buying phsical QR/NFC products)
 
 ## Data Model
 

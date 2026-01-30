@@ -1,4 +1,4 @@
-# Docker Deployment
+# Docker Deployment ✔
 
 Local self-hosted deployment using Docker.
 
@@ -69,9 +69,9 @@ docker-compose pull && docker-compose up -d
 
 ## Implementation Steps
 
-1. Create Dockerfile with multi-stage build
-2. Create docker-compose.yml
-3. Add `/api/health` endpoint
-4. Create `.dockerignore`
-5. Add deployment documentation to README
-6. Test local Docker deployment
+1. [x] Create Dockerfile with multi-stage build
+2. [x] Create docker-compose.yml
+3. [x] Add `/api/health` endpoint
+4. [x] Create `.dockerignore`
+5. [x] Create docker-compose.prod.yml with optional Traefik/Watchtower
+6. [ ] Test local Docker deployment
