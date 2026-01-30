@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Nuxt: Debug im Edge",
+            "url": "http://localhost:3000",
+            "webRoot": "${workspaceFolder}",
+            "runtimeExecutable": "C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe",
+            "trace": true,
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "preLaunchTask": "Debug Nuxt (Edge)"
+        }
+    ]
+}

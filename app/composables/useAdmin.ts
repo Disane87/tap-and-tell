@@ -5,13 +5,18 @@
  * stored in `sessionStorage`. Provides reactive auth state and a `getToken()`
  * helper for attaching Bearer tokens to admin API requests.
  *
+ * Uses module-level `ref()` instead of `useState()` to avoid SSR hydration
+ * mismatches when `checkAuth()` reads from `sessionStorage` on the client.
+ *
  * @returns Reactive auth state and login/logout/checkAuth/getToken functions.
  */
-export function useAdmin() {
-  const isAuthenticated = useState('admin-auth', () => false)
-  const isLoading = useState('admin-loading', () => false)
-  const error = useState<string | null>('admin-error', () => null)
 
+// Module-level refs — NOT useState() — avoids SSR payload serialization
+const isAuthenticated = ref(false)
+const isLoading = ref(false)
+const error = ref<string | null>(null)
+
+export function useAdmin() {
   /**
    * Authenticates with the admin API using a password.
    * @param password - The admin password to verify.

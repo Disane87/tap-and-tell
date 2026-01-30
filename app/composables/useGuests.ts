@@ -7,13 +7,18 @@ import type { GuestEntry, CreateGuestEntryInput, GuestEntriesResponse, GuestEntr
  * `fetchEntries`, `createEntry`, and `deleteEntry` methods that
  * call the `/api/entries` server routes.
  *
+ * Uses module-level `ref()` instead of `useState()` to avoid SSR
+ * payload serialization and potential hydration mismatches.
+ *
  * @returns Reactive guest entries state and mutation functions.
  */
-export function useGuests() {
-  const entries = useState<GuestEntry[]>('guest-entries', () => [])
-  const isLoading = useState('guests-loading', () => false)
-  const error = useState<string | null>('guests-error', () => null)
 
+// Module-level refs — NOT useState() — avoids SSR payload serialization
+const entries = ref<GuestEntry[]>([])
+const isLoading = ref(false)
+const error = ref<string | null>(null)
+
+export function useGuests() {
   /** Fetches all guest entries from the server and updates reactive state. */
   async function fetchEntries(): Promise<void> {
     isLoading.value = true

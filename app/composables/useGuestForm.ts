@@ -1,157 +1,279 @@
-import type { CreateGuestEntryInput } from '~/types/guest'
+import type { CreateGuestEntryInput, GuestAnswers, FavoriteSong, FavoriteVideo } from '~/types/guest'
 
 /** Lifecycle status of the guest form submission. */
 export type FormStatus = 'idle' | 'submitting' | 'success' | 'error'
 
-/** Reactive state for the guest submission form fields. */
-export interface FormState {
+/** All fields tracked by the multi-step wizard form. */
+export interface WizardFormState {
+  // Step 1: Basics
   name: string
-  message: string
   photo: string | null
+
+  // Step 2: Favorites
+  favoriteColor: string
+  favoriteFood: string
+  favoriteMovie: string
+  favoriteSongTitle: string
+  favoriteSongArtist: string
+  favoriteSongUrl: string
+  favoriteVideoTitle: string
+  favoriteVideoUrl: string
+
+  // Step 3: Fun
+  superpower: string
+  hiddenTalent: string
+  desertIslandItems: string
+  coffeeOrTea: 'coffee' | 'tea' | null
+  nightOwlOrEarlyBird: 'night_owl' | 'early_bird' | null
+  beachOrMountains: 'beach' | 'mountains' | null
+
+  // Step 4: Message
+  bestMemory: string
+  howWeMet: string
+  message: string
 }
 
 /** Per-field validation error messages (`null` = valid). */
-export interface FormValidation {
-  name: string | null
-  message: string | null
-  photo: string | null
-}
+export type FormValidation = Record<string, string | null>
 
-const MAX_NAME_LENGTH = 100
-const MAX_MESSAGE_LENGTH = 1000
+export const TOTAL_STEPS = 4
+export const MAX_NAME_LENGTH = 100
+export const MAX_MESSAGE_LENGTH = 1000
+export const MAX_TEXT_LENGTH = 500
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024 // 5MB
 
 /**
- * Composable for guest form state management and validation.
+ * Creates the default (empty) wizard form state.
+ * @returns A fresh WizardFormState with all fields reset.
+ */
+function createDefaultState(): WizardFormState {
+  return {
+    name: '',
+    photo: null,
+    favoriteColor: '',
+    favoriteFood: '',
+    favoriteMovie: '',
+    favoriteSongTitle: '',
+    favoriteSongArtist: '',
+    favoriteSongUrl: '',
+    favoriteVideoTitle: '',
+    favoriteVideoUrl: '',
+    superpower: '',
+    hiddenTalent: '',
+    desertIslandItems: '',
+    coffeeOrTea: null,
+    nightOwlOrEarlyBird: null,
+    beachOrMountains: null,
+    bestMemory: '',
+    howWeMet: '',
+    message: ''
+  }
+}
+
+// Module-level refs — NOT useState() — avoids SSR payload serialization
+const currentStep = ref(0)
+const direction = ref<'forward' | 'backward'>('forward')
+const formState = ref<WizardFormState>(createDefaultState())
+const validation = ref<FormValidation>({})
+const status = ref<FormStatus>('idle')
+const errorMessage = ref<string | null>(null)
+
+/**
+ * Composable for the multi-step guest form wizard.
  *
- * Manages name, message, and photo fields with per-field validation,
- * submission lifecycle status, and helper methods.
+ * Manages a 4-step wizard (Basics, Favorites, Fun, Message) with per-step
+ * validation, navigation controls, and submission data assembly.
  *
- * @returns Reactive form state, validation, status, and control functions.
+ * @returns Reactive form state, wizard controls, and submission helpers.
  */
 export function useGuestForm() {
-  const formState = useState<FormState>('guest-form', () => ({
-    name: '',
-    message: '',
-    photo: null
-  }))
-
-  const validation = useState<FormValidation>('guest-form-validation', () => ({
-    name: null,
-    message: null,
-    photo: null
-  }))
-
-  const status = useState<FormStatus>('guest-form-status', () => 'idle')
-  const errorMessage = useState<string | null>('guest-form-error', () => null)
-
   /**
-   * Validates the guest name field.
-   * @param value - The name to validate.
-   * @returns An error message, or `null` if valid.
+   * Validates Step 1 (Basics): name and photo.
+   * @returns `true` if step 1 fields are valid.
    */
-  function validateName(value: string): string | null {
-    if (!value.trim()) {
-      return 'Name is required'
+  function validateStep1(): boolean {
+    const errors: FormValidation = {}
+    if (!formState.value.name.trim()) {
+      errors.name = 'Name is required'
+    } else if (formState.value.name.length > MAX_NAME_LENGTH) {
+      errors.name = `Name must be ${MAX_NAME_LENGTH} characters or less`
     }
-    if (value.length > MAX_NAME_LENGTH) {
-      return `Name must be ${MAX_NAME_LENGTH} characters or less`
+    if (formState.value.photo) {
+      if (!formState.value.photo.startsWith('data:image/')) {
+        errors.photo = 'Invalid image format'
+      } else {
+        const sizeInBytes = (formState.value.photo.length * 3) / 4
+        if (sizeInBytes > MAX_PHOTO_SIZE) {
+          errors.photo = 'Photo must be 5MB or less'
+        }
+      }
     }
-    return null
+    validation.value = errors
+    return Object.values(errors).every(v => v === null || v === undefined)
   }
 
   /**
-   * Validates the guest message field.
-   * @param value - The message to validate.
-   * @returns An error message, or `null` if valid.
+   * Validates Step 4 (Message): message is required.
+   * @returns `true` if step 4 fields are valid.
    */
-  function validateMessage(value: string): string | null {
-    if (!value.trim()) {
-      return 'Message is required'
+  function validateStep4(): boolean {
+    const errors: FormValidation = {}
+    if (!formState.value.message.trim()) {
+      errors.message = 'Message is required'
+    } else if (formState.value.message.length > MAX_MESSAGE_LENGTH) {
+      errors.message = `Message must be ${MAX_MESSAGE_LENGTH} characters or less`
     }
-    if (value.length > MAX_MESSAGE_LENGTH) {
-      return `Message must be ${MAX_MESSAGE_LENGTH} characters or less`
-    }
-    return null
+    validation.value = errors
+    return Object.values(errors).every(v => v === null || v === undefined)
   }
 
   /**
-   * Validates an optional base64-encoded photo.
-   * @param base64 - The base64 data URI, or `null` if no photo.
-   * @returns An error message, or `null` if valid.
+   * Validates the current wizard step.
+   * Steps 2 and 3 are entirely optional — they always pass.
+   * @returns `true` if the current step is valid.
    */
-  function validatePhoto(base64: string | null): string | null {
-    if (!base64) return null
+  function validateCurrentStep(): boolean {
+    if (currentStep.value === 0) return validateStep1()
+    if (currentStep.value === 3) return validateStep4()
+    // Steps 2 and 3 are optional — always valid
+    validation.value = {}
+    return true
+  }
 
-    // Check if it's a valid base64 image
-    if (!base64.startsWith('data:image/')) {
-      return 'Invalid image format'
+  /** Advances to the next step if validation passes. */
+  function nextStep(): void {
+    if (currentStep.value < TOTAL_STEPS - 1 && validateCurrentStep()) {
+      direction.value = 'forward'
+      currentStep.value++
     }
+  }
 
-    // Estimate size (base64 is ~4/3 of original size)
-    const sizeInBytes = (base64.length * 3) / 4
-    if (sizeInBytes > MAX_PHOTO_SIZE) {
-      return 'Photo must be 5MB or less'
+  /** Returns to the previous step. */
+  function prevStep(): void {
+    if (currentStep.value > 0) {
+      direction.value = 'backward'
+      currentStep.value--
+      validation.value = {}
     }
-
-    return null
   }
 
   /**
-   * Runs all field validations and updates the validation state.
-   * @returns `true` if all fields are valid.
+   * Jumps to a specific step.
+   * @param step - The step index (0–3).
+   */
+  function goToStep(step: number): void {
+    if (step >= 0 && step < TOTAL_STEPS) {
+      direction.value = step > currentStep.value ? 'forward' : 'backward'
+      currentStep.value = step
+      validation.value = {}
+    }
+  }
+
+  /**
+   * Validates all required fields across all steps.
+   * @returns `true` if the form can be submitted.
    */
   function validate(): boolean {
-    validation.value = {
-      name: validateName(formState.value.name),
-      message: validateMessage(formState.value.message),
-      photo: validatePhoto(formState.value.photo)
+    const errors: FormValidation = {}
+
+    // Step 1 required
+    if (!formState.value.name.trim()) {
+      errors.name = 'Name is required'
+    } else if (formState.value.name.length > MAX_NAME_LENGTH) {
+      errors.name = `Name must be ${MAX_NAME_LENGTH} characters or less`
     }
 
-    return !validation.value.name && !validation.value.message && !validation.value.photo
+    // Step 4 required
+    if (!formState.value.message.trim()) {
+      errors.message = 'Message is required'
+    } else if (formState.value.message.length > MAX_MESSAGE_LENGTH) {
+      errors.message = `Message must be ${MAX_MESSAGE_LENGTH} characters or less`
+    }
+
+    validation.value = errors
+    return Object.values(errors).every(v => v === null || v === undefined)
   }
 
-  /** Sets the name field and clears its validation error. */
-  function setName(value: string): void {
-    formState.value.name = value
-    validation.value.name = null
+  /**
+   * Assembles the form state into a `CreateGuestEntryInput` payload.
+   * Empty/null optional fields are omitted from the answers object.
+   * @returns The API submission payload.
+   */
+  function getSubmitData(): CreateGuestEntryInput {
+    const answers: GuestAnswers = {}
+
+    // Favorites
+    if (formState.value.favoriteColor.trim())
+      answers.favoriteColor = formState.value.favoriteColor.trim()
+    if (formState.value.favoriteFood.trim())
+      answers.favoriteFood = formState.value.favoriteFood.trim()
+    if (formState.value.favoriteMovie.trim())
+      answers.favoriteMovie = formState.value.favoriteMovie.trim()
+
+    if (formState.value.favoriteSongTitle.trim()) {
+      const song: FavoriteSong = {
+        type: 'text',
+        title: formState.value.favoriteSongTitle.trim()
+      }
+      if (formState.value.favoriteSongArtist.trim())
+        song.artist = formState.value.favoriteSongArtist.trim()
+      if (formState.value.favoriteSongUrl.trim())
+        song.url = formState.value.favoriteSongUrl.trim()
+      answers.favoriteSong = song
+    }
+
+    if (formState.value.favoriteVideoTitle.trim()) {
+      const video: FavoriteVideo = {
+        type: 'text',
+        title: formState.value.favoriteVideoTitle.trim()
+      }
+      if (formState.value.favoriteVideoUrl.trim())
+        video.url = formState.value.favoriteVideoUrl.trim()
+      answers.favoriteVideo = video
+    }
+
+    // Fun
+    if (formState.value.superpower.trim())
+      answers.superpower = formState.value.superpower.trim()
+    if (formState.value.hiddenTalent.trim())
+      answers.hiddenTalent = formState.value.hiddenTalent.trim()
+    if (formState.value.desertIslandItems.trim())
+      answers.desertIslandItems = formState.value.desertIslandItems.trim()
+
+    // Toggles
+    if (formState.value.coffeeOrTea)
+      answers.coffeeOrTea = formState.value.coffeeOrTea
+    if (formState.value.nightOwlOrEarlyBird)
+      answers.nightOwlOrEarlyBird = formState.value.nightOwlOrEarlyBird
+    if (formState.value.beachOrMountains)
+      answers.beachOrMountains = formState.value.beachOrMountains
+
+    // Connection
+    if (formState.value.bestMemory.trim())
+      answers.bestMemory = formState.value.bestMemory.trim()
+    if (formState.value.howWeMet.trim())
+      answers.howWeMet = formState.value.howWeMet.trim()
+    if (formState.value.message.trim())
+      answers.messageToHost = formState.value.message.trim()
+
+    const hasAnswers = Object.keys(answers).length > 0
+
+    return {
+      name: formState.value.name.trim(),
+      message: formState.value.message.trim(),
+      photo: formState.value.photo || undefined,
+      answers: hasAnswers ? answers : undefined
+    }
   }
 
-  /** Sets the message field and clears its validation error. */
-  function setMessage(value: string): void {
-    formState.value.message = value
-    validation.value.message = null
-  }
-
-  /** Sets the photo field (base64 data URI or `null`) and clears its validation error. */
-  function setPhoto(base64: string | null): void {
-    formState.value.photo = base64
-    validation.value.photo = null
-  }
-
-  /** Resets all form fields, validation, and status to their initial state. */
+  /** Resets the entire wizard to its initial state. */
   function reset(): void {
-    formState.value = {
-      name: '',
-      message: '',
-      photo: null
-    }
-    validation.value = {
-      name: null,
-      message: null,
-      photo: null
-    }
+    formState.value = createDefaultState()
+    validation.value = {}
     status.value = 'idle'
     errorMessage.value = null
-  }
-
-  /** Returns the current form data shaped for the API submission payload. */
-  function getSubmitData(): CreateGuestEntryInput {
-    return {
-      name: formState.value.name,
-      message: formState.value.message,
-      photo: formState.value.photo || undefined
-    }
+    currentStep.value = 0
+    direction.value = 'forward'
   }
 
   /** Updates the form lifecycle status. */
@@ -165,29 +287,32 @@ export function useGuestForm() {
     status.value = 'error'
   }
 
+  /** Whether the form has enough data to submit (name + message filled). */
   const isValid = computed(() => {
     return formState.value.name.trim() !== '' &&
-           formState.value.message.trim() !== '' &&
-           !validation.value.name &&
-           !validation.value.message &&
-           !validation.value.photo
+           formState.value.message.trim() !== ''
   })
 
   return {
-    formState: readonly(formState),
+    currentStep: readonly(currentStep),
+    direction: readonly(direction),
+    formState,
     validation: readonly(validation),
     status: readonly(status),
     errorMessage: readonly(errorMessage),
     isValid,
-    setName,
-    setMessage,
-    setPhoto,
+    nextStep,
+    prevStep,
+    goToStep,
     validate,
-    reset,
+    validateCurrentStep,
     getSubmitData,
+    reset,
     setStatus,
     setError,
+    TOTAL_STEPS,
     MAX_NAME_LENGTH,
-    MAX_MESSAGE_LENGTH
+    MAX_MESSAGE_LENGTH,
+    MAX_TEXT_LENGTH
   }
 }

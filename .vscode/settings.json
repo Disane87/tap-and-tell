@@ -1,0 +1,18 @@
+{
+    "folders": [
+        {
+            "path": "."
+        }
+    ],
+    "settings": {
+        "extensions.ignoreRecommendations": false,
+        "extensions.disabled": [
+            "*"
+        ],
+        "extensions.enabled": [
+            "WakaTime.vscode-wakatime",
+            "vue.volar",
+            "mrmlnc.vscode-scss"
+        ]
+    }
+}
