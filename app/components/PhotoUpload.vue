@@ -1,131 +1,111 @@
 <script setup lang="ts">
+/**
+ * Photo upload component with camera capture and file picker.
+ *
+ * Encodes selected images as base64 data URIs for submission.
+ * Validates file type (image/* only) and resets input for re-selection.
+ *
+ * @emits update:modelValue - The base64-encoded image string or null.
+ */
 import { Camera, Upload, X } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
 
-interface Props {
-  photo: string | null
-  disabled?: boolean
-  error?: string | null
-}
-
-defineProps<Props>()
-
-const emit = defineEmits<{
-  (e: 'update:photo', value: string | null): void
+const props = defineProps<{
+  modelValue: string | null
 }>()
 
-const fileInput = ref<HTMLInputElement | null>(null)
+const emit = defineEmits<{
+  'update:modelValue': [value: string | null]
+}>()
+
 const cameraInput = ref<HTMLInputElement | null>(null)
+const fileInput = ref<HTMLInputElement | null>(null)
 
-function handleFileSelect(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-
-  if (file) {
-    processFile(file)
-  }
-
-  // Reset input so the same file can be selected again
-  input.value = ''
+/** Opens the device camera for photo capture. */
+function openCamera(): void {
+  cameraInput.value?.click()
 }
 
-function processFile(file: File) {
-  // Validate file type
+/** Opens the file picker for gallery selection. */
+function openFilePicker(): void {
+  fileInput.value?.click()
+}
+
+/**
+ * Reads the selected file and emits it as a base64 data URI.
+ * @param event - The file input change event.
+ */
+function handleFileChange(event: Event): void {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
   if (!file.type.startsWith('image/')) {
+    target.value = ''
     return
   }
 
   const reader = new FileReader()
-  reader.onload = (e) => {
-    const result = e.target?.result
-    if (typeof result === 'string') {
-      emit('update:photo', result)
-    }
+  reader.onload = () => {
+    emit('update:modelValue', reader.result as string)
   }
   reader.readAsDataURL(file)
+
+  // Reset so the same file can be re-selected
+  target.value = ''
 }
 
-function openFilePicker() {
-  fileInput.value?.click()
-}
-
-function openCamera() {
-  cameraInput.value?.click()
-}
-
-function removePhoto() {
-  emit('update:photo', null)
+/** Removes the current photo. */
+function removePhoto(): void {
+  emit('update:modelValue', null)
 }
 </script>
 
 <template>
-  <div class="space-y-3">
-    <div
-      v-if="photo"
-      class="photo-frame relative overflow-hidden border border-border/40"
-    >
-      <img
-        :src="photo"
-        alt="Selected photo preview"
-        class="aspect-video w-full object-cover"
-      >
-      <Button
-        type="button"
-        variant="destructive"
-        size="icon"
-        class="absolute right-2 top-2"
-        :disabled="disabled"
-        @click="removePhoto"
-      >
-        <X class="h-4 w-4" />
-        <span class="sr-only">Remove photo</span>
-      </Button>
-    </div>
-
-    <div v-else class="flex gap-2">
-      <Button
-        type="button"
-        variant="outline"
-        class="flex-1"
-        :disabled="disabled"
-        @click="openCamera"
-      >
-        <Camera class="mr-2 h-4 w-4" />
-        Take Photo
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        class="flex-1"
-        :disabled="disabled"
-        @click="openFilePicker"
-      >
-        <Upload class="mr-2 h-4 w-4" />
-        Upload
-      </Button>
-    </div>
-
-    <input
-      ref="fileInput"
-      type="file"
-      accept="image/*"
-      class="hidden"
-      :disabled="disabled"
-      @change="handleFileSelect"
-    >
-
+  <div class="flex flex-col items-center gap-3">
+    <!-- Hidden file inputs -->
     <input
       ref="cameraInput"
       type="file"
       accept="image/*"
       capture="environment"
       class="hidden"
-      :disabled="disabled"
-      @change="handleFileSelect"
+      @change="handleFileChange"
+    >
+    <input
+      ref="fileInput"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleFileChange"
     >
 
-    <p v-if="error" class="text-sm text-destructive">
-      {{ error }}
-    </p>
+    <!-- Photo preview -->
+    <div v-if="props.modelValue" class="relative">
+      <img
+        :src="props.modelValue"
+        alt="Photo preview"
+        class="photo-frame h-32 w-32 object-cover"
+      >
+      <button
+        type="button"
+        class="absolute -right-2 -top-2 rounded-full bg-destructive p-1 text-destructive-foreground shadow-sm"
+        aria-label="Remove photo"
+        @click="removePhoto"
+      >
+        <X class="h-3 w-3" />
+      </button>
+    </div>
+
+    <!-- Upload buttons -->
+    <div v-else class="flex gap-2">
+      <Button type="button" variant="outline" size="sm" @click="openCamera">
+        <Camera class="mr-1.5 h-4 w-4" />
+        Camera
+      </Button>
+      <Button type="button" variant="outline" size="sm" @click="openFilePicker">
+        <Upload class="mr-1.5 h-4 w-4" />
+        Upload
+      </Button>
+    </div>
   </div>
 </template>

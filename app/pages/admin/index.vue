@@ -1,174 +1,160 @@
 <script setup lang="ts">
+/**
+ * Admin dashboard page.
+ *
+ * Displays all guest entries in a list with delete functionality.
+ * Protected by admin authentication — redirects to login if not authenticated.
+ */
+import { Trash2, LogOut } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
-import { Trash2, LogOut, RefreshCw } from 'lucide-vue-next'
 import type { GuestEntry } from '~/types/guest'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
 
 const { isAuthenticated, checkAuth, logout, getToken } = useAdmin()
 const router = useRouter()
 
 const entries = ref<GuestEntry[]>([])
 const isLoading = ref(false)
-const error = ref<string | null>(null)
-const entryToDelete = ref<GuestEntry | null>(null)
-const deleteDialogOpen = ref(false)
+const deleteTarget = ref<GuestEntry | null>(null)
+const showDeleteDialog = ref(false)
 
-onMounted(() => {
-  if (!checkAuth()) {
-    router.push('/admin/login')
-    return
-  }
-  fetchEntries()
-})
-
-async function fetchEntries() {
+/** Fetches entries using the admin-authenticated endpoint. */
+async function fetchAdminEntries(): Promise<void> {
   isLoading.value = true
-  error.value = null
-
   try {
     const token = getToken()
-    const response = await $fetch<{ success: boolean; data?: GuestEntry[]; count?: number }>('/api/admin/entries', {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+    const response = await $fetch<{ success: boolean; data?: GuestEntry[] }>('/api/admin/entries', {
+      headers: { Authorization: `Bearer ${token}` }
     })
-
     if (response.success && response.data) {
       entries.value = response.data
     }
-  } catch (err) {
-    error.value = 'Failed to load entries'
-    console.error(err)
+  } catch {
+    toast.error('Failed to fetch entries')
   } finally {
     isLoading.value = false
   }
 }
 
-function confirmDelete(entry: GuestEntry) {
-  entryToDelete.value = entry
-  deleteDialogOpen.value = true
-}
-
-async function deleteEntry() {
-  if (!entryToDelete.value) return
+/** Deletes an entry after confirmation. */
+async function confirmDelete(): Promise<void> {
+  if (!deleteTarget.value) return
 
   try {
     const token = getToken()
-    await $fetch(`/api/admin/entries/${entryToDelete.value.id}`, {
+    await $fetch(`/api/admin/entries/${deleteTarget.value.id}`, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
-
-    entries.value = entries.value.filter(e => e.id !== entryToDelete.value?.id)
+    entries.value = entries.value.filter(e => e.id !== deleteTarget.value!.id)
     toast.success('Entry deleted')
-  } catch (err) {
+  } catch {
     toast.error('Failed to delete entry')
-    console.error(err)
   } finally {
-    entryToDelete.value = null
-    deleteDialogOpen.value = false
+    showDeleteDialog.value = false
+    deleteTarget.value = null
   }
 }
 
-function handleLogout() {
+/** Opens the delete confirmation dialog. */
+function promptDelete(entry: GuestEntry): void {
+  deleteTarget.value = entry
+  showDeleteDialog.value = true
+}
+
+function handleLogout(): void {
   logout()
   router.push('/admin/login')
 }
 
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleString()
+/** Formats an ISO date string. */
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
+
+onMounted(() => {
+  checkAuth()
+  if (!isAuthenticated.value) {
+    router.push('/admin/login')
+    return
+  }
+  fetchAdminEntries()
+})
 </script>
 
 <template>
-  <div class="mx-auto max-w-4xl">
-    <div class="mb-8 flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-        <p class="text-muted-foreground">
-          Manage guestbook entries ({{ entries.length }} total)
-        </p>
-      </div>
-      <div class="flex gap-2">
-        <Button variant="outline" size="icon" :disabled="isLoading" @click="fetchEntries">
-          <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isLoading }" />
-        </Button>
-        <Button variant="outline" @click="handleLogout">
-          <LogOut class="mr-2 h-4 w-4" />
-          Logout
-        </Button>
-      </div>
-    </div>
-
-    <div v-if="isLoading && entries.length === 0" class="flex justify-center py-12">
-      <div class="h-8 w-8 animate-spin rounded-full border-4 border-muted border-t-primary" />
-    </div>
-
-    <div v-else-if="error" class="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center">
-      <p class="text-destructive">{{ error }}</p>
-      <Button variant="outline" class="mt-4" @click="fetchEntries">
-        Try Again
+  <div class="mx-auto max-w-4xl px-4 py-8">
+    <div class="mb-6 flex items-center justify-between">
+      <h1 class="font-display text-2xl font-bold">Admin Dashboard</h1>
+      <Button variant="ghost" size="sm" @click="handleLogout">
+        <LogOut class="mr-1.5 h-4 w-4" />
+        Logout
       </Button>
     </div>
 
-    <div v-else-if="entries.length === 0" class="py-12 text-center">
-      <p class="text-muted-foreground">No entries yet.</p>
+    <!-- Loading -->
+    <div v-if="isLoading" class="py-12 text-center">
+      <p class="animate-gentle-pulse text-muted-foreground">Loading entries...</p>
     </div>
 
-    <div v-else class="space-y-4">
-      <Card v-for="entry in entries" :key="entry.id">
-        <CardHeader class="pb-2">
-          <div class="flex items-start justify-between">
-            <div class="flex-1">
-              <CardTitle class="text-lg">{{ entry.name }}</CardTitle>
+    <!-- Empty -->
+    <div v-else-if="entries.length === 0" class="py-12 text-center">
+      <p class="text-muted-foreground">No guest entries yet.</p>
+    </div>
+
+    <!-- Entry list -->
+    <div v-else class="space-y-3">
+      <div
+        v-for="entry in entries"
+        :key="entry.id"
+        class="card-polaroid flex items-start justify-between gap-4"
+      >
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-3">
+            <img
+              v-if="entry.photoUrl"
+              :src="entry.photoUrl"
+              :alt="entry.name"
+              class="h-10 w-10 rounded-full object-cover"
+            >
+            <div>
+              <h3 class="font-handwritten text-xl">{{ entry.name }}</h3>
               <p class="text-xs text-muted-foreground">{{ formatDate(entry.createdAt) }}</p>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              class="text-destructive hover:bg-destructive/10 hover:text-destructive"
-              @click="confirmDelete(entry)"
-            >
-              <Trash2 class="h-4 w-4" />
-            </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div class="flex gap-4">
-            <div v-if="entry.photoUrl" class="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
-              <img :src="entry.photoUrl" :alt="entry.name" class="h-full w-full object-cover">
-            </div>
-            <p class="flex-1 text-sm text-muted-foreground line-clamp-3">{{ entry.message }}</p>
-          </div>
-        </CardContent>
-      </Card>
+          <p class="mt-2 line-clamp-2 text-sm text-muted-foreground">{{ entry.message }}</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="shrink-0 text-destructive hover:bg-destructive/10"
+          @click="promptDelete(entry)"
+        >
+          <Trash2 class="h-4 w-4" />
+        </Button>
+      </div>
     </div>
 
-    <AlertDialog :open="deleteDialogOpen" @update:open="deleteDialogOpen = $event">
+    <!-- Delete confirmation dialog -->
+    <AlertDialog :open="showDeleteDialog" @update:open="showDeleteDialog = $event">
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Entry</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the entry from "{{ entryToDelete?.name }}"? This action cannot be undone.
+            Are you sure you want to delete {{ deleteTarget?.name }}'s entry? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction class="bg-destructive text-destructive-foreground hover:bg-destructive/90" @click="deleteEntry">
+          <AlertDialogCancel @click="showDeleteDialog = false">Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            @click="confirmDelete"
+          >
             Delete
           </AlertDialogAction>
         </AlertDialogFooter>

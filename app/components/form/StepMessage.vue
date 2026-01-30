@@ -1,68 +1,59 @@
 <script setup lang="ts">
 /**
- * Wizard Step 4: Connection messages — best memory, how we met, message to host.
- * Message is required; other fields are optional.
+ * Step 4 of the guest wizard: Our Story and Message (message required).
+ *
+ * Fields: Best Memory (optional), How We Met (optional), Message to Host (required).
  */
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
-import type { FormValidation } from '~/composables/useGuestForm'
 
-interface Props {
+defineProps<{
   bestMemory: string
   howWeMet: string
   message: string
-  validation: FormValidation
-  disabled?: boolean
-}
+  messageError: string | null
+}>()
 
-defineProps<Props>()
-
-const emit = defineEmits<{
-  (e: 'update:bestMemory', value: string): void
-  (e: 'update:howWeMet', value: string): void
-  (e: 'update:message', value: string): void
+defineEmits<{
+  'update:bestMemory': [value: string]
+  'update:howWeMet': [value: string]
+  'update:message': [value: string]
 }>()
 </script>
 
 <template>
   <div class="space-y-5">
-    <div>
-      <Label class="mb-1.5 block text-sm font-medium">Best memory together</Label>
+    <div class="space-y-2">
+      <Label for="best-memory">Best Memory Together</Label>
       <Textarea
+        id="best-memory"
         :model-value="bestMemory"
         placeholder="A favorite moment you shared..."
-        :disabled="disabled"
-        class="min-h-[80px] resize-none"
-        @update:model-value="emit('update:bestMemory', $event as string)"
+        rows="2"
+        @update:model-value="$emit('update:bestMemory', $event)"
       />
     </div>
 
-    <div>
-      <Label class="mb-1.5 block text-sm font-medium">How did you meet?</Label>
+    <div class="space-y-2">
+      <Label for="how-we-met">How We Met</Label>
       <Textarea
+        id="how-we-met"
         :model-value="howWeMet"
-        placeholder="The story of how you first connected..."
-        :disabled="disabled"
-        class="min-h-[80px] resize-none"
-        @update:model-value="emit('update:howWeMet', $event as string)"
+        placeholder="The story of how you met..."
+        rows="2"
+        @update:model-value="$emit('update:howWeMet', $event)"
       />
     </div>
 
-    <div>
-      <Label for="guest-message" class="mb-1.5 block text-sm font-medium">
-        Your Message <span class="text-destructive">*</span>
-      </Label>
+    <div class="space-y-2">
+      <Label for="guest-message">Your Message *</Label>
       <Textarea
         id="guest-message"
         :model-value="message"
-        placeholder="Leave a personal message..."
-        :disabled="disabled"
-        class="min-h-[120px] resize-none"
-        @update:model-value="emit('update:message', $event as string)"
+        placeholder="Leave a message for the host..."
+        rows="4"
+        :class="{ 'border-destructive': messageError }"
+        @update:model-value="$emit('update:message', $event)"
       />
-      <p v-if="validation.message" class="mt-1 text-sm text-destructive">
-        {{ validation.message }}
-      </p>
+      <p v-if="messageError" class="text-sm text-destructive">{{ messageError }}</p>
     </div>
   </div>
 </template>

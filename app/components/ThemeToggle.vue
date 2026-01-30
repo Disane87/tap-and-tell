@@ -1,21 +1,36 @@
 <script setup lang="ts">
+/**
+ * Three-mode theme toggle: Light → Dark → System.
+ * Cycles through modes on each click.
+ * Wrapped in <ClientOnly> by the layout to prevent hydration mismatch.
+ */
 import { Sun, Moon, Monitor } from 'lucide-vue-next'
-import { Button } from '@/components/ui/button'
 
 const { theme, toggleTheme } = useTheme()
+
+const icon = computed(() => {
+  switch (theme.value) {
+    case 'light': return Sun
+    case 'dark': return Moon
+    default: return Monitor
+  }
+})
+
+const label = computed(() => {
+  switch (theme.value) {
+    case 'light': return 'Switch to dark mode'
+    case 'dark': return 'Switch to system mode'
+    default: return 'Switch to light mode'
+  }
+})
 </script>
 
 <template>
-  <Button
-    variant="ghost"
-    size="icon"
-    :title="`Current theme: ${theme}. Click to change.`"
-    aria-label="Toggle theme"
+  <button
+    :aria-label="label"
+    class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground"
     @click="toggleTheme"
   >
-    <Sun v-if="theme === 'light'" class="h-5 w-5" />
-    <Moon v-else-if="theme === 'dark'" class="h-5 w-5" />
-    <Monitor v-else class="h-5 w-5" />
-    <span class="sr-only">Toggle theme</span>
-  </Button>
+    <component :is="icon" class="h-4 w-4" />
+  </button>
 </template>

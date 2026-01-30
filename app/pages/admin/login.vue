@@ -1,66 +1,56 @@
 <script setup lang="ts">
+/**
+ * Admin login page.
+ *
+ * Simple password form that authenticates via the admin API.
+ * On success, redirects to the admin dashboard.
+ */
 import { toast } from 'vue-sonner'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 
-const { login, isLoading, error, checkAuth } = useAdmin()
+const { isAuthenticated, isLoading, error, login, checkAuth } = useAdmin()
 const router = useRouter()
-
 const password = ref('')
 
+async function handleLogin(): Promise<void> {
+  if (!password.value.trim()) return
+
+  const success = await login(password.value)
+  if (success) {
+    toast.success('Logged in')
+    router.push('/admin')
+  }
+}
+
 onMounted(() => {
-  if (checkAuth()) {
+  checkAuth()
+  if (isAuthenticated.value) {
     router.push('/admin')
   }
 })
-
-async function handleSubmit(event: Event) {
-  event.preventDefault()
-
-  const success = await login(password.value)
-
-  if (success) {
-    toast.success('Welcome back!')
-    router.push('/admin')
-  } else {
-    toast.error(error.value || 'Invalid password')
-  }
-}
 </script>
 
 <template>
-  <div class="flex min-h-[60vh] items-center justify-center">
-    <Card class="w-full max-w-sm">
-      <CardHeader class="text-center">
-        <CardTitle>Admin Login</CardTitle>
-        <CardDescription>Enter the admin password to continue</CardDescription>
+  <div class="mx-auto flex min-h-[80vh] max-w-sm items-center justify-center px-4">
+    <Card class="w-full">
+      <CardHeader>
+        <CardTitle class="font-display text-xl">Admin Login</CardTitle>
+        <CardDescription>Enter the admin password to continue.</CardDescription>
       </CardHeader>
       <CardContent>
-        <form class="space-y-4" @submit="handleSubmit">
+        <form class="space-y-4" @submit.prevent="handleLogin">
           <div class="space-y-2">
-            <Label for="password">Password</Label>
+            <Label for="admin-password">Password</Label>
             <Input
-              id="password"
+              id="admin-password"
               v-model="password"
               type="password"
               placeholder="Enter password"
               :disabled="isLoading"
-              autocomplete="current-password"
             />
           </div>
-
-          <p v-if="error" class="text-sm text-destructive">
-            {{ error }}
-          </p>
-
-          <Button type="submit" class="w-full" :disabled="isLoading || !password">
-            <span v-if="isLoading" class="flex items-center gap-2">
-              <span class="h-4 w-4 animate-spin rounded-full border-2 border-background border-t-transparent" />
-              Logging in...
-            </span>
-            <span v-else>Login</span>
+          <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
+          <Button type="submit" class="w-full" :disabled="isLoading">
+            {{ isLoading ? 'Logging in...' : 'Login' }}
           </Button>
         </form>
       </CardContent>

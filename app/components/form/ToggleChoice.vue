@@ -1,30 +1,28 @@
 <script setup lang="ts">
 /**
- * Reusable binary toggle component for "this or that" questions.
- * Displays two side-by-side buttons. Tapping the selected option deselects it.
+ * Reusable binary toggle choice (e.g., Coffee vs Tea).
+ *
+ * Two side-by-side buttons; the selected one is highlighted.
+ * Tapping the already-selected option deselects it (sets to null).
+ *
+ * @props modelValue - Current selection or null.
+ * @props optionA / optionB - The two choices with label and value.
+ * @emits update:modelValue - The selected value or null.
  */
-interface ToggleOption {
-  value: string
-  label: string
-  icon: string
-}
 
-interface Props {
+defineProps<{
   modelValue: string | null
-  optionA: ToggleOption
-  optionB: ToggleOption
-  disabled?: boolean
-}
-
-const props = defineProps<Props>()
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | null): void
+  optionA: { label: string; value: string }
+  optionB: { label: string; value: string }
 }>()
 
-function select(value: string) {
-  if (props.disabled) return
-  emit('update:modelValue', props.modelValue === value ? null : value)
+const emit = defineEmits<{
+  'update:modelValue': [value: string | null]
+}>()
+
+/** Toggles selection: selects if different, deselects if same. */
+function select(value: string, current: string | null): void {
+  emit('update:modelValue', current === value ? null : value)
 }
 </script>
 
@@ -32,27 +30,23 @@ function select(value: string) {
   <div class="flex gap-2">
     <button
       type="button"
-      class="flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all"
+      class="flex-1 rounded-lg border px-3 py-2 text-sm transition-all"
       :class="modelValue === optionA.value
-        ? 'border-primary bg-primary/10 text-primary'
-        : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground'"
-      :disabled="disabled"
-      @click="select(optionA.value)"
+        ? 'border-primary bg-primary/10 text-primary font-medium'
+        : 'border-border text-muted-foreground hover:border-primary/50'"
+      @click="select(optionA.value, modelValue)"
     >
-      <span>{{ optionA.icon }}</span>
-      <span>{{ optionA.label }}</span>
+      {{ optionA.label }}
     </button>
     <button
       type="button"
-      class="flex flex-1 items-center justify-center gap-2 rounded-lg border px-4 py-3 text-sm font-medium transition-all"
+      class="flex-1 rounded-lg border px-3 py-2 text-sm transition-all"
       :class="modelValue === optionB.value
-        ? 'border-primary bg-primary/10 text-primary'
-        : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground'"
-      :disabled="disabled"
-      @click="select(optionB.value)"
+        ? 'border-primary bg-primary/10 text-primary font-medium'
+        : 'border-border text-muted-foreground hover:border-primary/50'"
+      @click="select(optionB.value, modelValue)"
     >
-      <span>{{ optionB.icon }}</span>
-      <span>{{ optionB.label }}</span>
+      {{ optionB.label }}
     </button>
   </div>
 </template>

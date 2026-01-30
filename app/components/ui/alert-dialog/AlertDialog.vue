@@ -1,22 +1,15 @@
 <script setup lang="ts">
-import { AlertDialogRoot } from 'radix-vue'
+import type { AlertDialogEmits, AlertDialogProps } from "reka-ui"
+import { AlertDialogRoot, useForwardPropsEmits } from "reka-ui"
 
-const props = defineProps<{
-  open?: boolean
-  defaultOpen?: boolean
-}>()
+const props = defineProps<AlertDialogProps>()
+const emits = defineEmits<AlertDialogEmits>()
 
-const emits = defineEmits<{
-  (e: 'update:open', value: boolean): void
-}>()
+const forwarded = useForwardPropsEmits(props, emits)
 </script>
 
 <template>
-  <AlertDialogRoot
-    :open="props.open"
-    :default-open="props.defaultOpen"
-    @update:open="emits('update:open', $event)"
-  >
+  <AlertDialogRoot v-bind="forwarded">
     <slot />
   </AlertDialogRoot>
 </template>

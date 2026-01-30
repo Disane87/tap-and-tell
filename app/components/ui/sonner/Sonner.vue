@@ -1,37 +1,47 @@
-<script setup lang="ts">
-import { Toaster as Sonner, type ToasterProps } from 'vue-sonner'
+<script lang="ts" setup>
+import type { ToasterProps } from "vue-sonner"
+import { reactiveOmit } from "@vueuse/core"
+import { CircleCheckIcon, InfoIcon, Loader2Icon, OctagonXIcon, TriangleAlertIcon, XIcon } from "lucide-vue-next"
+import { Toaster as Sonner } from "vue-sonner"
 
 const props = defineProps<ToasterProps>()
+const delegatedProps = reactiveOmit(props, "toastOptions")
 </script>
 
 <template>
   <Sonner
-    v-bind="props"
     class="toaster group"
     :toast-options="{
       classes: {
-        toast: [
-          'group toast card-polaroid',
-          'group-[.toaster]:bg-background group-[.toaster]:text-foreground',
-          'group-[.toaster]:border-border group-[.toaster]:shadow-lg',
-          'animate-scale-in',
-          'relative overflow-hidden',
-        ].join(' '),
-        title: 'font-handwritten text-lg flex items-center gap-2',
+        toast: 'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
         description: 'group-[.toast]:text-muted-foreground',
-        actionButton: 'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground rounded-md px-3 py-1 font-semibold shadow-md hover:scale-105 transition-transform',
-        cancelButton: 'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground rounded-md px-3 py-1 font-semibold hover:scale-105 transition-transform',
-        icon: 'inline-block mr-2 align-middle text-xl',
-      },
-      render: {
-        icon: (type) => {
-          if (type === 'success') return '✅';
-          if (type === 'error') return '❌';
-          if (type === 'warning') return '⚠️';
-          if (type === 'info') return 'ℹ️';
-          return '💬';
-        },
+        actionButton:
+          'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
+        cancelButton:
+          'group-[.toast]:bg-muted group-[.toast]:text-muted-foreground',
       },
     }"
-  />
+    v-bind="delegatedProps"
+  >
+    <template #success-icon>
+      <CircleCheckIcon class="size-4" />
+    </template>
+    <template #info-icon>
+      <InfoIcon class="size-4" />
+    </template>
+    <template #warning-icon>
+      <TriangleAlertIcon class="size-4" />
+    </template>
+    <template #error-icon>
+      <OctagonXIcon class="size-4" />
+    </template>
+    <template #loading-icon>
+      <div>
+        <Loader2Icon class="size-4 animate-spin" />
+      </div>
+    </template>
+    <template #close-icon>
+      <XIcon class="size-4" />
+    </template>
+  </Sonner>
 </template>

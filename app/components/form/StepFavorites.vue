@@ -1,109 +1,97 @@
 <script setup lang="ts">
 /**
- * Wizard Step 2: Favorites — color, food, movie, song, video.
- * All fields are optional.
+ * Step 2 of the guest wizard: Favorites (all optional).
+ *
+ * Fields: Color, Food, Movie, Song (title/artist/URL), Video (title/URL).
  */
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 
-interface Props {
+defineProps<{
   favoriteColor: string
   favoriteFood: string
   favoriteMovie: string
-  favoriteSongTitle: string
-  favoriteSongArtist: string
-  favoriteSongUrl: string
-  favoriteVideoTitle: string
-  favoriteVideoUrl: string
-  disabled?: boolean
-}
+  songTitle: string
+  songArtist: string
+  songUrl: string
+  videoTitle: string
+  videoUrl: string
+}>()
 
-defineProps<Props>()
-
-const emit = defineEmits<{
-  (e: 'update:favoriteColor', value: string): void
-  (e: 'update:favoriteFood', value: string): void
-  (e: 'update:favoriteMovie', value: string): void
-  (e: 'update:favoriteSongTitle', value: string): void
-  (e: 'update:favoriteSongArtist', value: string): void
-  (e: 'update:favoriteSongUrl', value: string): void
-  (e: 'update:favoriteVideoTitle', value: string): void
-  (e: 'update:favoriteVideoUrl', value: string): void
+defineEmits<{
+  'update:favoriteColor': [value: string]
+  'update:favoriteFood': [value: string]
+  'update:favoriteMovie': [value: string]
+  'update:songTitle': [value: string]
+  'update:songArtist': [value: string]
+  'update:songUrl': [value: string]
+  'update:videoTitle': [value: string]
+  'update:videoUrl': [value: string]
 }>()
 </script>
 
 <template>
   <div class="space-y-5">
-    <p class="text-sm text-muted-foreground">Tell us about your favorites — all optional!</p>
-
-    <div class="grid grid-cols-2 gap-4">
-      <div>
-        <Label class="mb-1.5 block text-sm font-medium">Favorite Color</Label>
-        <Input
-          :model-value="favoriteColor"
-          placeholder="e.g. Royal Blue"
-          :disabled="disabled"
-          @update:model-value="emit('update:favoriteColor', $event as string)"
-        />
-      </div>
-      <div>
-        <Label class="mb-1.5 block text-sm font-medium">Favorite Food</Label>
-        <Input
-          :model-value="favoriteFood"
-          placeholder="e.g. Pizza"
-          :disabled="disabled"
-          @update:model-value="emit('update:favoriteFood', $event as string)"
-        />
-      </div>
+    <div class="space-y-2">
+      <Label for="fav-color">Favorite Color</Label>
+      <Input
+        id="fav-color"
+        :model-value="favoriteColor"
+        placeholder="e.g. Sunset Orange"
+        @update:model-value="$emit('update:favoriteColor', $event)"
+      />
     </div>
 
-    <div>
-      <Label class="mb-1.5 block text-sm font-medium">Favorite Movie</Label>
+    <div class="space-y-2">
+      <Label for="fav-food">Favorite Food</Label>
       <Input
+        id="fav-food"
+        :model-value="favoriteFood"
+        placeholder="e.g. Homemade pasta"
+        @update:model-value="$emit('update:favoriteFood', $event)"
+      />
+    </div>
+
+    <div class="space-y-2">
+      <Label for="fav-movie">Favorite Movie</Label>
+      <Input
+        id="fav-movie"
         :model-value="favoriteMovie"
         placeholder="e.g. The Grand Budapest Hotel"
-        :disabled="disabled"
-        @update:model-value="emit('update:favoriteMovie', $event as string)"
+        @update:model-value="$emit('update:favoriteMovie', $event)"
       />
     </div>
 
-    <div class="space-y-3 rounded-lg border border-border/40 p-4">
-      <Label class="block text-sm font-medium">Favorite Song</Label>
-      <div class="grid grid-cols-2 gap-3">
-        <Input
-          :model-value="favoriteSongTitle"
-          placeholder="Song title"
-          :disabled="disabled"
-          @update:model-value="emit('update:favoriteSongTitle', $event as string)"
-        />
-        <Input
-          :model-value="favoriteSongArtist"
-          placeholder="Artist"
-          :disabled="disabled"
-          @update:model-value="emit('update:favoriteSongArtist', $event as string)"
-        />
-      </div>
+    <!-- Song Card -->
+    <div class="rounded-lg border border-border/60 p-4 space-y-3">
+      <Label class="text-sm font-semibold">Favorite Song</Label>
       <Input
-        :model-value="favoriteSongUrl"
-        placeholder="Spotify or YouTube Music link (optional)"
-        :disabled="disabled"
-        @update:model-value="emit('update:favoriteSongUrl', $event as string)"
+        :model-value="songTitle"
+        placeholder="Song title"
+        @update:model-value="$emit('update:songTitle', $event)"
+      />
+      <Input
+        :model-value="songArtist"
+        placeholder="Artist"
+        @update:model-value="$emit('update:songArtist', $event)"
+      />
+      <Input
+        :model-value="songUrl"
+        placeholder="Link (Spotify, YouTube, etc.)"
+        @update:model-value="$emit('update:songUrl', $event)"
       />
     </div>
 
-    <div class="space-y-3 rounded-lg border border-border/40 p-4">
-      <Label class="block text-sm font-medium">Favorite Video</Label>
+    <!-- Video Card -->
+    <div class="rounded-lg border border-border/60 p-4 space-y-3">
+      <Label class="text-sm font-semibold">Favorite Video</Label>
       <Input
-        :model-value="favoriteVideoTitle"
+        :model-value="videoTitle"
         placeholder="Video title"
-        :disabled="disabled"
-        @update:model-value="emit('update:favoriteVideoTitle', $event as string)"
+        @update:model-value="$emit('update:videoTitle', $event)"
       />
       <Input
-        :model-value="favoriteVideoUrl"
-        placeholder="YouTube link (optional)"
-        :disabled="disabled"
-        @update:model-value="emit('update:favoriteVideoUrl', $event as string)"
+        :model-value="videoUrl"
+        placeholder="Link (YouTube, etc.)"
+        @update:model-value="$emit('update:videoUrl', $event)"
       />
     </div>
   </div>
