@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import { existsSync, mkdirSync, writeFileSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { eq, desc, and, inArray } from 'drizzle-orm'
@@ -13,12 +12,12 @@ const DATA_DIR = process.env.DATA_DIR || '.data'
 const PHOTOS_DIR = join(DATA_DIR, 'photos')
 
 /**
- * Ensures the photos directory exists for a given tenant.
+ * Ensures the photos directory exists for a given guestbook.
  *
- * @param tenantId - The tenant ID for namespaced photo storage.
+ * @param guestbookId - The guestbook ID for namespaced photo storage.
  */
-function ensurePhotosDir(tenantId?: string): string {
-  const dir = tenantId ? join(PHOTOS_DIR, tenantId) : PHOTOS_DIR
+function ensurePhotosDir(guestbookId?: string): string {
+  const dir = guestbookId ? join(PHOTOS_DIR, guestbookId) : PHOTOS_DIR
   if (!existsSync(dir)) {
     mkdirSync(dir, { recursive: true })
   }
@@ -26,46 +25,46 @@ function ensurePhotosDir(tenantId?: string): string {
 }
 
 /**
- * Reads all guest entries from the database for a given tenant.
+ * Reads all guest entries from the database for a given guestbook.
  * Returns newest first.
  *
- * @param tenantId - The tenant ID to scope entries to.
+ * @param guestbookId - The guestbook ID to scope entries to.
  * @returns Array of guest entries sorted newest first.
  */
-export function readEntries(tenantId?: string): GuestEntry[] {
+export function readEntries(guestbookId?: string): GuestEntry[] {
   const db = useDb()
-  const conditions = tenantId ? eq(entries.tenantId, tenantId) : undefined
+  const conditions = guestbookId ? eq(entries.guestbookId, guestbookId) : undefined
   const rows = db.select().from(entries).where(conditions).orderBy(desc(entries.createdAt)).all()
   return rows.map(mapRowToEntry)
 }
 
 /**
- * Reads only approved guest entries for a tenant.
+ * Reads only approved guest entries for a guestbook.
  * Entries without a status are treated as approved for backward compatibility.
  *
- * @param tenantId - The tenant ID to scope entries to.
+ * @param guestbookId - The guestbook ID to scope entries to.
  * @returns Array of approved guest entries.
  */
-export function readApprovedEntries(tenantId?: string): GuestEntry[] {
+export function readApprovedEntries(guestbookId?: string): GuestEntry[] {
   const db = useDb()
-  const conditions = tenantId
-    ? and(eq(entries.tenantId, tenantId), eq(entries.status, 'approved'))
+  const conditions = guestbookId
+    ? and(eq(entries.guestbookId, guestbookId), eq(entries.status, 'approved'))
     : eq(entries.status, 'approved')
   const rows = db.select().from(entries).where(conditions).orderBy(desc(entries.createdAt)).all()
   return rows.map(mapRowToEntry)
 }
 
 /**
- * Reads entries filtered by status for a tenant.
+ * Reads entries filtered by status for a guestbook.
  *
  * @param status - The status to filter by.
- * @param tenantId - The tenant ID to scope entries to.
+ * @param guestbookId - The guestbook ID to scope entries to.
  * @returns Filtered entries.
  */
-export function readEntriesByStatus(status: EntryStatus, tenantId?: string): GuestEntry[] {
+export function readEntriesByStatus(status: EntryStatus, guestbookId?: string): GuestEntry[] {
   const db = useDb()
-  const conditions = tenantId
-    ? and(eq(entries.tenantId, tenantId), eq(entries.status, status))
+  const conditions = guestbookId
+    ? and(eq(entries.guestbookId, guestbookId), eq(entries.status, status))
     : eq(entries.status, status)
   const rows = db.select().from(entries).where(conditions).orderBy(desc(entries.createdAt)).all()
   return rows.map(mapRowToEntry)
@@ -87,7 +86,7 @@ export function findEntryById(id: string): GuestEntry | undefined {
  * Creates a new guest entry with a generated UUID.
  * Optionally saves a photo file and sets the photoUrl.
  *
- * @param tenantId - The tenant this entry belongs to.
+ * @param guestbookId - The guestbook this entry belongs to.
  * @param name - Guest name.
  * @param message - Guest message.
  * @param photo - Optional base64-encoded photo data.
@@ -95,14 +94,14 @@ export function findEntryById(id: string): GuestEntry | undefined {
  * @returns The created entry.
  */
 export function createEntry(
-  tenantId: string,
+  guestbookId: string,
   name: string,
   message: string,
   photo?: string,
   answers?: GuestEntry['answers']
 ): GuestEntry {
   const db = useDb()
-  const id = randomUUID()
+  const id = generateId()
   let photoUrl: string | undefined
 
   // Save photo if provided (base64 data)
@@ -112,10 +111,10 @@ export function createEntry(
       const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
       const base64Data = match[2]
       const filename = `${id}.${ext}`
-      const photosDir = ensurePhotosDir(tenantId)
+      const photosDir = ensurePhotosDir(guestbookId)
       const filePath = join(photosDir, filename)
       writeFileSync(filePath, Buffer.from(base64Data, 'base64'))
-      photoUrl = `/api/photos/${tenantId}/${filename}`
+      photoUrl = `/api/photos/${guestbookId}/${filename}`
     }
   }
 
@@ -123,7 +122,7 @@ export function createEntry(
 
   db.insert(entries).values({
     id,
-    tenantId,
+    guestbookId,
     name,
     message,
     photoUrl: photoUrl || null,
@@ -225,9 +224,9 @@ export function bulkUpdateEntryStatus(ids: string[], status: EntryStatus): numbe
 
 /**
  * Gets the file path for a photo by filename.
- * Supports both legacy paths and tenant-namespaced paths.
+ * Supports both legacy paths and guestbook-namespaced paths.
  *
- * @param args - Filename or tenant ID + filename.
+ * @param args - Filename or guestbook ID + filename.
  * @returns The file path or undefined if not found.
  */
 export function getPhotoPath(...args: string[]): string | undefined {

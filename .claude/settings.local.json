@@ -8,7 +8,9 @@
       "Bash(pnpm dev:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm run dev)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(^d \")",
+      "Bash(find:*)"
     ]
   }
 }

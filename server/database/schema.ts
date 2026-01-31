@@ -1,9 +1,10 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
+import type { GuestbookSettings, GuestbookType } from '~~/server/types/guestbook'
 
 /**
  * Users table for owner authentication.
- * Each user can own multiple tenants (guestbooks).
+ * Each user can own multiple tenants.
  */
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
@@ -27,24 +28,39 @@ export const sessions = sqliteTable('sessions', {
 })
 
 /**
- * Tenants table representing individual guestbooks.
- * Each tenant is owned by a user and has its own settings.
+ * Tenants table representing organizational units.
+ * Settings have moved to guestbook level.
  */
 export const tenants = sqliteTable('tenants', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   ownerId: text('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  settings: text('settings', { mode: 'json' }).$type<TenantSettings>().default({}),
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
   updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`)
 })
 
 /**
- * Entries table for guestbook entries, scoped to a tenant.
+ * Guestbooks table representing individual guestbook instances.
+ * Each guestbook belongs to a tenant and has its own settings.
+ */
+export const guestbooks = sqliteTable('guestbooks', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  type: text('type', { enum: ['permanent', 'event'] }).notNull().default('permanent'),
+  settings: text('settings', { mode: 'json' }).$type<GuestbookSettings>().default({}),
+  startDate: text('start_date'),
+  endDate: text('end_date'),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),
+  updatedAt: text('updated_at').notNull().default(sql`(datetime('now'))`)
+})
+
+/**
+ * Entries table for guestbook entries, scoped to a guestbook.
  */
 export const entries = sqliteTable('entries', {
   id: text('id').primaryKey(),
-  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  guestbookId: text('guestbook_id').notNull().references(() => guestbooks.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   message: text('message').notNull(),
   photoUrl: text('photo_url'),
@@ -55,13 +71,35 @@ export const entries = sqliteTable('entries', {
 })
 
 /**
- * Settings for a tenant guestbook.
+ * Tenant members table for role-based access control.
+ * Links users to tenants with a specific role (owner or co_owner).
  */
-export interface TenantSettings {
-  /** Whether entries require moderation before appearing publicly. */
-  moderationEnabled?: boolean
-  /** Custom welcome message for guests. */
-  welcomeMessage?: string
-  /** Custom theme color. */
-  themeColor?: string
-}
+export const tenantMembers = sqliteTable('tenant_members', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  role: text('role', { enum: ['owner', 'co_owner'] }).notNull(),
+  invitedBy: text('invited_by').references(() => users.id),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`)
+})
+
+/**
+ * Tenant invites table for inviting users to join a tenant.
+ * Stores pending invitations with a unique token.
+ */
+export const tenantInvites = sqliteTable('tenant_invites', {
+  id: text('id').primaryKey(),
+  tenantId: text('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  email: text('email').notNull(),
+  role: text('role', { enum: ['co_owner'] }).notNull().default('co_owner'),
+  invitedBy: text('invited_by').notNull().references(() => users.id),
+  token: text('token').notNull().unique(),
+  expiresAt: text('expires_at').notNull(),
+  acceptedAt: text('accepted_at'),
+  createdAt: text('created_at').notNull().default(sql`(datetime('now'))`)
+})
+
+/**
+ * Tenant role type. Owner has full control, co_owner can moderate entries.
+ */
+export type TenantRole = 'owner' | 'co_owner'

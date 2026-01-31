@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import { eq, and, gt } from 'drizzle-orm'
 import { useDb } from '~~/server/database'
 import { sessions, users } from '~~/server/database/schema'
@@ -18,7 +17,7 @@ export async function createSession(userId: string, email: string): Promise<stri
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
 
   db.insert(sessions).values({
-    id: randomUUID(),
+    id: generateId(),
     userId,
     token,
     expiresAt

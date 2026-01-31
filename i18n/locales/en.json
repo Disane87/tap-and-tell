@@ -18,7 +18,255 @@
     "title": "Tap & Tell",
     "subtitle": "Leave a message and tell us something about yourself.",
     "cta": "Sign the Guestbook",
-    "viewAll": "View all entries"
+    "viewAll": "View all entries",
+    "hero": {
+      "badge": "Digital Guestbook",
+      "title": "Tap & Tell",
+      "subtitle": "Some moments deserve more than a photo. Capture the words, the laughter, the stories — before they fade.",
+      "cta": "Get Started",
+      "login": "Sign In"
+    },
+    "problem": {
+      "badge": "The Problem",
+      "title": "Memories Fade Faster Than You Think",
+      "subtitle": "We take hundreds of photos — but who remembers the stories behind them?",
+      "point1": {
+        "title": "Lost in the Scroll",
+        "description": "Your best moments are buried under thousands of photos you'll never look at again."
+      },
+      "point2": {
+        "title": "Words Disappear",
+        "description": "The toast your best friend gave. The joke your uncle told. That handwritten note — gone."
+      },
+      "point3": {
+        "title": "Digital Noise",
+        "description": "Group chats get archived. Stories expire in 24 hours. Real emotions drown in notifications."
+      },
+      "stat1": { "number": "2,500+", "label": "photos taken at the average wedding" },
+      "stat2": { "number": "87%", "label": "of people forget event details within a year" },
+      "stat3": { "number": "0", "label": "of those photos capture how someone felt" }
+    },
+    "solution": {
+      "badge": "The Solution",
+      "title": "One Tap. Real Words. Forever.",
+      "subtitle": "Tap & Tell gives your guests a voice — not just a pose. Every entry is a real moment, captured in their own words.",
+      "point1": {
+        "icon": "heart",
+        "title": "Authentic, Not Staged",
+        "description": "No filters, no poses. Just honest words from the people who matter most."
+      },
+      "point2": {
+        "icon": "book-open",
+        "title": "A Book You'll Actually Open",
+        "description": "Unlike a photo album, a guestbook tells you who was there and what they felt."
+      },
+      "point3": {
+        "icon": "infinity",
+        "title": "Preserved Forever",
+        "description": "Export as PDF, keep it digital, or print it. Your memories, your way — for generations."
+      },
+      "cta": "Start Preserving Memories"
+    },
+    "useCases": {
+      "badge": "Made For Your Moments",
+      "title": "For Every Chapter of Life",
+      "subtitle": "From once-in-a-lifetime celebrations to everyday gatherings — every moment has a story worth keeping.",
+      "disclaimer": "Fictional example — for illustration only.",
+      "wedding": {
+        "emoji": "💒",
+        "title": "Weddings",
+        "eventName": "Lisa & Marco's Wedding",
+        "description": "Your guests traveled far to celebrate you. Let them leave words you'll read on every anniversary.",
+        "entry1": { "message": "I still remember how you two met at that rainy bus stop. Today was pure magic. Here's to a lifetime of adventures!", "song": "Thinking Out Loud — Ed Sheeran", "memory": "The first dance made everyone cry." },
+        "entry2": { "message": "From college roommates to watching you say 'I do' — what a journey. Love you both endlessly.", "food": "Your mom's lasagna", "memory": "Road trip to Lake Como, summer 2019." }
+      },
+      "birthday": {
+        "emoji": "🎂",
+        "title": "Birthdays",
+        "eventName": "Emma's 30th Birthday",
+        "description": "The candles go out, the cake is eaten — but the birthday wishes stay forever.",
+        "entry1": { "message": "30 looks incredible on you! Can't believe it's been 10 years since we met in that awful cooking class.", "superpower": "Making everyone laugh", "memory": "Karaoke night — you sang Bohemian Rhapsody solo." },
+        "entry2": { "message": "Happy 30th! You inspire me every day with your energy and kindness. The next decade is yours!", "food": "Chocolate lava cake", "memory": "Surprise birthday brunch last year." }
+      },
+      "housewarming": {
+        "emoji": "🏡",
+        "title": "Housewarming",
+        "eventName": "The Kleins' New Home",
+        "description": "Your new home deserves a first chapter. Let your first guests write the opening lines.",
+        "entry1": { "message": "This place already feels like home. Can't wait for movie nights on that huge couch!", "superpower": "Interior design eye", "memory": "Helping you paint the kitchen at 2 AM." },
+        "entry2": { "message": "From that tiny studio to this — you've come so far. The garden is going to be amazing in spring.", "food": "Your homemade sourdough", "memory": "The epic furniture assembly marathon." }
+      },
+      "farewell": {
+        "emoji": "✈️",
+        "title": "Farewells & Retirements",
+        "eventName": "David's Farewell Party",
+        "description": "When someone leaves, words matter more than gifts. Give them something they can carry forever.",
+        "entry1": { "message": "15 years of coffee breaks, deadline panics, and Friday beers. The office won't be the same. Go change the world!", "superpower": "Fixing any bug at 5 PM on a Friday", "memory": "The server room incident of 2019." },
+        "entry2": { "message": "You taught me everything I know about this job. More importantly, you taught me to never skip lunch. Thank you.", "food": "Cafeteria pizza Fridays", "memory": "Your legendary presentation saves." }
+      }
+    },
+    "memories": {
+      "badge": "Why It Matters",
+      "title": "In a World of Fleeting Content, Be Permanent",
+      "subtitle": "We live in an age where everything disappears — stories, posts, messages. But the people in your life deserve more than an expiring story.",
+      "paragraph1": "Think about the last party you attended. You took photos. Maybe a selfie. But can you remember what anyone said to you? The feeling in the room? The inside joke that made everyone laugh?",
+      "paragraph2": "Tap & Tell exists because some things are worth more than a like. A guestbook entry is raw, personal, and real. It's the difference between a snapshot and a love letter.",
+      "paragraph3": "Years from now, you won't scroll through 10,000 photos. But you will open a guestbook and read the words of someone who cared enough to write them.",
+      "cta": "Give Your Moments a Voice"
+    },
+    "features": {
+      "badge": "Features",
+      "title": "Everything You Need",
+      "subtitle": "A modern guestbook experience with powerful features.",
+      "cta": "See It In Action",
+      "nfc": {
+        "title": "NFC Enabled",
+        "description": "Guests simply tap their phone on an NFC tag to start writing."
+      },
+      "photo": {
+        "title": "Photo Upload",
+        "description": "Capture the moment with camera or gallery photos."
+      },
+      "wizard": {
+        "title": "Guided Wizard",
+        "description": "A friendly step-by-step form makes leaving entries easy."
+      },
+      "moderation": {
+        "title": "Moderation",
+        "description": "Review and approve entries before they go live."
+      },
+      "slideshow": {
+        "title": "Slideshow",
+        "description": "Display entries in a beautiful full-screen slideshow."
+      },
+      "pdf": {
+        "title": "PDF Export",
+        "description": "Download your guestbook as a styled PDF keepsake."
+      },
+      "qr": {
+        "title": "QR Codes",
+        "description": "Generate QR codes for guests without NFC."
+      },
+      "theme": {
+        "title": "Dark & Light Mode",
+        "description": "Looks great in any lighting with automatic theme support."
+      }
+    },
+    "howItWorks": {
+      "badge": "Simple Setup",
+      "title": "How It Works",
+      "subtitle": "Up and running in three simple steps.",
+      "cta": "Try It Free",
+      "stepLabel": "Step {number}",
+      "create": {
+        "title": "Create a Guestbook",
+        "description": "Sign up and create your first guestbook in seconds."
+      },
+      "share": {
+        "title": "Share the Link",
+        "description": "Share via NFC tag, QR code, or a simple link."
+      },
+      "entries": {
+        "title": "Collect Entries",
+        "description": "Guests leave messages, photos, and fun facts."
+      }
+    },
+    "pricing": {
+      "badge": "Pricing",
+      "title": "Simple, Transparent Pricing",
+      "subtitle": "Start free. Upgrade when you need more.",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "yearlyDiscount": "Save 20%",
+      "perMonth": "/mo",
+      "perYear": "/yr",
+      "free": {
+        "name": "Free",
+        "price": "0",
+        "description": "Perfect for trying it out.",
+        "cta": "Get Started",
+        "features": ["1 guestbook", "Up to 50 entries", "Basic customization", "Community support", "Powered by Tap & Tell branding"]
+      },
+      "home": {
+        "name": "Home",
+        "price": "5",
+        "priceYearly": "48",
+        "description": "For your home or a single event.",
+        "cta": "Start Free Trial",
+        "popular": "Most Popular",
+        "features": ["1 guestbook", "Unlimited entries", "Full customization", "Entry moderation", "PDF export", "No branding", "Email support"]
+      },
+      "family": {
+        "name": "Family",
+        "price": "12",
+        "priceYearly": "99",
+        "description": "Multiple events & advanced features.",
+        "cta": "Start Free Trial",
+        "features": ["Up to 5 guestbooks", "Everything in Home", "Priority support", "Analytics dashboard", "Custom domain"]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Custom",
+        "description": "For venues and businesses.",
+        "cta": "Contact Us",
+        "features": ["Unlimited guestbooks", "SSO / SAML", "API access", "Dedicated support", "SLA guarantee", "White-label option"]
+      }
+    },
+    "nfcShop": {
+      "badge": "NFC Tags",
+      "title": "Beautiful NFC Tags, Ready to Use",
+      "subtitle": "3D-printed NFC tag holders in any color you want. Pre-programmed and ready for your guestbook.",
+      "colorChoice": "Choose your color",
+      "colorHint": "Custom colors available — just tell us your RAL or hex code.",
+      "preProgrammed": "Pre-programmed with your guestbook link",
+      "durable": "Durable 3D-printed housing",
+      "easySetup": "Stick or stand — works everywhere",
+      "cta": "Order NFC Tags",
+      "startingAt": "Starting at",
+      "perTag": "/ tag",
+      "colors": {
+        "black": "Black",
+        "white": "White",
+        "mint": "Mint",
+        "coral": "Coral",
+        "custom": "Custom"
+      }
+    },
+    "openSource": {
+      "badge": "Open Source",
+      "title": "Free & Open Source",
+      "subtitle": "Tap & Tell is fully open source. Inspect the code, contribute, or self-host it on your own server.",
+      "github": "View on GitHub",
+      "docker": {
+        "title": "Self-Host with Docker",
+        "description": "Run Tap & Tell on your own server with a single docker-compose command. Full control, full privacy.",
+        "step1": "Clone the repository",
+        "step2": "Configure environment",
+        "step3": "Start with Docker Compose"
+      },
+      "license": "MIT License",
+      "contributors": "Community-driven development"
+    },
+    "cta": {
+      "title": "Ready to Create Your Guestbook?",
+      "subtitle": "Start collecting memories from your guests today — for free."
+    },
+    "footer": {
+      "copyright": "\u00a9 {year} Tap & Tell. All rights reserved.",
+      "product": "Product",
+      "resources": "Resources",
+      "legal": "Legal",
+      "features": "Features",
+      "pricing": "Pricing",
+      "nfcTags": "NFC Tags",
+      "docs": "Documentation",
+      "github": "GitHub",
+      "docker": "Docker",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "imprint": "Imprint",
+      "madeWith": "Made with love and NFC."
+    }
   },
   "form": {
     "addEntry": "Add Entry",
@@ -165,6 +413,7 @@
     "home": "Home",
     "guestbook": "Guestbook",
     "admin": "Admin",
+    "dashboard": "Dashboard",
     "slideshow": "Slideshow",
     "previous": "Previous",
     "next": "Next",
@@ -228,6 +477,61 @@
     "viewGuestbook": "View",
     "manage": "Manage",
     "deleteTenant": "Delete guestbook?",
+    "deleteConfirm": "This will permanently delete the guestbook and all its entries.",
+    "deleteSuccess": "Guestbook deleted",
+    "deleteFailed": "Failed to delete guestbook"
+  },
+  "members": {
+    "title": "Members",
+    "manage": "Manage Members",
+    "inviteTitle": "Invite Co-Owner",
+    "emailPlaceholder": "Email address",
+    "invite": "Invite",
+    "inviteSuccess": "Invitation sent!",
+    "inviteFailed": "Failed to send invitation",
+    "inviteLinkHint": "Share this link with the invitee:",
+    "linkCopied": "Link copied!",
+    "copyFailed": "Failed to copy link",
+    "removeSuccess": "Member removed",
+    "removeFailed": "Failed to remove member",
+    "roles": {
+      "owner": "Owner",
+      "co_owner": "Co-Owner"
+    }
+  },
+  "invite": {
+    "title": "Invitation",
+    "noToken": "No invitation token provided.",
+    "notFound": "Invitation not found.",
+    "expired": "This invitation has expired.",
+    "youAreInvited": "You have been invited to join",
+    "asRole": "as {role}",
+    "loginRequired": "You need to sign in to accept this invitation.",
+    "accept": "Accept Invitation",
+    "acceptSuccess": "Invitation accepted!",
+    "acceptFailed": "Failed to accept invitation",
+    "alreadyMember": "You are already a member of this guestbook.",
+    "accepted": "You have joined the guestbook!",
+    "redirecting": "Redirecting to dashboard..."
+  },
+  "tenantAdmin": {
+    "title": "Tenant Admin"
+  },
+  "guestbookAdmin": {
+    "guestbook": "guestbook",
+    "guestbooks": "guestbooks",
+    "create": "New Guestbook",
+    "createTitle": "Create Guestbook",
+    "createDescription": "Add a new guestbook to your tenant.",
+    "createSuccess": "Guestbook created!",
+    "createFailed": "Failed to create guestbook",
+    "name": "Name",
+    "namePlaceholder": "e.g. Wedding Party 2025",
+    "type": "Type",
+    "typePermanent": "Permanent",
+    "typeEvent": "Event",
+    "empty": "No guestbooks yet. Create your first one!",
+    "deleteTitle": "Delete guestbook?",
     "deleteConfirm": "This will permanently delete the guestbook and all its entries.",
     "deleteSuccess": "Guestbook deleted",
     "deleteFailed": "Failed to delete guestbook"

@@ -1,9 +1,9 @@
 import type { EntryStatus } from '~~/server/types/guest'
 
 /**
- * POST /api/tenants/:uuid/entries/bulk
+ * POST /api/tenants/:uuid/guestbooks/:gbUuid/entries/bulk
  * Bulk updates the moderation status of multiple entries.
- * Requires authentication and tenant ownership.
+ * Requires authentication and moderate permission.
  */
 export default defineEventHandler(async (event) => {
   const user = event.context.user
@@ -12,12 +12,18 @@ export default defineEventHandler(async (event) => {
   }
 
   const uuid = getRouterParam(event, 'uuid')
-  if (!uuid) {
-    throw createError({ statusCode: 400, message: 'Tenant ID is required' })
+  const gbUuid = getRouterParam(event, 'gbUuid')
+  if (!uuid || !gbUuid) {
+    throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  if (!verifyTenantOwnership(uuid, user.id)) {
+  if (!canPerformAction(uuid, user.id, 'moderate')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
+  }
+
+  const guestbook = getGuestbookById(gbUuid)
+  if (!guestbook || guestbook.tenantId !== uuid) {
+    throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
 
   const body = await readBody<{ ids: string[]; status: EntryStatus }>(event)

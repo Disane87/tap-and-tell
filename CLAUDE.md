@@ -19,11 +19,47 @@ Tap & Tell is an NFC-enabled digital guestbook application built with Nuxt 3. Gu
 
 ```bash
 pnpm install          # Install dependencies
-pnpm dev              # Start development server
+pnpm dev              # Start development server (HTTPS, self-signed cert)
 pnpm build            # Build for production
 pnpm preview          # Preview production build
 pnpm exec nuxi typecheck  # Type check
 ```
+
+### Dev Server
+
+The dev server runs over **HTTPS** (`https://localhost:3000`) using a self-signed certificate via `@vitejs/plugin-basic-ssl`. The browser will show a certificate warning on first visit — this is expected.
+
+### Dev Tenant (Auto-Seeded)
+
+On startup in development mode (`NODE_ENV !== 'production'`), a dev tenant is automatically created via `server/database/seed-dev.ts`. This is **idempotent** — it only runs if the dev user does not yet exist.
+
+| Item | Value |
+|---|---|
+| **Email** | `dev@tap-and-tell.local` |
+| **Password** | `dev123` |
+| **Tenant ID** | `dev000tenant` |
+| **Tenant Name** | Dev Guestbook (All Features) |
+
+**Guestbooks:** Two guestbooks are created:
+- `dev00000gb01` — "Welcome Home" (permanent, moderation on, theme `#6366f1`)
+- `dev00000gb02` — "Silvester 2025" (event, moderation off, theme `#f59e0b`)
+
+**Sample Entries:** 4 entries pre-seeded in guestbook 1 (2× approved, 1× pending, 1× rejected) with various guest answers.
+
+**Dev URLs:**
+
+| Page | URL |
+|---|---|
+| Login | `/login` |
+| Dashboard | `/dashboard` |
+| Tenant Admin | `/t/dev000tenant/admin` |
+| Guest Form (GB1) | `/t/dev000tenant/g/dev00000gb01` |
+| Guestbook (GB1) | `/t/dev000tenant/g/dev00000gb01/guestbook` |
+| Moderation (GB1) | `/t/dev000tenant/g/dev00000gb01/admin` |
+| QR Code (GB1) | `/t/dev000tenant/g/dev00000gb01/admin/qr` |
+| Slideshow (GB1) | `/t/dev000tenant/g/dev00000gb01/slideshow` |
+
+**Reset:** Delete `.data/data.db` and restart the dev server to re-seed from scratch.
 
 ## Architecture
 
@@ -33,50 +69,75 @@ pnpm exec nuxi typecheck  # Type check
 
 ### Storage Layer
 
-No database — uses **file-based JSON storage** in `.data/` directory (configurable via `DATA_DIR` env var):
-- `.data/entries.json` — Array of `GuestEntry` objects
-- `.data/photos/` — Image files named `{entryId}.{ext}`
+SQLite database at `.data/data.db` with Drizzle ORM. Photos stored at `.data/photos/[guestbookId]/[entryId].[ext]`.
 
 Storage logic lives in `server/utils/storage.ts`.
 
+### Data Model
+
+```
+Tenant (name, plan, members)
+  └── Guestbook 1 (type: permanent, settings, entries)
+  └── Guestbook 2 (type: event, settings, date, entries)
+```
+
 ### API Routes (`server/routes/api/`)
 
-**Public:**
-- `GET /api/entries` — All entries (newest-first)
-- `POST /api/entries` — Create entry (name, message, photo as base64, answers)
-- `GET /api/entries/[id]` — Single entry
-- `DELETE /api/entries/[id]` — Delete entry (unprotected — known issue)
-- `GET /api/photos/[filename]` — Serve photo file
+**Public (no auth):**
+- `GET /api/t/[uuid]/guestbooks` — List guestbooks for tenant
+- `GET /api/t/[uuid]/g/[gbUuid]/info` — Guestbook info (name, settings)
+- `GET /api/t/[uuid]/g/[gbUuid]/entries` — Approved entries
+- `POST /api/t/[uuid]/g/[gbUuid]/entries` — Create entry
 
-**Admin (Bearer token required):**
-- `POST /api/admin/login` — Authenticate with password, returns HMAC-SHA256 token (24hr expiry)
+**Authenticated (JWT cookie):**
+- `GET/POST /api/tenants` — List/create tenants
+- `GET/PUT/DELETE /api/tenants/[uuid]` — Tenant CRUD
+- `GET/POST /api/tenants/[uuid]/guestbooks` — List/create guestbooks
+- `GET/PUT/DELETE /api/tenants/[uuid]/guestbooks/[gbUuid]` — Guestbook CRUD
+- `GET /api/tenants/[uuid]/guestbooks/[gbUuid]/entries` — All entries (admin)
+- `DELETE /api/tenants/[uuid]/guestbooks/[gbUuid]/entries/[id]` — Delete entry
+- `PATCH /api/tenants/[uuid]/guestbooks/[gbUuid]/entries/[id]` — Update status
+- `POST /api/tenants/[uuid]/guestbooks/[gbUuid]/entries/bulk` — Bulk status update
+
+**Legacy Admin (Bearer token):**
+- `POST /api/admin/login` — Authenticate with password
 - `GET /api/admin/entries` — Fetch entries
 - `DELETE /api/admin/entries/[id]` — Delete entry
 
-Auth logic in `server/utils/auth.ts`.
-
 ### Key Composables (`app/composables/`)
 
-- **`useGuests`** — CRUD operations for entries. Module-level `ref()` state shared across app.
-- **`useGuestForm`** — 4-step wizard state (Basics → Favorites → Fun → Message) with per-step validation. Steps 1 & 4 required, 2 & 3 optional.
-- **`useAdmin`** — Token-based admin auth using `sessionStorage`.
+- **`useGuestbooks`** — Guestbook CRUD for a tenant. Module-level `ref()` state.
+- **`useTenantGuests(tenantId, guestbookId)`** — Public guest entry operations (fetch approved, create).
+- **`useTenantAdmin(tenantId, guestbookId)`** — Admin entry operations (fetch all, delete, update status, bulk).
+- **`useTenants`** — Tenant CRUD operations.
+- **`useGuestForm`** — 4-step wizard state (Basics → Favorites → Fun → Message) with per-step validation.
+- **`useAdmin`** — Token-based legacy admin auth using `sessionStorage`.
 - **`useNfc`** — Detects NFC context from URL query params (`?source=nfc&event=EventName`).
 - **`useTheme`** — Light/dark/system theme with `localStorage` persistence and FOUC prevention via inline head script.
 
 ### Data Flow
 
-1. User visits `/` (optionally via NFC tag with `?source=nfc&event=...`)
+1. User visits `/t/[uuid]/g/[gbUuid]` (optionally via NFC tag with `?source=nfc&event=...`)
 2. Multi-step wizard (`app/components/form/FormWizard.vue`) collects name, photo, answers, message
-3. On submit → `useGuests.createEntry()` → `POST /api/entries`
-4. Server saves entry JSON + photo file to `.data/`
-5. Guestbook page (`/guestbook`) displays all entries via `GuestCard` components
+3. On submit → `useTenantGuests.createEntry()` → `POST /api/t/[uuid]/g/[gbUuid]/entries`
+4. Server saves entry to database + photo file to `.data/photos/[guestbookId]/`
+5. Guestbook page (`/t/[uuid]/g/[gbUuid]/guestbook`) displays approved entries via `GuestCard` components
 
 ### Pages
 
-- `/` — Guest submission form (multi-step wizard)
-- `/guestbook` — View all entries
-- `/admin/login` — Admin password entry
-- `/admin` — Admin dashboard (entry management)
+- `/` — Marketing landing page (hero, features, how it works)
+- `/login` — Owner login
+- `/register` — Owner registration
+- `/dashboard` — Redirect to user's tenant admin (`/t/[uuid]/admin`), or create-tenant flow
+- `/t/[uuid]` — Tenant root — redirects to first guestbook
+- `/t/[uuid]/admin` — Tenant admin (guestbook list, members)
+- `/t/[uuid]/g/[gbUuid]` — Guestbook guest form (multi-step wizard)
+- `/t/[uuid]/g/[gbUuid]/guestbook` — Guestbook entries view
+- `/t/[uuid]/g/[gbUuid]/slideshow` — Guestbook slideshow
+- `/t/[uuid]/g/[gbUuid]/admin` — Guestbook admin (entry moderation)
+- `/t/[uuid]/g/[gbUuid]/admin/qr` — Guestbook QR code generator
+- `/admin/login` — Legacy admin login
+- `/admin` — Legacy admin dashboard
 
 ### Theme System (3-Layer Initialization)
 
@@ -134,3 +195,23 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 - Ensure accessibility (a11y) best practices are followed in all UI components
 - Write unit tests for critical logic in composables and utilities
 - Document API routes with JSDoc comments describing request/response formats
+
+# Project rules for Claude Code when working on the Tap & Tell repository.
+You MUST read the following files before doing any work:
+- CLAUDE.md
+- PRD.md
+- PROMPT.md
+- PROJECT_MEMORY.md
+- plans/*.md
+
+Treat them as authoritative.
+Do not contradict them.
+Ask before acting if something is unclear.
+
+Failure to comply with these rules will result in immediate termination of your access to the repository.
+
+# Important
+- Always follow the instructions in CLAUDE.md and PRD.md.
+- Do not make any changes that contradict the plans in the plans/ directory.
+- If something is not specified in the plans, ask for clarification before proceeding.
+- If new stuff is added/changed update PRD.md and CLAUDE.md and any relevant plan files accordingly.

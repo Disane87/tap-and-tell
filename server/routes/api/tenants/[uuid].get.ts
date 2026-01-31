@@ -1,11 +1,12 @@
-import { sql } from 'drizzle-orm'
-import { eq } from 'drizzle-orm'
+import { sql, eq } from 'drizzle-orm'
 import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
+import { canPerformAction, getUserTenantRole } from '~~/server/utils/tenant'
 
 /**
  * GET /api/tenants/:uuid
- * Returns tenant details for the authenticated owner.
+ * Returns tenant details for authenticated members (owner or co_owner).
+ * Includes guestbook count.
  */
 export default defineEventHandler((event) => {
   const user = event.context.user
@@ -18,15 +19,18 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
+  if (!canPerformAction(uuid, user.id, 'read')) {
+    throw createError({ statusCode: 403, message: 'Forbidden' })
+  }
+
   const db = useDb()
   const tenant = db.select({
     id: tenants.id,
     name: tenants.name,
     ownerId: tenants.ownerId,
-    settings: tenants.settings,
     createdAt: tenants.createdAt,
     updatedAt: tenants.updatedAt,
-    entryCount: sql<number>`(SELECT COUNT(*) FROM entries WHERE entries.tenant_id = ${tenants.id})`
+    guestbookCount: sql<number>`(SELECT COUNT(*) FROM guestbooks WHERE guestbooks.tenant_id = ${tenants.id})`
   })
     .from(tenants)
     .where(eq(tenants.id, uuid))
@@ -36,12 +40,10 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 404, message: 'Tenant not found' })
   }
 
-  if (tenant.ownerId !== user.id) {
-    throw createError({ statusCode: 403, message: 'Forbidden' })
-  }
+  const role = getUserTenantRole(uuid, user.id)
 
   return {
     success: true,
-    data: tenant
+    data: { ...tenant, role }
   }
 })

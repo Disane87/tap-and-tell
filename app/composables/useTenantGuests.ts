@@ -1,30 +1,32 @@
 import type { GuestEntry, CreateGuestEntryInput, GuestEntriesResponse, GuestEntryResponse } from '~/types/guest'
 
 /**
- * Composable for tenant-scoped guest entry CRUD operations.
+ * Composable for guestbook-scoped guest entry CRUD operations.
  *
- * Calls /api/t/[uuid]/entries for public guest-facing operations.
+ * Calls /api/t/[uuid]/g/[gbUuid]/entries for public guest-facing operations.
  * Each call creates fresh state — no module-level sharing needed
- * since each tenant page is independent.
+ * since each guestbook page is independent.
  *
  * @param tenantId - The tenant UUID.
+ * @param guestbookId - The guestbook UUID.
  * @returns Reactive entries array and CRUD methods.
  */
-export function useTenantGuests(tenantId: Ref<string> | string) {
-  const id = isRef(tenantId) ? tenantId : ref(tenantId)
+export function useTenantGuests(tenantId: Ref<string> | string, guestbookId: Ref<string> | string) {
+  const tId = isRef(tenantId) ? tenantId : ref(tenantId)
+  const gbId = isRef(guestbookId) ? guestbookId : ref(guestbookId)
   const entries = ref<GuestEntry[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
 
   /**
-   * Fetches approved entries for the tenant's public guestbook.
+   * Fetches approved entries for the guestbook's public view.
    */
   async function fetchEntries(): Promise<void> {
     loading.value = true
     error.value = null
 
     try {
-      const response = await $fetch<GuestEntriesResponse>(`/api/t/${id.value}/entries`)
+      const response = await $fetch<GuestEntriesResponse>(`/api/t/${tId.value}/g/${gbId.value}/entries`)
       if (response.success && response.data) {
         entries.value = response.data
       } else {
@@ -38,7 +40,7 @@ export function useTenantGuests(tenantId: Ref<string> | string) {
   }
 
   /**
-   * Creates a new guest entry for the tenant.
+   * Creates a new guest entry for the guestbook.
    *
    * @param input - Entry data.
    * @returns The created entry or null on failure.
@@ -48,7 +50,7 @@ export function useTenantGuests(tenantId: Ref<string> | string) {
     error.value = null
 
     try {
-      const response = await $fetch<GuestEntryResponse>(`/api/t/${id.value}/entries`, {
+      const response = await $fetch<GuestEntryResponse>(`/api/t/${tId.value}/g/${gbId.value}/entries`, {
         method: 'POST',
         body: input
       })

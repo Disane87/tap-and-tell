@@ -1,9 +1,9 @@
 import type { EntryStatus } from '~~/server/types/guest'
 
 /**
- * PATCH /api/tenants/:uuid/entries/:id
+ * PATCH /api/tenants/:uuid/guestbooks/:gbUuid/entries/:id
  * Updates the moderation status of an entry.
- * Requires authentication and tenant ownership.
+ * Requires authentication and moderate permission.
  */
 export default defineEventHandler(async (event) => {
   const user = event.context.user
@@ -12,14 +12,20 @@ export default defineEventHandler(async (event) => {
   }
 
   const uuid = getRouterParam(event, 'uuid')
+  const gbUuid = getRouterParam(event, 'gbUuid')
   const id = getRouterParam(event, 'id')
 
-  if (!uuid || !id) {
-    throw createError({ statusCode: 400, message: 'Tenant ID and entry ID are required' })
+  if (!uuid || !gbUuid || !id) {
+    throw createError({ statusCode: 400, message: 'Tenant ID, Guestbook ID, and entry ID are required' })
   }
 
-  if (!verifyTenantOwnership(uuid, user.id)) {
+  if (!canPerformAction(uuid, user.id, 'moderate')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
+  }
+
+  const guestbook = getGuestbookById(gbUuid)
+  if (!guestbook || guestbook.tenantId !== uuid) {
+    throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
 
   const body = await readBody<{ status: EntryStatus; rejectionReason?: string }>(event)
