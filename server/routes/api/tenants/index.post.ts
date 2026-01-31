@@ -1,11 +1,12 @@
-import { randomUUID } from 'crypto'
 import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
 import type { CreateTenantInput } from '~~/server/types/tenant'
+import { addTenantMember } from '~~/server/utils/tenant'
 
 /**
  * POST /api/tenants
- * Creates a new tenant (guestbook) for the authenticated user.
+ * Creates a new tenant for the authenticated user.
+ * Automatically adds the creator as owner in tenant_members.
  */
 export default defineEventHandler(async (event) => {
   const user = event.context.user
@@ -24,17 +25,19 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = useDb()
-  const id = randomUUID()
+  const id = generateId()
   const now = new Date().toISOString()
 
   db.insert(tenants).values({
     id,
     name: body.name.trim(),
     ownerId: user.id,
-    settings: body.settings || {},
     createdAt: now,
     updatedAt: now
   }).run()
+
+  // Add creator as owner member
+  addTenantMember(id, user.id, 'owner')
 
   return {
     success: true,
@@ -42,7 +45,6 @@ export default defineEventHandler(async (event) => {
       id,
       name: body.name.trim(),
       ownerId: user.id,
-      settings: body.settings || {},
       createdAt: now,
       updatedAt: now
     }

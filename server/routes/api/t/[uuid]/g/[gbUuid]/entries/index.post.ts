@@ -1,18 +1,19 @@
 import type { CreateGuestEntryInput } from '~~/server/types/guest'
 
 /**
- * POST /api/t/:uuid/entries
- * Creates a new entry for a tenant's guestbook.
+ * POST /api/t/:uuid/g/:gbUuid/entries
+ * Creates a new entry for a guestbook.
  * No authentication required (guest submission).
  */
 export default defineEventHandler(async (event) => {
   const uuid = getRouterParam(event, 'uuid')
-  if (!uuid) {
-    throw createError({ statusCode: 400, message: 'Tenant ID is required' })
+  const gbUuid = getRouterParam(event, 'gbUuid')
+  if (!uuid || !gbUuid) {
+    throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  const tenant = getTenantById(uuid)
-  if (!tenant) {
+  const guestbook = getGuestbookById(gbUuid)
+  if (!guestbook || guestbook.tenantId !== uuid) {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
 
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const entry = createEntry(
-    uuid,
+    gbUuid,
     body.name.trim(),
     body.message.trim(),
     body.photo,

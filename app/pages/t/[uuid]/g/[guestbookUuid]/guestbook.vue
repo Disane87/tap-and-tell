@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Tenant-scoped guestbook page displaying approved entries in a grid.
+ * Guestbook-scoped page displaying approved entries in a grid.
  */
 import { Search, X, ArrowUpDown, Play, Download, Loader2 } from 'lucide-vue-next'
 import type { GuestEntry } from '~/types/guest'
@@ -8,8 +8,9 @@ import type { GuestEntry } from '~/types/guest'
 const { locale } = useI18n()
 const route = useRoute()
 const tenantId = computed(() => route.params.uuid as string)
+const guestbookId = computed(() => route.params.guestbookUuid as string)
 
-const { entries, loading, fetchEntries } = useTenantGuests(tenantId)
+const { entries, loading, fetchEntries } = useTenantGuests(tenantId, guestbookId)
 const { searchQuery, sortOrder, filterEntries, clearFilters, hasActiveFilters } = useEntryFilters()
 const { generatePdf, isGenerating } = usePdfExport()
 
@@ -102,7 +103,7 @@ onMounted(() => {
           {{ $t('guestbook.exportPdf') }}
         </Button>
 
-        <NuxtLink :to="`/t/${tenantId}/slideshow`">
+        <NuxtLink :to="`/t/${tenantId}/g/${guestbookId}/slideshow`">
           <Button variant="outline" size="sm" class="flex items-center gap-2">
             <Play class="h-4 w-4" />
             {{ $t('nav.slideshow') }}
@@ -119,7 +120,7 @@ onMounted(() => {
     <!-- Empty state -->
     <div v-else-if="entries.length === 0" class="py-12 text-center">
       <p class="text-muted-foreground">{{ $t('guestbook.empty') }}</p>
-      <NuxtLink :to="`/t/${tenantId}`">
+      <NuxtLink :to="`/t/${tenantId}/g/${guestbookId}`">
         <Button class="mt-4">{{ $t('guestbook.createFirst') }}</Button>
       </NuxtLink>
     </div>

@@ -18,7 +18,255 @@
     "title": "Tap & Tell",
     "subtitle": "Hinterlasse eine Nachricht und erzähl uns etwas über dich.",
     "cta": "Reinschreiben",
-    "viewAll": "Alle Einträge ansehen"
+    "viewAll": "Alle Einträge ansehen",
+    "hero": {
+      "badge": "Digitales Gästebuch",
+      "title": "Tap & Tell",
+      "subtitle": "Manche Momente verdienen mehr als ein Foto. Halte die Worte fest, das Lachen, die Geschichten — bevor sie verblassen.",
+      "cta": "Jetzt starten",
+      "login": "Anmelden"
+    },
+    "problem": {
+      "badge": "Das Problem",
+      "title": "Erinnerungen verblassen schneller, als du denkst",
+      "subtitle": "Wir machen hunderte Fotos — aber wer erinnert sich an die Geschichten dahinter?",
+      "point1": {
+        "title": "Verloren im Scrollen",
+        "description": "Deine schönsten Momente sind unter tausenden Fotos begraben, die du nie wieder anschaust."
+      },
+      "point2": {
+        "title": "Worte verschwinden",
+        "description": "Die Rede deines besten Freundes. Der Witz deines Onkels. Die handgeschriebene Karte — weg."
+      },
+      "point3": {
+        "title": "Digitales Rauschen",
+        "description": "Gruppenchats werden archiviert. Stories verschwinden nach 24 Stunden. Echte Emotionen gehen in Benachrichtigungen unter."
+      },
+      "stat1": { "number": "2.500+", "label": "Fotos werden bei einer durchschnittlichen Hochzeit gemacht" },
+      "stat2": { "number": "87%", "label": "der Menschen vergessen Event-Details innerhalb eines Jahres" },
+      "stat3": { "number": "0", "label": "dieser Fotos fangen ein, wie sich jemand gefühlt hat" }
+    },
+    "solution": {
+      "badge": "Die Lösung",
+      "title": "Ein Tap. Echte Worte. Für immer.",
+      "subtitle": "Tap & Tell gibt deinen Gästen eine Stimme — nicht nur eine Pose. Jeder Eintrag ist ein echter Moment, festgehalten in ihren eigenen Worten.",
+      "point1": {
+        "icon": "heart",
+        "title": "Authentisch, nicht inszeniert",
+        "description": "Keine Filter, keine Posen. Nur ehrliche Worte von den Menschen, die dir am wichtigsten sind."
+      },
+      "point2": {
+        "icon": "book-open",
+        "title": "Ein Buch, das du wirklich öffnest",
+        "description": "Anders als ein Fotoalbum erzählt ein Gästebuch, wer da war und was sie empfunden haben."
+      },
+      "point3": {
+        "icon": "infinity",
+        "title": "Für immer bewahrt",
+        "description": "Exportiere als PDF, behalte es digital oder drucke es aus. Deine Erinnerungen, auf deine Art — für Generationen."
+      },
+      "cta": "Beginne, Erinnerungen zu bewahren"
+    },
+    "useCases": {
+      "badge": "Für deine Momente",
+      "title": "Für jedes Kapitel des Lebens",
+      "subtitle": "Von einmaligen Feiern bis zu alltäglichen Zusammenkünften — jeder Moment hat eine Geschichte, die es wert ist, bewahrt zu werden.",
+      "disclaimer": "Fiktives Beispiel — nur zur Veranschaulichung.",
+      "wedding": {
+        "emoji": "💒",
+        "title": "Hochzeiten",
+        "eventName": "Lisa & Marcos Hochzeit",
+        "description": "Deine Gäste sind weit gereist, um mit euch zu feiern. Lass sie Worte hinterlassen, die ihr an jedem Jahrestag lest.",
+        "entry1": { "message": "Ich erinnere mich noch, wie ihr euch an der verregneten Bushaltestelle kennengelernt habt. Heute war pure Magie. Auf ein Leben voller Abenteuer!", "song": "Thinking Out Loud — Ed Sheeran", "memory": "Der Eröffnungstanz hat alle zum Weinen gebracht." },
+        "entry2": { "message": "Von der WG bis zum Traualtar — was für eine Reise. Ich hab euch beide unendlich lieb.", "food": "Die Lasagne deiner Mama", "memory": "Roadtrip zum Comer See, Sommer 2019." }
+      },
+      "birthday": {
+        "emoji": "🎂",
+        "title": "Geburtstage",
+        "eventName": "Emmas 30. Geburtstag",
+        "description": "Die Kerzen erlöschen, der Kuchen ist gegessen — aber die Geburtstagswünsche bleiben für immer.",
+        "entry1": { "message": "30 steht dir unglaublich gut! Kaum zu glauben, dass es schon 10 Jahre her ist seit dem schrecklichen Kochkurs.", "superpower": "Alle zum Lachen bringen", "memory": "Karaoke-Abend — du hast Bohemian Rhapsody solo gesungen." },
+        "entry2": { "message": "Happy 30th! Du inspirierst mich jeden Tag mit deiner Energie und Herzlichkeit. Das nächste Jahrzehnt gehört dir!", "food": "Schokoladen-Lava-Kuchen", "memory": "Der Überraschungs-Brunch letztes Jahr." }
+      },
+      "housewarming": {
+        "emoji": "🏡",
+        "title": "Einweihungsfeier",
+        "eventName": "Bei den Kleins",
+        "description": "Dein neues Zuhause verdient ein erstes Kapitel. Lass deine ersten Gäste die Eröffnungszeilen schreiben.",
+        "entry1": { "message": "Hier fühlt man sich sofort zuhause. Ich freu mich schon auf Filmabende auf dem riesigen Sofa!", "superpower": "Einrichtungs-Gespür", "memory": "Um 2 Uhr nachts die Küche gestrichen." },
+        "entry2": { "message": "Vom winzigen Studio hierher — ihr habt so viel erreicht. Der Garten wird im Frühling der Hammer.", "food": "Dein selbstgemachtes Sauerteigbrot", "memory": "Der epische Möbelaufbau-Marathon." }
+      },
+      "farewell": {
+        "emoji": "✈️",
+        "title": "Abschiede & Ruhestand",
+        "eventName": "Davids Abschiedsfeier",
+        "description": "Wenn jemand geht, bedeuten Worte mehr als Geschenke. Gib ihnen etwas, das sie für immer bei sich tragen können.",
+        "entry1": { "message": "15 Jahre Kaffeepausen, Deadline-Panik und Freitags-Bier. Das Büro wird nicht mehr dasselbe sein. Geh die Welt verändern!", "superpower": "Jeden Bug um 17 Uhr am Freitag fixen", "memory": "Der Serverraum-Vorfall von 2019." },
+        "entry2": { "message": "Du hast mir alles beigebracht, was ich über diesen Job weiß. Und vor allem: nie das Mittagessen ausfallen lassen. Danke.", "food": "Kantine-Pizza freitags", "memory": "Deine legendären Präsentations-Rettungen." }
+      }
+    },
+    "memories": {
+      "badge": "Warum es wichtig ist",
+      "title": "In einer Welt voller flüchtiger Inhalte: Sei beständig",
+      "subtitle": "Wir leben in einer Zeit, in der alles verschwindet — Stories, Posts, Nachrichten. Aber die Menschen in deinem Leben verdienen mehr als eine ablaufende Story.",
+      "paragraph1": "Denk an die letzte Feier, auf der du warst. Du hast Fotos gemacht. Vielleicht ein Selfie. Aber erinnerst du dich, was dir jemand gesagt hat? An das Gefühl im Raum? Den Insider-Witz, über den alle gelacht haben?",
+      "paragraph2": "Tap & Tell existiert, weil manche Dinge mehr wert sind als ein Like. Ein Gästebuch-Eintrag ist roh, persönlich und echt. Es ist der Unterschied zwischen einem Schnappschuss und einem Liebesbrief.",
+      "paragraph3": "In ein paar Jahren wirst du nicht durch 10.000 Fotos scrollen. Aber du wirst ein Gästebuch öffnen und die Worte von jemandem lesen, der sich die Mühe gemacht hat, sie aufzuschreiben.",
+      "cta": "Gib deinen Momenten eine Stimme"
+    },
+    "features": {
+      "badge": "Funktionen",
+      "title": "Alles, was du brauchst",
+      "subtitle": "Ein modernes Gästebuch-Erlebnis mit starken Funktionen.",
+      "cta": "Erlebe es selbst",
+      "nfc": {
+        "title": "NFC-fähig",
+        "description": "Gäste halten einfach ihr Handy an einen NFC-Tag, um loszuschreiben."
+      },
+      "photo": {
+        "title": "Foto-Upload",
+        "description": "Halte den Moment fest mit Kamera- oder Galerie-Fotos."
+      },
+      "wizard": {
+        "title": "Geführter Assistent",
+        "description": "Ein freundliches Schritt-für-Schritt-Formular macht das Eintragen einfach."
+      },
+      "moderation": {
+        "title": "Moderation",
+        "description": "Prüfe und genehmige Einträge, bevor sie veröffentlicht werden."
+      },
+      "slideshow": {
+        "title": "Diashow",
+        "description": "Zeige Einträge in einer schönen Vollbild-Diashow an."
+      },
+      "pdf": {
+        "title": "PDF-Export",
+        "description": "Lade dein Gästebuch als gestaltetes PDF-Andenken herunter."
+      },
+      "qr": {
+        "title": "QR-Codes",
+        "description": "Erstelle QR-Codes für Gäste ohne NFC."
+      },
+      "theme": {
+        "title": "Dark & Light Mode",
+        "description": "Sieht bei jedem Licht gut aus – mit automatischer Theme-Unterstützung."
+      }
+    },
+    "howItWorks": {
+      "badge": "Einfaches Setup",
+      "title": "So funktioniert's",
+      "subtitle": "In drei einfachen Schritten startklar.",
+      "cta": "Kostenlos testen",
+      "stepLabel": "Schritt {number}",
+      "create": {
+        "title": "Gästebuch erstellen",
+        "description": "Registriere dich und erstelle dein erstes Gästebuch in Sekunden."
+      },
+      "share": {
+        "title": "Link teilen",
+        "description": "Teile per NFC-Tag, QR-Code oder einfachem Link."
+      },
+      "entries": {
+        "title": "Einträge sammeln",
+        "description": "Gäste hinterlassen Nachrichten, Fotos und Fun Facts."
+      }
+    },
+    "pricing": {
+      "badge": "Preise",
+      "title": "Einfach & Transparent",
+      "subtitle": "Starte kostenlos. Upgrade, wenn du mehr brauchst.",
+      "monthly": "Monatlich",
+      "yearly": "Jährlich",
+      "yearlyDiscount": "20% sparen",
+      "perMonth": "/Mo",
+      "perYear": "/Jahr",
+      "free": {
+        "name": "Free",
+        "price": "0",
+        "description": "Perfekt zum Ausprobieren.",
+        "cta": "Jetzt starten",
+        "features": ["1 Gästebuch", "Bis zu 50 Einträge", "Basis-Anpassung", "Community Support", "Powered by Tap & Tell Branding"]
+      },
+      "home": {
+        "name": "Home",
+        "price": "5",
+        "priceYearly": "48",
+        "description": "Für dein Zuhause oder ein einzelnes Event.",
+        "cta": "Kostenlos testen",
+        "popular": "Beliebteste Wahl",
+        "features": ["1 Gästebuch", "Unbegrenzte Einträge", "Volle Anpassung", "Eintrags-Moderation", "PDF-Export", "Kein Branding", "E-Mail Support"]
+      },
+      "family": {
+        "name": "Family",
+        "price": "12",
+        "priceYearly": "99",
+        "description": "Mehrere Events & erweiterte Funktionen.",
+        "cta": "Kostenlos testen",
+        "features": ["Bis zu 5 Gästebücher", "Alles aus Home", "Priority Support", "Analytics Dashboard", "Eigene Domain"]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": "Individuell",
+        "description": "Für Veranstaltungsorte & Unternehmen.",
+        "cta": "Kontaktiere uns",
+        "features": ["Unbegrenzte Gästebücher", "SSO / SAML", "API-Zugang", "Dedizierter Support", "SLA-Garantie", "White-Label Option"]
+      }
+    },
+    "nfcShop": {
+      "badge": "NFC Tags",
+      "title": "Wunderschöne NFC Tags, sofort einsatzbereit",
+      "subtitle": "3D-gedruckte NFC-Tag-Halter in jeder Wunschfarbe. Vorprogrammiert und bereit für dein Gästebuch.",
+      "colorChoice": "Wähle deine Farbe",
+      "colorHint": "Sonderfarben möglich — nenne uns einfach deinen RAL- oder Hex-Code.",
+      "preProgrammed": "Vorprogrammiert mit deinem Gästebuch-Link",
+      "durable": "Langlebiges 3D-gedrucktes Gehäuse",
+      "easySetup": "Kleben oder Stellen — passt überall",
+      "cta": "NFC Tags bestellen",
+      "startingAt": "Ab",
+      "perTag": "/ Tag",
+      "colors": {
+        "black": "Schwarz",
+        "white": "Weiß",
+        "mint": "Mint",
+        "coral": "Koralle",
+        "custom": "Wunschfarbe"
+      }
+    },
+    "openSource": {
+      "badge": "Open Source",
+      "title": "Frei & Open Source",
+      "subtitle": "Tap & Tell ist vollständig Open Source. Schau dir den Code an, trage bei oder hoste es auf deinem eigenen Server.",
+      "github": "Auf GitHub ansehen",
+      "docker": {
+        "title": "Self-Hosting mit Docker",
+        "description": "Betreibe Tap & Tell auf deinem eigenen Server mit einem einzigen docker-compose Befehl. Volle Kontrolle, volle Privatsphäre.",
+        "step1": "Repository klonen",
+        "step2": "Umgebung konfigurieren",
+        "step3": "Mit Docker Compose starten"
+      },
+      "license": "MIT Lizenz",
+      "contributors": "Community-getriebene Entwicklung"
+    },
+    "cta": {
+      "title": "Bereit, dein Gästebuch zu erstellen?",
+      "subtitle": "Fang heute an, Erinnerungen deiner Gäste zu sammeln — kostenlos."
+    },
+    "footer": {
+      "copyright": "\u00a9 {year} Tap & Tell. Alle Rechte vorbehalten.",
+      "product": "Produkt",
+      "resources": "Ressourcen",
+      "legal": "Rechtliches",
+      "features": "Funktionen",
+      "pricing": "Preise",
+      "nfcTags": "NFC Tags",
+      "docs": "Dokumentation",
+      "github": "GitHub",
+      "docker": "Docker",
+      "privacy": "Datenschutz",
+      "terms": "AGB",
+      "imprint": "Impressum",
+      "madeWith": "Gemacht mit Liebe und NFC."
+    }
   },
   "form": {
     "addEntry": "Eintrag hinzufügen",
@@ -165,6 +413,7 @@
     "home": "Start",
     "guestbook": "Gästebuch",
     "admin": "Admin",
+    "dashboard": "Dashboard",
     "slideshow": "Diashow",
     "previous": "Zurück",
     "next": "Weiter",
@@ -228,6 +477,61 @@
     "viewGuestbook": "Ansehen",
     "manage": "Verwalten",
     "deleteTenant": "Gästebuch löschen?",
+    "deleteConfirm": "Das Gästebuch und alle Einträge werden unwiderruflich gelöscht.",
+    "deleteSuccess": "Gästebuch gelöscht",
+    "deleteFailed": "Gästebuch konnte nicht gelöscht werden"
+  },
+  "members": {
+    "title": "Mitglieder",
+    "manage": "Mitglieder verwalten",
+    "inviteTitle": "Co-Owner einladen",
+    "emailPlaceholder": "E-Mail-Adresse",
+    "invite": "Einladen",
+    "inviteSuccess": "Einladung gesendet!",
+    "inviteFailed": "Einladung konnte nicht gesendet werden",
+    "inviteLinkHint": "Teile diesen Link mit der eingeladenen Person:",
+    "linkCopied": "Link kopiert!",
+    "copyFailed": "Link konnte nicht kopiert werden",
+    "removeSuccess": "Mitglied entfernt",
+    "removeFailed": "Mitglied konnte nicht entfernt werden",
+    "roles": {
+      "owner": "Besitzer",
+      "co_owner": "Co-Owner"
+    }
+  },
+  "invite": {
+    "title": "Einladung",
+    "noToken": "Kein Einladungs-Token angegeben.",
+    "notFound": "Einladung nicht gefunden.",
+    "expired": "Diese Einladung ist abgelaufen.",
+    "youAreInvited": "Du wurdest eingeladen, beizutreten",
+    "asRole": "als {role}",
+    "loginRequired": "Du musst dich anmelden, um diese Einladung anzunehmen.",
+    "accept": "Einladung annehmen",
+    "acceptSuccess": "Einladung angenommen!",
+    "acceptFailed": "Einladung konnte nicht angenommen werden",
+    "alreadyMember": "Du bist bereits Mitglied dieses Gästebuchs.",
+    "accepted": "Du bist dem Gästebuch beigetreten!",
+    "redirecting": "Weiterleitung zum Dashboard..."
+  },
+  "tenantAdmin": {
+    "title": "Tenant-Verwaltung"
+  },
+  "guestbookAdmin": {
+    "guestbook": "Gästebuch",
+    "guestbooks": "Gästebücher",
+    "create": "Neues Gästebuch",
+    "createTitle": "Gästebuch erstellen",
+    "createDescription": "Füge ein neues Gästebuch zu deinem Tenant hinzu.",
+    "createSuccess": "Gästebuch erstellt!",
+    "createFailed": "Gästebuch konnte nicht erstellt werden",
+    "name": "Name",
+    "namePlaceholder": "z.B. Hochzeitsfeier 2025",
+    "type": "Typ",
+    "typePermanent": "Permanent",
+    "typeEvent": "Event",
+    "empty": "Noch keine Gästebücher. Erstelle dein erstes!",
+    "deleteTitle": "Gästebuch löschen?",
     "deleteConfirm": "Das Gästebuch und alle Einträge werden unwiderruflich gelöscht.",
     "deleteSuccess": "Gästebuch gelöscht",
     "deleteFailed": "Gästebuch konnte nicht gelöscht werden"

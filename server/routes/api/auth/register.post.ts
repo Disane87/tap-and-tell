@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto'
 import { eq } from 'drizzle-orm'
 import { useDb } from '~~/server/database'
 import { users } from '~~/server/database/schema'
@@ -40,7 +39,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 409, message: 'Email already registered' })
   }
 
-  const id = randomUUID()
+  const id = generateId()
   const passwordHash = await hashPassword(body.password)
 
   db.insert(users).values({

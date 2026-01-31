@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto'
+import { nanoid } from 'nanoid'
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
 import Database from 'better-sqlite3'
@@ -58,8 +58,8 @@ export function seedFromLegacy(dbPath: string, dataDir: string): void {
   }
 
   // Create a default owner user
-  const defaultUserId = randomUUID()
-  const defaultTenantId = randomUUID()
+  const defaultUserId = nanoid(12)
+  const defaultTenantId = nanoid(12)
 
   const insertUser = db.prepare(
     'INSERT INTO users (id, email, password_hash, name) VALUES (?, ?, ?, ?)'
@@ -72,6 +72,12 @@ export function seedFromLegacy(dbPath: string, dataDir: string): void {
     'INSERT INTO tenants (id, name, owner_id) VALUES (?, ?, ?)'
   )
   insertTenant.run(defaultTenantId, 'Default Guestbook', defaultUserId)
+
+  // Create owner membership for default tenant
+  const insertMember = db.prepare(
+    'INSERT OR IGNORE INTO tenant_members (id, tenant_id, user_id, role) VALUES (?, ?, ?, ?)'
+  )
+  insertMember.run(nanoid(12), defaultTenantId, defaultUserId, 'owner')
 
   // Migrate entries
   const insertEntry = db.prepare(`
@@ -96,6 +102,22 @@ export function seedFromLegacy(dbPath: string, dataDir: string): void {
   })
 
   transaction()
+
+  // Backfill tenant_members for any tenants missing owner membership
+  const tenantsWithoutMembers = db.prepare(`
+    SELECT t.id, t.owner_id FROM tenants t
+    WHERE NOT EXISTS (
+      SELECT 1 FROM tenant_members tm WHERE tm.tenant_id = t.id AND tm.role = 'owner'
+    )
+  `).all() as Array<{ id: string; owner_id: string }>
+
+  const insertOwnerMember = db.prepare(
+    'INSERT OR IGNORE INTO tenant_members (id, tenant_id, user_id, role) VALUES (?, ?, ?, ?)'
+  )
+  for (const t of tenantsWithoutMembers) {
+    insertOwnerMember.run(nanoid(12), t.id, t.owner_id, 'owner')
+  }
+
   db.close()
 
   console.log(`Seeded ${legacyEntries.length} entries into default tenant ${defaultTenantId}`)

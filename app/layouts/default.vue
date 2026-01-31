@@ -8,7 +8,7 @@
  * - Main content slot
  * - Toast notifications via Sonner
  */
-import { BookOpen, Home, Settings, LayoutDashboard, LogIn } from 'lucide-vue-next'
+import { Home, Settings, LayoutDashboard, LogIn } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -18,8 +18,7 @@ const { isAuthenticated } = useAuth()
  * Navigation links.
  */
 const navLinks = computed(() => [
-  { to: '/', label: t('nav.home'), icon: Home },
-  { to: '/guestbook', label: t('nav.guestbook'), icon: BookOpen }
+  { to: '/', label: t('nav.home'), icon: Home }
 ])
 
 /**

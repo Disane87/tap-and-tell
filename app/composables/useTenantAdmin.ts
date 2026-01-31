@@ -1,25 +1,29 @@
 import type { EntryStatus, GuestEntry, GuestEntriesResponse } from '~/types/guest'
 
 /**
- * Composable for tenant-scoped admin operations.
+ * Composable for guestbook-scoped admin operations.
  *
- * Calls /api/tenants/[uuid]/entries for authenticated owner operations.
+ * Calls /api/tenants/[uuid]/guestbooks/[gbUuid]/entries for authenticated owner operations.
  * Uses cookie-based auth instead of Bearer tokens.
  *
  * @param tenantId - The tenant UUID.
+ * @param guestbookId - The guestbook UUID.
  * @returns Admin state and methods.
  */
-export function useTenantAdmin(tenantId: Ref<string> | string) {
-  const id = isRef(tenantId) ? tenantId : ref(tenantId)
+export function useTenantAdmin(tenantId: Ref<string> | string, guestbookId: Ref<string> | string) {
+  const tId = isRef(tenantId) ? tenantId : ref(tenantId)
+  const gbId = isRef(guestbookId) ? guestbookId : ref(guestbookId)
 
   /**
-   * Fetches all entries for a tenant (including pending/rejected).
+   * Fetches all entries for a guestbook (including pending/rejected).
    *
    * @returns Array of entries or null on failure.
    */
   async function fetchEntries(): Promise<GuestEntry[] | null> {
     try {
-      const response = await $fetch<GuestEntriesResponse>(`/api/tenants/${id.value}/entries`)
+      const response = await $fetch<GuestEntriesResponse>(
+        `/api/tenants/${tId.value}/guestbooks/${gbId.value}/entries`
+      )
       if (response.success && response.data) {
         return response.data
       }
@@ -37,7 +41,10 @@ export function useTenantAdmin(tenantId: Ref<string> | string) {
    */
   async function deleteEntry(entryId: string): Promise<boolean> {
     try {
-      await $fetch(`/api/tenants/${id.value}/entries/${entryId}`, { method: 'DELETE' })
+      await $fetch(
+        `/api/tenants/${tId.value}/guestbooks/${gbId.value}/entries/${entryId}`,
+        { method: 'DELETE' }
+      )
       return true
     } catch {
       return false
@@ -59,7 +66,7 @@ export function useTenantAdmin(tenantId: Ref<string> | string) {
   ): Promise<GuestEntry | null> {
     try {
       const response = await $fetch<{ success: boolean; data?: GuestEntry }>(
-        `/api/tenants/${id.value}/entries/${entryId}`,
+        `/api/tenants/${tId.value}/guestbooks/${gbId.value}/entries/${entryId}`,
         {
           method: 'PATCH',
           body: { status, rejectionReason }
@@ -84,7 +91,7 @@ export function useTenantAdmin(tenantId: Ref<string> | string) {
   async function bulkUpdateStatus(ids: string[], status: EntryStatus): Promise<number> {
     try {
       const response = await $fetch<{ success: boolean; data?: { updated: number } }>(
-        `/api/tenants/${id.value}/entries/bulk`,
+        `/api/tenants/${tId.value}/guestbooks/${gbId.value}/entries/bulk`,
         {
           method: 'POST',
           body: { ids, status }

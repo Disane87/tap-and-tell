@@ -1,23 +1,20 @@
 /**
- * Tenant settings configurable by the owner.
+ * Role a user can have within a tenant.
  */
-export interface TenantSettings {
-  moderationEnabled?: boolean
-  welcomeMessage?: string
-  themeColor?: string
-}
+export type TenantRole = 'owner' | 'co_owner'
 
 /**
- * Tenant object representing a guestbook instance.
+ * Tenant object representing an organizational unit.
+ * Settings have moved to guestbook level.
  */
 export interface Tenant {
   id: string
   name: string
   ownerId: string
-  settings: TenantSettings
   createdAt: string
   updatedAt: string
-  entryCount?: number
+  guestbookCount?: number
+  role?: TenantRole
 }
 
 /**
@@ -25,7 +22,6 @@ export interface Tenant {
  */
 export interface CreateTenantInput {
   name: string
-  settings?: TenantSettings
 }
 
 /**
@@ -33,5 +29,37 @@ export interface CreateTenantInput {
  */
 export interface UpdateTenantInput {
   name?: string
-  settings?: TenantSettings
+}
+
+/**
+ * A tenant member with user details for display.
+ */
+export interface TenantMemberWithUser {
+  id: string
+  tenantId: string
+  userId: string
+  role: TenantRole
+  invitedBy: string | null
+  createdAt: string
+  user: {
+    id: string
+    email: string
+    name: string
+  }
+}
+
+/**
+ * A pending invitation to join a tenant.
+ */
+export interface TenantInvite {
+  id: string
+  tenantId: string
+  email: string
+  role: TenantRole
+  invitedBy: string
+  token: string
+  expiresAt: string
+  acceptedAt: string | null
+  createdAt: string
+  tenantName?: string
 }

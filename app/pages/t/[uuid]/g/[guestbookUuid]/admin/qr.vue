@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Tenant-scoped QR Code Generator page.
+ * Guestbook-scoped QR Code Generator page.
  */
 import QRCode from 'qrcode'
 import { Download, Copy, Check, RefreshCw } from 'lucide-vue-next'
@@ -9,6 +9,7 @@ import { toast } from 'vue-sonner'
 const { t } = useI18n()
 const route = useRoute()
 const tenantId = computed(() => route.params.uuid as string)
+const guestbookId = computed(() => route.params.guestbookUuid as string)
 
 const eventName = ref('')
 const qrDataUrl = ref('')
@@ -18,7 +19,7 @@ const generating = ref(false)
 
 const baseUrl = computed(() => {
   if (typeof window !== 'undefined') {
-    return `${window.location.origin}/t/${tenantId.value}`
+    return `${window.location.origin}/t/${tenantId.value}/g/${guestbookId.value}`
   }
   return ''
 })
@@ -137,7 +138,7 @@ watch(fullUrl, () => { generateQrCode() }, { immediate: true })
     </Card>
 
     <div class="mt-6">
-      <NuxtLink :to="`/t/${tenantId}/admin`" class="text-sm text-muted-foreground hover:text-foreground">
+      <NuxtLink :to="`/t/${tenantId}/g/${guestbookId}/admin`" class="text-sm text-muted-foreground hover:text-foreground">
         ← {{ $t('admin.qr.backToAdmin') }}
       </NuxtLink>
     </div>

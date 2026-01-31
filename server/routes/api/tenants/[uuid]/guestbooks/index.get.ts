@@ -1,7 +1,7 @@
 /**
- * GET /api/tenants/:uuid/entries
- * Returns all entries for a tenant (including pending/rejected).
- * Requires authentication and tenant ownership.
+ * GET /api/tenants/:uuid/guestbooks
+ * Lists all guestbooks for a tenant with entry counts.
+ * Requires authentication and tenant membership.
  */
 export default defineEventHandler((event) => {
   const user = event.context.user
@@ -14,14 +14,14 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
-  if (!verifyTenantOwnership(uuid, user.id)) {
+  if (!canPerformAction(uuid, user.id, 'read')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const tenantEntries = readEntries(uuid)
+  const guestbookList = getGuestbooksByTenant(uuid)
 
   return {
     success: true,
-    data: tenantEntries
+    data: guestbookList
   }
 })

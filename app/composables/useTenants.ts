@@ -11,7 +11,7 @@ const error = ref<string | null>(null)
 /**
  * Composable for tenant CRUD operations.
  *
- * Provides reactive state and methods for managing tenants (guestbooks).
+ * Provides reactive state and methods for managing tenants.
  * State is shared across all components via module-level refs.
  *
  * @returns Reactive tenants array and CRUD methods.

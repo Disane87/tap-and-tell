@@ -1,10 +1,16 @@
 import tailwindcss from '@tailwindcss/vite'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: false,
+
+  devServer: {
+    host: '192.168.1.116',
+    https: true
+  },
 
   modules: [
     'shadcn-nuxt',
@@ -100,7 +106,8 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [
-      tailwindcss()
+      tailwindcss(),
+      basicSsl()
     ]
   },
 
