@@ -8,12 +8,25 @@ Tap & Tell is an NFC-enabled digital guestbook application built with Nuxt 3. Gu
 
 ## Tech Stack
 
-- **Framework**: Nuxt 4.3 with SSR disabled (client-side SPA)
-- **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite` plugin)
-- **Components**: shadcn-vue (headless UI, installed under `app/components/ui/`)
-- **Language**: TypeScript
-- **Package Manager**: pnpm
-- **Deployment**: Vercel
+| Layer | Technology |
+|---|---|
+| Framework | Nuxt 4.3 (SSR disabled, client-side SPA) |
+| Language | TypeScript |
+| UI Components | shadcn-vue / Radix Vue / Reka UI (under `app/components/ui/`) |
+| Styling | Tailwind CSS v4 (via `@tailwindcss/vite`) |
+| Icons | Iconify (`@iconify/vue`) / Lucide (`lucide-vue-next`) |
+| Database (local) | SQLite via better-sqlite3 |
+| Database (prod) | Turso (LibSQL) |
+| ORM | Drizzle ORM |
+| Auth | JWT via jose (HTTP-only cookies) |
+| i18n | @nuxtjs/i18n v10 |
+| PWA | @vite-pwa/nuxt |
+| PDF | jsPDF |
+| QR Codes | qrcode |
+| Notifications | vue-sonner |
+| Utilities | @vueuse/core |
+| Package Manager | pnpm |
+| Deployment | Vercel (primary), Docker (self-hosted) |
 
 ## Development Commands
 
@@ -147,11 +160,18 @@ Tenant (name, plan, members)
 
 ### Environment Variables
 
-```
-ADMIN_PASSWORD=...   # Admin login password (defaults to 'admin123' — change in prod)
-TOKEN_SECRET=...     # HMAC signing secret (defaults to 'tap-and-tell-secret' — change in prod)
-DATA_DIR=.data       # Storage directory path
-```
+| Variable | Purpose | Default |
+|---|---|---|
+| `DATABASE_URL` | SQLite file path | `file:.data/data.db` |
+| `TURSO_DATABASE_URL` | Turso production URL | – |
+| `TURSO_AUTH_TOKEN` | Turso auth token | – |
+| `JWT_SECRET` | Owner auth JWT signing secret | insecure default |
+| `ADMIN_PASSWORD` | Legacy admin password | `admin123` |
+| `TOKEN_SECRET` | Legacy token signing secret | `tap-and-tell-secret` |
+| `DATA_DIR` | Photo storage directory | `.data` |
+| `NODE_ENV` | Environment mode | `development` |
+
+> All secret defaults must be overridden in production.
 
 ## Implementation Plans
 
@@ -177,15 +197,16 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 
 ### Workflow
 - **Present a plan before major changes** — for non-trivial features or refactors, outline the approach before implementing
-- **Write tests proactively** — add unit tests for new composables, utilities, and critical logic without being asked
+- **Write tests proactively** — add unit/integration/e2e tests for new composables, utilities, and critical logic without being asked. Run tests and ensure they pass
 - **Verify builds after changes** — run `pnpm build` after completing work to ensure no regressions
+- **Plan execution order** — start with `plans/00_overview.md` and follow sequentially. Do not advance to the next plan until the current one is build-safe and the plan file has been updated
+- **JSDoc is a blocker** — if documentation is missing or outdated, fix it before proceeding
 
 ## Process Rules
 
 - Read `PROJECT_MEMORY.md` before implementing changes — it contains known issues and hard constraints
 - Verify the project builds (`pnpm build`) before marking any step complete
 - Update relevant markdown plans/docs before implementing architectural changes
-- JSDoc is required on all functions, composables, utilities, and server handlers — describe intention, inputs, outputs, and side effects
 - Load external fonts via `<link>` tags, not CSS `@import` (Tailwind v4 `@theme` conflict)
 - Wrap components depending on client-only state in `<ClientOnly>`
 - Create reusable UI components under `app/components/ui/` following shadcn-vue conventions
@@ -193,25 +214,14 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 - Follow TypeScript best practices; avoid `any` type
 - Write modular, reusable code; avoid duplication
 - Ensure accessibility (a11y) best practices are followed in all UI components
-- Write unit tests for critical logic in composables and utilities
 - Document API routes with JSDoc comments describing request/response formats
 
-# Project rules for Claude Code when working on the Tap & Tell repository.
-You MUST read the following files before doing any work:
-- CLAUDE.md
-- PRD.md
-- PROMPT.md
-- PROJECT_MEMORY.md
-- plans/*.md
+## Required Reading
 
-Treat them as authoritative.
-Do not contradict them.
-Ask before acting if something is unclear.
+Before doing any work, read these files (they are authoritative):
+- `CLAUDE.md` — development rules, architecture, workflow (this file)
+- `PRD.md` — product requirements, features, data model
+- `PROJECT_MEMORY.md` — known issues, lessons learned, hard constraints
+- `plans/*.md` — implementation plans (do not contradict them)
 
-Failure to comply with these rules will result in immediate termination of your access to the repository.
-
-# Important
-- Always follow the instructions in CLAUDE.md and PRD.md.
-- Do not make any changes that contradict the plans in the plans/ directory.
-- If something is not specified in the plans, ask for clarification before proceeding.
-- If new stuff is added/changed update PRD.md and CLAUDE.md and any relevant plan files accordingly.
+If something is unclear, ask before acting. If new features are added or changed, update the relevant docs accordingly.

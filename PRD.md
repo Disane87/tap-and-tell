@@ -87,23 +87,7 @@ export entries as PDF, and manage everything from a personal dashboard.
 
 ## Pages
 
-| Route | Purpose |
-|---|---|
-| `/` | Marketing landing page (hero, features, how it works) |
-
-| `/login` | Owner login |
-| `/register` | Owner registration |
-| `/dashboard` | Redirect to tenant admin (`/t/[uuid]/admin`) or create-tenant flow |
-| `/t/[uuid]` | Tenant root — redirects to first guestbook |
-| `/t/[uuid]/admin` | Tenant admin (guestbook list, members) |
-| `/t/[uuid]/g/[gbUuid]` | Guestbook guest form |
-| `/t/[uuid]/g/[gbUuid]/guestbook` | Guestbook entries view |
-| `/t/[uuid]/g/[gbUuid]/slideshow` | Guestbook slideshow |
-| `/t/[uuid]/g/[gbUuid]/admin` | Guestbook admin (moderation) |
-| `/t/[uuid]/g/[gbUuid]/admin/qr` | Guestbook QR code generator |
-| `/admin/login` | Legacy admin login |
-| `/admin` | Legacy admin dashboard |
-| `/admin/qr` | Legacy QR code generator |
+See `CLAUDE.md` → Pages for the full route table.
 
 ## Data Model
 
@@ -172,46 +156,11 @@ export entries as PDF, and manage everything from a personal dashboard.
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Framework | Nuxt 4.3 (SSR disabled, client-side SPA) |
-| Language | TypeScript |
-| UI Components | shadcn-vue / Radix Vue / Reka UI |
-| Styling | Tailwind CSS v4 (via `@tailwindcss/vite`) |
-| Icons | Lucide (via lucide-vue-next) / Iconify |
-| Database (local) | SQLite via better-sqlite3 |
-| Database (prod) | Turso (LibSQL) |
-| ORM | Drizzle ORM |
-| Auth | JWT via jose (HTTP-only cookies) |
-| i18n | @nuxtjs/i18n v10 |
-| PWA | @vite-pwa/nuxt |
-| PDF | jsPDF |
-| QR Codes | qrcode |
-| Notifications | vue-sonner |
-| Utilities | @vueuse/core |
-| Package Manager | pnpm |
-| Deployment | Vercel (primary), Docker (self-hosted) |
+See `CLAUDE.md` for the full tech stack and development setup.
 
-## Environment Variables
+## Environment Variables & Known Issues
 
-| Variable | Purpose | Default |
-|---|---|---|
-| `DATABASE_URL` | SQLite file path | `file:.data/data.db` |
-| `TURSO_DATABASE_URL` | Turso production URL | – |
-| `TURSO_AUTH_TOKEN` | Turso auth token | – |
-| `JWT_SECRET` | Owner auth JWT signing secret | insecure default |
-| `ADMIN_PASSWORD` | Legacy admin password | `admin123` |
-| `TOKEN_SECRET` | Legacy token signing secret | `tap-and-tell-secret` |
-| `DATA_DIR` | Photo storage directory | `.data` |
-| `NODE_ENV` | Environment mode | `development` |
-
-> All secret defaults must be overridden in production.
-
-## Known Issues
-
-- `DELETE /api/entries/[id]` is public (no auth required) – security risk
-- Default credentials are insecure – must be set via env vars in production
-- ~40 pre-existing typecheck errors for missing `@types/node` globals
+See `CLAUDE.md` (Environment Variables) and `PROJECT_MEMORY.md` (Known Issues & Fixes).
 
 ## Future / Planned
 
