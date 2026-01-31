@@ -65,58 +65,15 @@ and avoid repeating documented issues.
 
 ---
 
-## Architecture: Multi-Tenant System (Plan 26)
+## Architecture Notes
 
-### Database
-- **SQLite via Drizzle ORM**: Schema in `server/database/schema.ts`, connection in `server/database/index.ts`.
-- **Tables**: `users`, `sessions`, `tenants`, `entries` (with `tenant_id` FK).
-- **Drivers**: `better-sqlite3` (local), `@libsql/client` (Turso production).
-- **Init**: Nitro plugin `server/plugins/database.ts` runs migrations + seeds from legacy `entries.json`.
+For full architecture details, see:
+- `CLAUDE.md` → Architecture (storage, API routes, composables, data flow, pages)
+- `plans/26_tenant_system.md` → Multi-tenant data model, URL structure, migration
+- `plans/27_user_registration.md` → Owner auth, user schema
+- `plans/27b_roles_and_permissions.md` → 3-role system, permission matrix, invite flow
 
-### Owner Authentication
-- **JWT via `jose`**: HTTP-only cookies (`auth_token`), 7-day expiry.
-- **Password hashing**: Node.js `crypto.scrypt` (no native module needed).
-- **Server middleware** `server/middleware/auth.ts` attaches `event.context.user`.
-- **API routes**: `/api/auth/register`, `/api/auth/login`, `/api/auth/logout`, `/api/auth/me`.
-
-### Tenant & Guestbook System
-- **Data model**: `Tenant → Guestbook → Entry`. Settings live on guestbooks, not tenants.
-- **Guestbook types**: `permanent` (home, shop) and `event` (wedding, birthday — with dates).
-- **Owner CRUD**: `/api/tenants` (GET, POST), `/api/tenants/[uuid]` (GET, PUT, DELETE).
-- **Guestbook CRUD**: `/api/tenants/[uuid]/guestbooks` (GET, POST), `/api/tenants/[uuid]/guestbooks/[gbUuid]` (GET, PUT, DELETE).
-- **Public guest APIs**: `/api/t/[uuid]/g/[gbUuid]/entries` (GET approved, POST new), `/api/t/[uuid]/g/[gbUuid]/info`.
-- **Admin APIs**: `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries` (GET all, DELETE, PATCH status, POST bulk).
-- **Photos**: Namespaced per guestbook: `.data/photos/[guestbookId]/[entryId].[ext]`.
-
-### Frontend
-- **Auth composable**: `useAuth()` with module-level refs (`user`, `loading`, `initialized`).
-- **Tenant composables**: `useTenants()`, `useGuestbooks()`, `useTenantGuests(tenantId, guestbookId)`, `useTenantAdmin(tenantId, guestbookId)`.
-- **Pages**: `/login`, `/register`, `/dashboard`, `/t/[uuid]` (redirect), `/t/[uuid]/admin`, `/t/[uuid]/g/[gbUuid]`, `/t/[uuid]/g/[gbUuid]/guestbook`, `/t/[uuid]/g/[gbUuid]/admin`, `/t/[uuid]/g/[gbUuid]/admin/qr`, `/t/[uuid]/g/[gbUuid]/slideshow`.
-- **Route guard**: `app/middleware/auth.global.ts` protects `/dashboard`.
-- **Tenant model**: Each user has exactly one tenant (or is invited to one). A tenant can have N guestbooks and N events (plan-dependent). `/dashboard` auto-redirects to the user's tenant admin page.
-
-### Roles & Permissions (Plan 27b)
-- **3-role system**: Owner (full control), Co-Owner (moderate entries), Guest (anonymous, submit only).
-- **Tables**: `tenant_members` (role assignments, UNIQUE tenant+user), `tenant_invites` (token-based invites, 7-day expiry).
-- **Permission check**: `canPerformAction(tenantId, userId, action)` in `server/utils/tenant.ts`.
-  - `read`/`moderate` → owner + co_owner
-  - `manage`/`delete` → owner only
-- **Invite flow**: Owner creates invite → shares link → invitee accepts at `/accept-invite?token=...` → `tenant_members` entry created.
-- **Auto-add owner**: `POST /api/tenants` automatically adds creator as owner in `tenant_members`.
-- **Dashboard**: Shows role badges per tenant. Delete button hidden for co-owners.
-- **Admin panel**: Members section (invite/remove) only visible to owners. Entry moderation available to both roles.
+### Key Decisions (not documented elsewhere)
+- **nanoid instead of UUID**: All `randomUUID()` calls replaced with `nanoid(12)` via `server/utils/id.ts`. 12-character URL-safe strings. Backward-compatible — existing UUIDs in DB remain valid. Migration file uses `nanoid` directly (no Nitro auto-imports).
+- **Legacy compatibility**: `/` is now a marketing page (no longer guest form). Root-level `/guestbook` and `/slideshow` routes removed. `createEntry()` requires `guestbookId` as first parameter. `getDefaultTenantId()` returns first tenant for legacy routes. Legacy admin auth (Bearer tokens) still works for `/admin` pages.
 - **`verifyTenantOwnership()`**: Deprecated, replaced by `canPerformAction()`.
-
-### ID Generation: nanoid instead of UUID
-- **Change**: All `randomUUID()` calls replaced with `nanoid(12)` via `server/utils/id.ts`.
-- **Format**: 12-character URL-safe strings (A-Za-z0-9, `_`, `-`) instead of 36-character UUIDs.
-- **Backward-compatible**: All ID columns are `TEXT` — existing UUIDs in the database remain valid. Only new IDs are shorter.
-- **Dev seed IDs**: `dev000tenant`, `dev00000user`, `dev00000gb01`, `dev00000gb02`.
-- **Migration file** (`server/database/migrate.ts`): Uses `nanoid` directly since it cannot use Nitro auto-imports.
-
-### Legacy Compatibility
-- `/` is now a marketing landing page (no longer the guest form).
-- Root-level `/guestbook` and `/slideshow` routes have been removed. Guestbook-specific routes (`/t/[uuid]/g/[gbUuid]/guestbook`, `/t/[uuid]/g/[gbUuid]/slideshow`) replace old tenant-level routes.
-- `createEntry()` in `storage.ts` now requires `guestbookId` as first parameter.
-- `getDefaultTenantId()` in `server/utils/tenant.ts` returns the first tenant for legacy routes.
-- Legacy admin auth (`useAdmin`, Bearer tokens) still works for `/admin` pages.
