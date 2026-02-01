@@ -17,11 +17,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'moderate')) {
+  if (!await canPerformAction(uuid, user.id, 'moderate')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const guestbook = getGuestbookById(gbUuid)
+  const guestbook = await getGuestbookById(gbUuid)
   if (!guestbook || guestbook.tenantId !== uuid) {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid status' })
   }
 
-  const updated = bulkUpdateEntryStatus(body.ids, body.status)
+  const updated = await bulkUpdateEntryStatus(uuid, body.ids, body.status)
 
   return {
     success: true,

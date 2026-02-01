@@ -9,9 +9,10 @@ import type { GuestbookSettings, GuestbookType } from '~~/server/types/guestbook
  * @param id - The guestbook UUID.
  * @returns The guestbook row or undefined.
  */
-export function getGuestbookById(id: string) {
+export async function getGuestbookById(id: string) {
   const db = useDb()
-  return db.select().from(guestbooks).where(eq(guestbooks.id, id)).get()
+  const rows = await db.select().from(guestbooks).where(eq(guestbooks.id, id))
+  return rows[0]
 }
 
 /**
@@ -20,7 +21,7 @@ export function getGuestbookById(id: string) {
  * @param tenantId - The tenant UUID.
  * @returns Array of guestbooks with entry counts.
  */
-export function getGuestbooksByTenant(tenantId: string) {
+export async function getGuestbooksByTenant(tenantId: string) {
   const db = useDb()
   return db.select({
     id: guestbooks.id,
@@ -36,7 +37,6 @@ export function getGuestbooksByTenant(tenantId: string) {
   })
     .from(guestbooks)
     .where(eq(guestbooks.tenantId, tenantId))
-    .all()
 }
 
 /**
@@ -46,7 +46,7 @@ export function getGuestbooksByTenant(tenantId: string) {
  * @param input - Guestbook creation data.
  * @returns The created guestbook.
  */
-export function createGuestbook(tenantId: string, input: {
+export async function createGuestbook(tenantId: string, input: {
   name: string
   type?: GuestbookType
   settings?: GuestbookSettings
@@ -55,19 +55,19 @@ export function createGuestbook(tenantId: string, input: {
 }) {
   const db = useDb()
   const id = generateId()
-  const now = new Date().toISOString()
+  const now = new Date()
 
-  db.insert(guestbooks).values({
+  await db.insert(guestbooks).values({
     id,
     tenantId,
     name: input.name,
     type: input.type || 'permanent',
     settings: input.settings || {},
-    startDate: input.startDate || null,
-    endDate: input.endDate || null,
+    startDate: input.startDate ? new Date(input.startDate) : null,
+    endDate: input.endDate ? new Date(input.endDate) : null,
     createdAt: now,
     updatedAt: now
-  }).run()
+  })
 
   return {
     id,
@@ -77,8 +77,8 @@ export function createGuestbook(tenantId: string, input: {
     settings: input.settings || {},
     startDate: input.startDate,
     endDate: input.endDate,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
     entryCount: 0
   }
 }
@@ -90,7 +90,7 @@ export function createGuestbook(tenantId: string, input: {
  * @param input - Update data.
  * @returns The updated guestbook or undefined.
  */
-export function updateGuestbook(id: string, input: {
+export async function updateGuestbook(id: string, input: {
   name?: string
   type?: GuestbookType
   settings?: GuestbookSettings
@@ -98,22 +98,24 @@ export function updateGuestbook(id: string, input: {
   endDate?: string
 }) {
   const db = useDb()
-  const existing = db.select().from(guestbooks).where(eq(guestbooks.id, id)).get()
+  const rows = await db.select().from(guestbooks).where(eq(guestbooks.id, id))
+  const existing = rows[0]
   if (!existing) return undefined
 
   const updates: Record<string, unknown> = {
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date()
   }
 
   if (input.name !== undefined) updates.name = input.name
   if (input.type !== undefined) updates.type = input.type
   if (input.settings !== undefined) updates.settings = input.settings
-  if (input.startDate !== undefined) updates.startDate = input.startDate
-  if (input.endDate !== undefined) updates.endDate = input.endDate
+  if (input.startDate !== undefined) updates.startDate = input.startDate ? new Date(input.startDate) : null
+  if (input.endDate !== undefined) updates.endDate = input.endDate ? new Date(input.endDate) : null
 
-  db.update(guestbooks).set(updates).where(eq(guestbooks.id, id)).run()
+  await db.update(guestbooks).set(updates).where(eq(guestbooks.id, id))
 
-  return db.select().from(guestbooks).where(eq(guestbooks.id, id)).get()
+  const updated = await db.select().from(guestbooks).where(eq(guestbooks.id, id))
+  return updated[0]
 }
 
 /**
@@ -122,10 +124,10 @@ export function updateGuestbook(id: string, input: {
  * @param id - The guestbook UUID.
  * @returns True if the guestbook was deleted.
  */
-export function deleteGuestbook(id: string): boolean {
+export async function deleteGuestbook(id: string): Promise<boolean> {
   const db = useDb()
-  const result = db.delete(guestbooks).where(eq(guestbooks.id, id)).run()
-  return result.changes > 0
+  await db.delete(guestbooks).where(eq(guestbooks.id, id))
+  return true
 }
 
 /**
@@ -135,9 +137,9 @@ export function deleteGuestbook(id: string): boolean {
  * @param guestbookId - The guestbook UUID.
  * @returns The guestbook with tenant info or undefined.
  */
-export function getGuestbookWithTenant(guestbookId: string) {
+export async function getGuestbookWithTenant(guestbookId: string) {
   const db = useDb()
-  return db.select({
+  const rows = await db.select({
     id: guestbooks.id,
     tenantId: guestbooks.tenantId,
     name: guestbooks.name,
@@ -153,5 +155,5 @@ export function getGuestbookWithTenant(guestbookId: string) {
     .from(guestbooks)
     .innerJoin(tenants, eq(guestbooks.tenantId, tenants.id))
     .where(eq(guestbooks.id, guestbookId))
-    .get()
+  return rows[0]
 }

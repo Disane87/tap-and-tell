@@ -3,7 +3,7 @@
  * Returns all entries for a guestbook (including pending/rejected).
  * Requires authentication and tenant membership (owner or co_owner).
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const user = event.context.user
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
@@ -15,16 +15,16 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'moderate')) {
+  if (!await canPerformAction(uuid, user.id, 'moderate')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const guestbook = getGuestbookById(gbUuid)
+  const guestbook = await getGuestbookById(gbUuid)
   if (!guestbook || guestbook.tenantId !== uuid) {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
 
-  const guestbookEntries = readEntries(gbUuid)
+  const guestbookEntries = await readEntries(uuid, gbUuid)
 
   return {
     success: true,

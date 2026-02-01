@@ -19,7 +19,8 @@ export default defineEventHandler(async (event) => {
   const email = body.email.trim().toLowerCase()
   const db = useDb()
 
-  const user = db.select().from(users).where(eq(users.email, email)).get()
+  const rows = await db.select().from(users).where(eq(users.email, email))
+  const user = rows[0]
   if (!user) {
     throw createError({ statusCode: 401, message: 'Invalid email or password' })
   }

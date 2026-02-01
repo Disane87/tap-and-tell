@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'manage')) {
+  if (!await canPerformAction(uuid, user.id, 'manage')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
@@ -34,10 +34,11 @@ export default defineEventHandler(async (event) => {
   const db = useDb()
 
   // Check tenant exists
-  const tenant = db.select({ id: tenants.id, name: tenants.name })
+  const tenantRows = await db.select({ id: tenants.id, name: tenants.name })
     .from(tenants)
     .where(eq(tenants.id, uuid))
-    .get()
+
+  const tenant = tenantRows[0]
 
   if (!tenant) {
     throw createError({ statusCode: 404, message: 'Tenant not found' })
@@ -48,16 +49,16 @@ export default defineEventHandler(async (event) => {
   const now = new Date()
   const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 days
 
-  db.insert(tenantInvites).values({
+  await db.insert(tenantInvites).values({
     id,
     tenantId: uuid,
     email: body.email.trim().toLowerCase(),
     role: 'co_owner',
     invitedBy: user.id,
     token,
-    expiresAt: expiresAt.toISOString(),
-    createdAt: now.toISOString()
-  }).run()
+    expiresAt,
+    createdAt: now
+  })
 
   return {
     success: true,

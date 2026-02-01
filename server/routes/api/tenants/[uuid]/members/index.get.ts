@@ -5,7 +5,7 @@ import { canPerformAction, getTenantMembers } from '~~/server/utils/tenant'
  * Returns all members of a tenant with their user details.
  * Requires authentication and read permission (owner or co_owner).
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const user = event.context.user
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
@@ -16,11 +16,11 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'read')) {
+  if (!await canPerformAction(uuid, user.id, 'read')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const members = getTenantMembers(uuid)
+  const members = await getTenantMembers(uuid)
 
   return {
     success: true,
