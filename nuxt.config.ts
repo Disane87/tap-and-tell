@@ -111,6 +111,15 @@ export default defineNuxtConfig({
     ]
   },
 
+  nitro: {
+    externals: {
+      inline: [],
+    },
+    rollupConfig: {
+      external: ['pg'],
+    },
+  },
+
   css: ['~/assets/css/main.css'],
 
   app: {
