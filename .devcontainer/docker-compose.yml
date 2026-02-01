@@ -1,0 +1,41 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      - node_modules:/workspace/node_modules
+    command: sleep infinity
+    environment:
+      - NODE_ENV=development
+      - POSTGRES_URL=postgresql://tapandtell:tapandtell_dev@db:5432/tapandtell
+      - JWT_SECRET=devcontainer-jwt-secret-not-for-production
+      - ENCRYPTION_MASTER_KEY=0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef
+      - CSRF_SECRET=devcontainer-csrf-secret-not-for-production
+      - ADMIN_PASSWORD=admin123
+      - TOKEN_SECRET=devcontainer-token-secret
+      - DATA_DIR=.data
+    depends_on:
+      db:
+        condition: service_healthy
+    network_mode: service:db
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tapandtell
+      POSTGRES_USER: tapandtell
+      POSTGRES_PASSWORD: tapandtell_dev
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tapandtell']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+  node_modules:
