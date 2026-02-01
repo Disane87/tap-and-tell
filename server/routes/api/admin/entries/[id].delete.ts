@@ -2,7 +2,7 @@
  * DELETE /api/admin/entries/:id
  * Deletes a guest entry by ID. Requires admin authentication.
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, 'Authorization')
 
   if (!validateAuthHeader(authHeader ?? null)) {
@@ -21,7 +21,12 @@ export default defineEventHandler((event) => {
     })
   }
 
-  const deleted = deleteEntry(id)
+  const tenantId = await getDefaultTenantId()
+  if (!tenantId) {
+    throw createError({ statusCode: 500, message: 'No default tenant configured' })
+  }
+
+  const deleted = await deleteEntry(tenantId, id)
 
   if (!deleted) {
     throw createError({

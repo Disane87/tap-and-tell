@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'manage')) {
+  if (!await canPerformAction(uuid, user.id, 'manage')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Name must be 100 characters or less' })
   }
 
-  const guestbook = createGuestbook(uuid, {
+  const guestbook = await createGuestbook(uuid, {
     name: body.name.trim(),
     type: body.type,
     settings: body.settings,

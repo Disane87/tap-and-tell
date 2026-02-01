@@ -19,12 +19,13 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'manage')) {
+  if (!await canPerformAction(uuid, user.id, 'manage')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
   const db = useDb()
-  const tenant = db.select().from(tenants).where(eq(tenants.id, uuid)).get()
+  const rows = await db.select().from(tenants).where(eq(tenants.id, uuid))
+  const tenant = rows[0]
 
   if (!tenant) {
     throw createError({ statusCode: 404, message: 'Tenant not found' })
@@ -33,7 +34,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<UpdateTenantInput>(event)
 
   const updates: Record<string, unknown> = {
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date()
   }
 
   if (body?.name !== undefined) {
@@ -43,12 +44,12 @@ export default defineEventHandler(async (event) => {
     updates.name = body.name.trim()
   }
 
-  db.update(tenants).set(updates).where(eq(tenants.id, uuid)).run()
+  await db.update(tenants).set(updates).where(eq(tenants.id, uuid))
 
-  const updated = db.select().from(tenants).where(eq(tenants.id, uuid)).get()
+  const updatedRows = await db.select().from(tenants).where(eq(tenants.id, uuid))
 
   return {
     success: true,
-    data: updated
+    data: updatedRows[0]
   }
 })

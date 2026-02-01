@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const tenantId = getDefaultTenantId()
+  const tenantId = await getDefaultTenantId()
   if (!tenantId) {
     throw createError({
       statusCode: 500,
@@ -54,8 +54,19 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const entry = createEntry(
+  // Get the first guestbook for the default tenant
+  const guestbookList = await getGuestbooksByTenant(tenantId)
+  const guestbook = guestbookList[0]
+  if (!guestbook) {
+    throw createError({
+      statusCode: 500,
+      message: 'No guestbook configured for default tenant'
+    })
+  }
+
+  const entry = await createEntry(
     tenantId,
+    guestbook.id,
     body.name.trim(),
     body.message.trim(),
     body.photo,

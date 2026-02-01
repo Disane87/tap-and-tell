@@ -7,7 +7,7 @@ import { canPerformAction } from '~~/server/utils/tenant'
  * DELETE /api/tenants/:uuid
  * Deletes a tenant and all its entries. Only the owner can delete.
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const user = event.context.user
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
@@ -18,13 +18,13 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'delete')) {
+  if (!await canPerformAction(uuid, user.id, 'delete')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
   const db = useDb()
   // CASCADE will delete all entries and members too
-  db.delete(tenants).where(eq(tenants.id, uuid)).run()
+  await db.delete(tenants).where(eq(tenants.id, uuid))
 
   return { success: true }
 })

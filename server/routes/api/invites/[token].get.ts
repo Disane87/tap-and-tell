@@ -7,14 +7,14 @@ import { tenantInvites, tenants } from '~~/server/database/schema'
  * Returns invite details for a given token. Public endpoint.
  * Used to display invite information before accepting.
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const token = getRouterParam(event, 'token')
   if (!token) {
     throw createError({ statusCode: 400, message: 'Token is required' })
   }
 
   const db = useDb()
-  const invite = db.select({
+  const rows = await db.select({
     id: tenantInvites.id,
     tenantId: tenantInvites.tenantId,
     email: tenantInvites.email,
@@ -27,7 +27,8 @@ export default defineEventHandler((event) => {
     .from(tenantInvites)
     .innerJoin(tenants, eq(tenantInvites.tenantId, tenants.id))
     .where(eq(tenantInvites.token, token))
-    .get()
+
+  const invite = rows[0]
 
   if (!invite) {
     throw createError({ statusCode: 404, message: 'Invite not found' })

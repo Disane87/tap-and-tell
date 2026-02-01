@@ -14,14 +14,14 @@ import { createJwt, verifyJwt } from '~~/server/utils/jwt'
 export async function createSession(userId: string, email: string): Promise<string> {
   const db = useDb()
   const token = await createJwt({ sub: userId, email })
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
-  db.insert(sessions).values({
+  await db.insert(sessions).values({
     id: generateId(),
     userId,
     token,
     expiresAt
-  }).run()
+  })
 
   return token
 }
@@ -38,9 +38,9 @@ export async function validateSession(token: string) {
   if (!payload) return null
 
   const db = useDb()
-  const now = new Date().toISOString()
+  const now = new Date()
 
-  const session = db.select()
+  const sessionRows = await db.select()
     .from(sessions)
     .where(
       and(
@@ -48,20 +48,19 @@ export async function validateSession(token: string) {
         gt(sessions.expiresAt, now)
       )
     )
-    .get()
 
+  const session = sessionRows[0]
   if (!session) return null
 
-  const user = db.select({
+  const userRows = await db.select({
     id: users.id,
     email: users.email,
     name: users.name
   })
     .from(users)
     .where(eq(users.id, session.userId))
-    .get()
 
-  return user || null
+  return userRows[0] || null
 }
 
 /**
@@ -71,5 +70,5 @@ export async function validateSession(token: string) {
  */
 export async function deleteSession(token: string): Promise<void> {
   const db = useDb()
-  db.delete(sessions).where(eq(sessions.token, token)).run()
+  await db.delete(sessions).where(eq(sessions.token, token))
 }

@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing tenant UUID' })
   }
 
-  const guestbooks = getGuestbooksByTenant(uuid)
+  const guestbooks = await getGuestbooksByTenant(uuid)
 
   return {
     success: true,

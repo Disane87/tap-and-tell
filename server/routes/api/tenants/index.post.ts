@@ -2,6 +2,7 @@ import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
 import type { CreateTenantInput } from '~~/server/types/tenant'
 import { addTenantMember } from '~~/server/utils/tenant'
+import { generateEncryptionSalt } from '~~/server/utils/crypto'
 
 /**
  * POST /api/tenants
@@ -26,18 +27,19 @@ export default defineEventHandler(async (event) => {
 
   const db = useDb()
   const id = generateId()
-  const now = new Date().toISOString()
+  const now = new Date()
 
-  db.insert(tenants).values({
+  await db.insert(tenants).values({
     id,
     name: body.name.trim(),
     ownerId: user.id,
+    encryptionSalt: generateEncryptionSalt(),
     createdAt: now,
     updatedAt: now
-  }).run()
+  })
 
   // Add creator as owner member
-  addTenantMember(id, user.id, 'owner')
+  await addTenantMember(id, user.id, 'owner')
 
   return {
     success: true,

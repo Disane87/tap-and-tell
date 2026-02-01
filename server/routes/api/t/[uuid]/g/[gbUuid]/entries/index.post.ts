@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  const guestbook = getGuestbookById(gbUuid)
+  const guestbook = await getGuestbookById(gbUuid)
   if (!guestbook || guestbook.tenantId !== uuid) {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
@@ -39,7 +39,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Photo must be 5MB or less' })
   }
 
-  const entry = createEntry(
+  const entry = await createEntry(
+    uuid,
     gbUuid,
     body.name.trim(),
     body.message.trim(),

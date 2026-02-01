@@ -7,7 +7,7 @@ import { guestbooks } from '~~/server/database/schema'
  * Returns public guestbook information (name, settings).
  * No authentication required.
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const uuid = getRouterParam(event, 'uuid')
   const gbUuid = getRouterParam(event, 'gbUuid')
   if (!uuid || !gbUuid) {
@@ -15,7 +15,7 @@ export default defineEventHandler((event) => {
   }
 
   const db = useDb()
-  const guestbook = db.select({
+  const rows = await db.select({
     id: guestbooks.id,
     tenantId: guestbooks.tenantId,
     name: guestbooks.name,
@@ -24,7 +24,8 @@ export default defineEventHandler((event) => {
   })
     .from(guestbooks)
     .where(eq(guestbooks.id, gbUuid))
-    .get()
+
+  const guestbook = rows[0]
 
   if (!guestbook || guestbook.tenantId !== uuid) {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })

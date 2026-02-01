@@ -27,7 +27,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid status' })
   }
 
-  const entry = updateEntryStatus(id, body.status, body.rejectionReason)
+  const tenantId = await getDefaultTenantId()
+  if (!tenantId) {
+    throw createError({ statusCode: 500, message: 'No default tenant configured' })
+  }
+
+  const entry = await updateEntryStatus(tenantId, id, body.status, body.rejectionReason)
   if (!entry) {
     throw createError({ statusCode: 404, message: 'Entry not found' })
   }

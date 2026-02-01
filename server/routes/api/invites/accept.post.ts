@@ -23,7 +23,8 @@ export default defineEventHandler(async (event) => {
   }
 
   const db = useDb()
-  const invite = db.select().from(tenantInvites).where(eq(tenantInvites.token, body.token)).get()
+  const inviteRows = await db.select().from(tenantInvites).where(eq(tenantInvites.token, body.token))
+  const invite = inviteRows[0]
 
   if (!invite) {
     throw createError({ statusCode: 404, message: 'Invite not found' })
@@ -38,19 +39,18 @@ export default defineEventHandler(async (event) => {
   }
 
   // Check if user is already a member
-  const existingRole = getUserTenantRole(invite.tenantId, user.id)
+  const existingRole = await getUserTenantRole(invite.tenantId, user.id)
   if (existingRole) {
     throw createError({ statusCode: 409, message: 'Already a member of this tenant' })
   }
 
   // Add user as member
-  addTenantMember(invite.tenantId, user.id, invite.role as TenantRole, invite.invitedBy)
+  await addTenantMember(invite.tenantId, user.id, invite.role as TenantRole, invite.invitedBy)
 
   // Mark invite as accepted
-  db.update(tenantInvites)
-    .set({ acceptedAt: new Date().toISOString() })
+  await db.update(tenantInvites)
+    .set({ acceptedAt: new Date() })
     .where(eq(tenantInvites.id, invite.id))
-    .run()
 
   return {
     success: true,

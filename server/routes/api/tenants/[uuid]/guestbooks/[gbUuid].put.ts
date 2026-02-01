@@ -16,11 +16,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'manage')) {
+  if (!await canPerformAction(uuid, user.id, 'manage')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const existing = getGuestbookById(gbUuid)
+  const existing = await getGuestbookById(gbUuid)
   if (!existing || existing.tenantId !== uuid) {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Guestbook name cannot be empty' })
   }
 
-  const updated = updateGuestbook(gbUuid, {
+  const updated = await updateGuestbook(gbUuid, {
     name: body?.name?.trim(),
     type: body?.type,
     settings: body?.settings,

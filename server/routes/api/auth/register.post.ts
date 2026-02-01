@@ -34,20 +34,20 @@ export default defineEventHandler(async (event) => {
   const db = useDb()
 
   // Check if email already exists
-  const existing = db.select({ id: users.id }).from(users).where(eq(users.email, email)).get()
-  if (existing) {
+  const existingRows = await db.select({ id: users.id }).from(users).where(eq(users.email, email))
+  if (existingRows[0]) {
     throw createError({ statusCode: 409, message: 'Email already registered' })
   }
 
   const id = generateId()
   const passwordHash = await hashPassword(body.password)
 
-  db.insert(users).values({
+  await db.insert(users).values({
     id,
     email,
     passwordHash,
     name
-  }).run()
+  })
 
   const token = await createSession(id, email)
 
