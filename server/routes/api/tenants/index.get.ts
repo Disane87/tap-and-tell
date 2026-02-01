@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'tenant:read')
 
   const db = useDb()
   const rows = await db.select({

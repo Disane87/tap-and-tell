@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'entries:read')
 
   const uuid = getRouterParam(event, 'uuid')
   const gbUuid = getRouterParam(event, 'gbUuid')

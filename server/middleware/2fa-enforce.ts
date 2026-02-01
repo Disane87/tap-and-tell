@@ -11,6 +11,9 @@ export default defineEventHandler(async (event) => {
   const user = event.context.user
   if (!user) return // Not authenticated, let other middleware handle it
 
+  // API token-authenticated requests bypass 2FA (2FA was verified at app creation time)
+  if (event.context.apiApp) return
+
   const path = getRequestURL(event).pathname
 
   // Allow auth-related routes (including 2FA setup)

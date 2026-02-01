@@ -180,6 +180,70 @@ export const twoFactorTokens = pgTable('two_factor_tokens', {
 })
 
 /**
+ * API apps registered by tenant owners for third-party integrations.
+ * Each app is scoped to exactly one tenant.
+ * RLS-protected via tenant_id.
+ */
+export const apiApps = pgTable('api_apps', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  tenantId: varchar('tenant_id', { length: 24 }).notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  /** User who created this app. */
+  userId: varchar('user_id', { length: 24 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  /** Human-readable app name. */
+  name: text('name').notNull(),
+  /** Optional description of what this app does. */
+  description: text('description'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index('idx_api_apps_tenant').on(table.tenantId),
+  index('idx_api_apps_user').on(table.userId)
+])
+
+/**
+ * API tokens belonging to an API app.
+ * Token secrets are SHA-256 hashed before storage.
+ * Multiple tokens per app are supported (e.g. production, staging).
+ * Not RLS-protected directly — scoped through api_apps → tenant_id.
+ */
+export const apiTokens = pgTable('api_tokens', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  appId: varchar('app_id', { length: 24 }).notNull().references(() => apiApps.id, { onDelete: 'cascade' }),
+  /** Human-readable token name (e.g. "Production", "CI/CD"). */
+  name: text('name').notNull(),
+  /** SHA-256 hash of the token secret. */
+  tokenHash: text('token_hash').notNull().unique(),
+  /** First 8 chars of the token for identification (e.g. "tat_a1b2"). */
+  tokenPrefix: varchar('token_prefix', { length: 12 }).notNull(),
+  /** Array of granted scopes (e.g. ["entries:read", "guestbooks:read"]). */
+  scopes: jsonb('scopes').$type<string[]>().notNull().default([]),
+  /** Optional expiry date. Null means no expiry. */
+  expiresAt: timestamp('expires_at', { withTimezone: true }),
+  /** Last time this token was used for authentication. */
+  lastUsedAt: timestamp('last_used_at', { withTimezone: true }),
+  /** When the token was revoked. Non-null means revoked. */
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index('idx_api_tokens_app').on(table.appId),
+  index('idx_api_tokens_hash').on(table.tokenHash)
+])
+
+/**
  * Tenant role type. Owner has full control, co_owner can moderate entries.
  */
 export type TenantRole = 'owner' | 'co_owner'
+
+/**
+ * Valid API token scopes.
+ */
+export type ApiScope =
+  | 'entries:read'
+  | 'entries:write'
+  | 'guestbooks:read'
+  | 'guestbooks:write'
+  | 'tenant:read'
+  | 'tenant:write'
+  | 'members:read'
+  | 'members:write'
+  | 'photos:read'

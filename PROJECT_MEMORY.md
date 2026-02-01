@@ -143,5 +143,15 @@ For full architecture details, see:
 | `ENCRYPTION_MASTER_KEY` | 64-char hex key for photo encryption | Dev fallback (insecure) |
 | `CSRF_SECRET` | CSRF token signing secret | `csrf-secret-change-in-production` |
 
+### API Apps & Token System (Plan 36)
+- **GitHub-style API access**: Apps registered per tenant, each app gets API tokens with configurable scopes.
+- **Tables**: `api_apps` (RLS-protected via tenant_id), `api_tokens` (RLS via api_apps → tenant_id).
+- **Token format**: `tat_<40-hex-chars>` — SHA-256 hashed before storage, plaintext shown once at creation.
+- **Scopes**: `entries:read`, `entries:write`, `guestbooks:read`, `guestbooks:write`, `tenant:read`, `tenant:write`, `members:read`, `members:write`, `photos:read`.
+- **Auth flow**: `Authorization: Bearer tat_...` → hash → DB lookup → validate expiry/revocation → set `event.context.apiApp`.
+- **Scope enforcement**: `requireScope(event, scope)` on all authenticated routes. Cookie auth = full access. API token = scope-limited.
+- **Bypasses**: API tokens bypass CSRF (stateless Bearer) and 2FA enforcement (verified at app creation).
+- **Endpoints**: App CRUD under `/api/tenants/[uuid]/apps/`, token management under `.../apps/[appId]/tokens/`, scope list at `/api/scopes`.
+
 ### Important: All default secrets MUST be overridden in production
 - `JWT_SECRET`, `ADMIN_PASSWORD`, `TOKEN_SECRET`, `ENCRYPTION_MASTER_KEY`, `CSRF_SECRET`
