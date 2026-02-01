@@ -1,4 +1,3 @@
-import { useDb } from '~~/server/database'
 import { apiTokens, apiApps } from '~~/server/database/schema'
 import { eq } from 'drizzle-orm'
 
@@ -27,7 +26,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: `Invalid scopes. Valid scopes: ${ALL_SCOPES.join(', ')}` })
 
   // Verify the app exists and belongs to this tenant
-  const db = useDb()
+  const db = useDrizzle()
   const appRows = await db.select().from(apiApps).where(eq(apiApps.id, appId))
   const app = appRows[0]
   if (!app || app.tenantId !== uuid)

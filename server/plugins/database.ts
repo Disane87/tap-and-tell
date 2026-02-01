@@ -8,7 +8,8 @@ import { seedDevTenant } from '~~/server/database/seed-dev'
  * and creates a dev tenant in development mode.
  */
 export default defineNitroPlugin(async () => {
-  const connectionString = process.env.POSTGRES_URL || process.env.DATABASE_URL
+  const config = useRuntimeConfig()
+  const connectionString = config.postgresUrl
 
   if (!connectionString) {
     console.error('[database] No POSTGRES_URL or DATABASE_URL configured')

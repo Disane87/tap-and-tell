@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { guestbooks } from '~~/server/database/schema'
 
 /**
@@ -14,7 +13,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({
     id: guestbooks.id,
     tenantId: guestbooks.tenantId,

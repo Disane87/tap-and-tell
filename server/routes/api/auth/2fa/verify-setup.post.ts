@@ -1,6 +1,5 @@
 import { eq, and } from 'drizzle-orm'
 import { randomBytes } from 'crypto'
-import { useDb } from '~~/server/database'
 import { userTwoFactor } from '~~/server/database/schema'
 
 /**
@@ -20,7 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Verification code is required' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   // Find the pending 2FA setup
   const pendingRows = await db.select().from(userTwoFactor)

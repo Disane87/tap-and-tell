@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { withTenantContext } from '~~/server/database'
 import { apiApps } from '~~/server/database/schema'
 
 /**

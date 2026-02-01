@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenantInvites, tenants } from '~~/server/database/schema'
 
 /**
@@ -13,7 +12,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Token is required' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({
     id: tenantInvites.id,
     tenantId: tenantInvites.tenantId,

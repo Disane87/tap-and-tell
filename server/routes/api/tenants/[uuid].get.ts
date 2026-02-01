@@ -1,5 +1,4 @@
 import { sql, eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
 import { canPerformAction, getUserTenantRole } from '~~/server/utils/tenant'
 
@@ -24,7 +23,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({
     id: tenants.id,
     name: tenants.name,

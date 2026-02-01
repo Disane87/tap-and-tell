@@ -1,6 +1,5 @@
 import { createHash, randomBytes } from 'crypto'
 import { eq, and, isNull } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { apiApps, apiTokens } from '~~/server/database/schema'
 import type { ApiScope } from '~~/server/database/schema'
 
@@ -86,7 +85,7 @@ export async function validateApiToken(token: string): Promise<ApiTokenContext |
   if (!isApiToken(token)) return null
 
   const tokenHash = hashToken(token)
-  const db = useDb()
+  const db = useDrizzle()
 
   // Look up token by hash — joined with app for tenant info
   const rows = await db.select({

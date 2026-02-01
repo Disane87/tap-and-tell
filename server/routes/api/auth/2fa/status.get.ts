@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { userTwoFactor } from '~~/server/database/schema'
 
 /**
@@ -12,7 +11,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Authentication required' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   const rows = await db.select({
     method: userTwoFactor.method,

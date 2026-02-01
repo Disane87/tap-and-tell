@@ -1,5 +1,4 @@
 import { sql } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenants, tenantMembers } from '~~/server/database/schema'
 import { eq } from 'drizzle-orm'
 
@@ -15,7 +14,7 @@ export default defineEventHandler(async (event) => {
   }
   requireScope(event, 'tenant:read')
 
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({
     id: tenants.id,
     name: tenants.name,

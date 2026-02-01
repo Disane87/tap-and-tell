@@ -1,5 +1,4 @@
 import { eq, and, sql } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenants, tenantMembers, users, guestbooks } from '~~/server/database/schema'
 import type { TenantRole } from '~~/server/database/schema'
 import type { TenantMemberWithUser } from '~~/server/types/tenant'
@@ -18,7 +17,7 @@ export type TenantAction = 'read' | 'moderate' | 'manage' | 'delete'
  * @returns The default tenant ID or undefined.
  */
 export async function getDefaultTenantId(): Promise<string | undefined> {
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({ id: tenants.id }).from(tenants).limit(1)
   return rows[0]?.id
 }
@@ -30,7 +29,7 @@ export async function getDefaultTenantId(): Promise<string | undefined> {
  * @returns The tenant row or undefined.
  */
 export async function getTenantById(id: string) {
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select().from(tenants).where(eq(tenants.id, id))
   return rows[0]
 }
@@ -43,7 +42,7 @@ export async function getTenantById(id: string) {
  * @deprecated Use getUserTenants() instead which includes co-owned tenants.
  */
 export async function getTenantsByOwner(ownerId: string) {
-  const db = useDb()
+  const db = useDrizzle()
   return db.select().from(tenants).where(eq(tenants.ownerId, ownerId))
 }
 
@@ -68,7 +67,7 @@ export async function verifyTenantOwnership(tenantId: string, userId: string): P
  * @returns The user's role or null.
  */
 export async function getUserTenantRole(tenantId: string, userId: string): Promise<TenantRole | null> {
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({ role: tenantMembers.role })
     .from(tenantMembers)
     .where(and(
@@ -110,7 +109,7 @@ export async function canPerformAction(tenantId: string, userId: string, action:
  * @returns Array of members with user info.
  */
 export async function getTenantMembers(tenantId: string): Promise<TenantMemberWithUser[]> {
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({
     id: tenantMembers.id,
     tenantId: tenantMembers.tenantId,
@@ -147,7 +146,7 @@ export async function getTenantMembers(tenantId: string): Promise<TenantMemberWi
  * @returns Array of tenants with the user's role.
  */
 export async function getUserTenants(userId: string) {
-  const db = useDb()
+  const db = useDrizzle()
   return db.select({
     id: tenants.id,
     name: tenants.name,
@@ -171,7 +170,7 @@ export async function getUserTenants(userId: string) {
  * @param invitedBy - The user ID of the inviter (optional).
  */
 export async function addTenantMember(tenantId: string, userId: string, role: TenantRole, invitedBy?: string): Promise<void> {
-  const db = useDb()
+  const db = useDrizzle()
   await db.insert(tenantMembers).values({
     id: generateId(),
     tenantId,
@@ -194,7 +193,7 @@ export async function removeTenantMember(tenantId: string, userId: string): Prom
   const role = await getUserTenantRole(tenantId, userId)
   if (!role || role === 'owner') return false
 
-  const db = useDb()
+  const db = useDrizzle()
   await db.delete(tenantMembers)
     .where(and(
       eq(tenantMembers.tenantId, tenantId),

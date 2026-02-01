@@ -1,6 +1,5 @@
 import { randomBytes } from 'crypto'
 import { eq, and } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { users, userTwoFactor, twoFactorTokens } from '~~/server/database/schema'
 import { verifyPassword } from '~~/server/utils/password'
 import { createSession } from '~~/server/utils/session'
@@ -33,7 +32,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 423, message: 'Account temporarily locked due to too many failed attempts' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   const rows = await db.select().from(users).where(eq(users.email, email))
   const user = rows[0]

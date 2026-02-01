@@ -1,7 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { useDb, withTenantContext } from '~~/server/database'
 import { tenants, entries, guestbooks } from '~~/server/database/schema'
 import { canPerformAction } from '~~/server/utils/tenant'
 
@@ -31,7 +30,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Insufficient permissions' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   // Get current tenant info
   const tenantRows = await db.select().from(tenants).where(eq(tenants.id, uuid))
