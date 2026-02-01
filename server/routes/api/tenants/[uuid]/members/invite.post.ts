@@ -60,6 +60,8 @@ export default defineEventHandler(async (event) => {
     createdAt: now
   })
 
+  await recordAuditLog(event, 'member.add', { tenantId: uuid, resourceType: 'invite', resourceId: id, details: { email: body.email.trim().toLowerCase() } })
+
   return {
     success: true,
     data: {

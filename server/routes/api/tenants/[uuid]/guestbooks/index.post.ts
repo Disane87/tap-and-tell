@@ -38,6 +38,8 @@ export default defineEventHandler(async (event) => {
     endDate: body.endDate
   })
 
+  await recordAuditLog(event, 'guestbook.create', { tenantId: uuid, resourceType: 'guestbook', resourceId: guestbook.id })
+
   return {
     success: true,
     data: guestbook

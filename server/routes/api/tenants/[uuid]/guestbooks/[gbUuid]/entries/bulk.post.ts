@@ -37,6 +37,8 @@ export default defineEventHandler(async (event) => {
 
   const updated = await bulkUpdateEntryStatus(uuid, body.ids, body.status)
 
+  await recordAuditLog(event, 'entry.bulk_update', { tenantId: uuid, resourceType: 'entry', details: { ids: body.ids, status: body.status } })
+
   return {
     success: true,
     data: { updated }

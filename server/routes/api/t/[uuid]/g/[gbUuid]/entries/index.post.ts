@@ -6,6 +6,13 @@ import type { CreateGuestEntryInput } from '~~/server/types/guest'
  * No authentication required (guest submission).
  */
 export default defineEventHandler(async (event) => {
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+
+  const rateCheck = entryLimiter.check(ip)
+  if (!rateCheck.allowed) {
+    throw createError({ statusCode: 429, message: 'Too many submissions. Please try again later.' })
+  }
+
   const uuid = getRouterParam(event, 'uuid')
   const gbUuid = getRouterParam(event, 'gbUuid')
   if (!uuid || !gbUuid) {
@@ -39,13 +46,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Photo must be 5MB or less' })
   }
 
+  if (body.photo && !validatePhotoMimeType(body.photo)) {
+    throw createError({ statusCode: 400, message: 'Invalid photo format' })
+  }
+
+  const sanitized = sanitizeEntryInput({ name: body.name, message: body.message, answers: body.answers })
+
   const entry = await createEntry(
     uuid,
     gbUuid,
-    body.name.trim(),
-    body.message.trim(),
+    sanitized.name.trim(),
+    sanitized.message.trim(),
     body.photo,
-    body.answers
+    sanitized.answers
   )
 
   return {

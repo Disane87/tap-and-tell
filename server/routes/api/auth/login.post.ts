@@ -1,13 +1,16 @@
-import { eq } from 'drizzle-orm'
+import { randomBytes } from 'crypto'
+import { eq, and } from 'drizzle-orm'
 import { useDb } from '~~/server/database'
-import { users } from '~~/server/database/schema'
+import { users, userTwoFactor, twoFactorTokens } from '~~/server/database/schema'
 import { verifyPassword } from '~~/server/utils/password'
 import { createSession } from '~~/server/utils/session'
+import { generateId } from '~~/server/utils/id'
+import { generateEmailOtp } from '~~/server/utils/email-otp'
 
 /**
  * POST /api/auth/login
  * Authenticates an owner with email and password.
- * Sets an HTTP-only auth cookie on success.
+ * Sets HTTP-only cookies for both access token and refresh token.
  */
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ email: string; password: string }>(event)
@@ -16,7 +19,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Email and password are required' })
   }
 
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+
+  const rateCheck = loginLimiter.check(ip)
+  if (!rateCheck.allowed) {
+    throw createError({ statusCode: 429, message: 'Too many login attempts. Please try again later.' })
+  }
+
   const email = body.email.trim().toLowerCase()
+
+  const lockStatus = isLocked(email)
+  if (lockStatus.locked) {
+    throw createError({ statusCode: 423, message: 'Account temporarily locked due to too many failed attempts' })
+  }
+
   const db = useDb()
 
   const rows = await db.select().from(users).where(eq(users.email, email))
@@ -32,18 +48,63 @@ export default defineEventHandler(async (event) => {
 
   const valid = await verifyPassword(body.password, user.passwordHash)
   if (!valid) {
+    recordFailedAttempt(email)
+    await recordAuditLog(event, 'auth.login_failed', { details: { email } })
     throw createError({ statusCode: 401, message: 'Invalid email or password' })
   }
 
-  const token = await createSession(user.id, user.email)
+  recordSuccessfulLogin(email)
 
-  setCookie(event, 'auth_token', token, {
+  // Check if 2FA is enabled for this user
+  const tfaRows = await db.select().from(userTwoFactor)
+    .where(and(eq(userTwoFactor.userId, user.id), eq(userTwoFactor.enabled, 'true')))
+  const tfa = tfaRows[0]
+
+  if (tfa) {
+    // 2FA is enabled — create a temporary token instead of a full session
+    const tempToken = randomBytes(32).toString('hex')
+
+    await db.insert(twoFactorTokens).values({
+      id: generateId(),
+      userId: user.id,
+      token: tempToken,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
+    })
+
+    // If email method, send OTP now
+    if (tfa.method === 'email') {
+      generateEmailOtp(user.id, user.email)
+    }
+
+    return {
+      success: true,
+      requires2fa: true,
+      data: {
+        token: tempToken,
+        method: tfa.method
+      }
+    }
+  }
+
+  const { accessToken, refreshToken } = await createSession(user.id, user.email)
+
+  setCookie(event, 'auth_token', accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60,
+    sameSite: 'strict',
+    maxAge: 15 * 60, // 15 minutes
     path: '/'
   })
+
+  setCookie(event, 'refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    path: '/'
+  })
+
+  await recordAuditLog(event, 'auth.login', { userId: user.id })
 
   return {
     success: true,
