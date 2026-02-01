@@ -145,6 +145,35 @@ export async function runMigrations(connectionString: string): Promise<void> {
       );
 
       CREATE INDEX IF NOT EXISTS idx_two_factor_tokens_token ON two_factor_tokens(token);
+
+      CREATE TABLE IF NOT EXISTS api_apps (
+        id VARCHAR(24) PRIMARY KEY,
+        tenant_id VARCHAR(24) NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        user_id VARCHAR(24) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        description TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_api_apps_tenant ON api_apps(tenant_id);
+      CREATE INDEX IF NOT EXISTS idx_api_apps_user ON api_apps(user_id);
+
+      CREATE TABLE IF NOT EXISTS api_tokens (
+        id VARCHAR(24) PRIMARY KEY,
+        app_id VARCHAR(24) NOT NULL REFERENCES api_apps(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        token_hash TEXT NOT NULL UNIQUE,
+        token_prefix VARCHAR(12) NOT NULL,
+        scopes JSONB NOT NULL DEFAULT '[]',
+        expires_at TIMESTAMPTZ,
+        last_used_at TIMESTAMPTZ,
+        revoked_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_api_tokens_app ON api_tokens(app_id);
+      CREATE INDEX IF NOT EXISTS idx_api_tokens_hash ON api_tokens(token_hash);
     `)
 
     // ── Enable Row-Level Security ──────────────────────────────────
@@ -220,6 +249,28 @@ export async function runMigrations(connectionString: string): Promise<void> {
       'ALL',
       `tenant_id = current_setting('app.current_tenant_id', true)`,
       `tenant_id = current_setting('app.current_tenant_id', true)`
+    )
+
+    // ── API Apps RLS ──
+    await client.query(`ALTER TABLE api_apps ENABLE ROW LEVEL SECURITY`)
+    await client.query(`ALTER TABLE api_apps FORCE ROW LEVEL SECURITY`)
+    await createPolicy(
+      'api_apps',
+      'api_apps_isolation',
+      'ALL',
+      `tenant_id = current_setting('app.current_tenant_id', true)`,
+      `tenant_id = current_setting('app.current_tenant_id', true)`
+    )
+
+    // ── API Tokens RLS (via api_apps → tenant_id) ──
+    await client.query(`ALTER TABLE api_tokens ENABLE ROW LEVEL SECURITY`)
+    await client.query(`ALTER TABLE api_tokens FORCE ROW LEVEL SECURITY`)
+    await createPolicy(
+      'api_tokens',
+      'api_tokens_isolation',
+      'ALL',
+      `app_id IN (SELECT id FROM api_apps WHERE tenant_id = current_setting('app.current_tenant_id', true))`,
+      `app_id IN (SELECT id FROM api_apps WHERE tenant_id = current_setting('app.current_tenant_id', true))`
     )
 
     // ── Audit Logs RLS ──

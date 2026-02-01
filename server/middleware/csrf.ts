@@ -40,6 +40,12 @@ export default defineEventHandler(async (event) => {
     return
   }
 
+  // Skip API token-authenticated requests (stateless Bearer auth, CSRF not applicable)
+  const authHeader = getHeader(event, 'authorization')
+  if (authHeader?.startsWith('Bearer tat_')) {
+    return
+  }
+
   // Read token from header (preferred) or request body fallback
   let token = getHeader(event, 'x-csrf-token')
 

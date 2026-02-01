@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'members:write')
 
   const uuid = getRouterParam(event, 'uuid')
   const userId = getRouterParam(event, 'userId')
