@@ -39,6 +39,8 @@ export const tenants = pgTable('tenants', {
   ownerId: varchar('owner_id', { length: 24 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
   /** Per-tenant encryption salt for photo encryption key derivation (hex-encoded). */
   encryptionSalt: varchar('encryption_salt', { length: 64 }),
+  /** Current encryption key version for key rotation support. */
+  keyVersion: varchar('key_version', { length: 10 }).notNull().default('1'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 })
@@ -117,6 +119,65 @@ export const tenantInvites = pgTable('tenant_invites', {
   index('idx_tenant_invites_token').on(table.token),
   index('idx_tenant_invites_email').on(table.email)
 ])
+
+/**
+ * Audit logs table for tracking security-relevant actions.
+ * RLS-protected via tenant_id. Entries with null tenant_id are visible when tenant context is not set.
+ */
+export const auditLogs = pgTable('audit_logs', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  tenantId: varchar('tenant_id', { length: 24 }).references(() => tenants.id, { onDelete: 'set null' }),
+  userId: varchar('user_id', { length: 24 }).references(() => users.id, { onDelete: 'set null' }),
+  action: text('action').notNull(),
+  resourceType: text('resource_type'),
+  resourceId: varchar('resource_id', { length: 24 }),
+  details: jsonb('details').$type<Record<string, unknown>>(),
+  ipAddress: text('ip_address'),
+  userAgent: text('user_agent'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index('idx_audit_logs_tenant').on(table.tenantId),
+  index('idx_audit_logs_user').on(table.userId),
+  index('idx_audit_logs_action').on(table.action),
+  index('idx_audit_logs_created').on(table.createdAt)
+])
+
+/**
+ * Two-factor authentication configuration per user.
+ * Supports TOTP (authenticator app) and email-based OTP.
+ */
+export const userTwoFactor = pgTable('user_two_factor', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  userId: varchar('user_id', { length: 24 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  /** 2FA method: 'totp' for authenticator app, 'email' for email-based OTP. */
+  method: text('method', { enum: ['totp', 'email'] }).notNull(),
+  /** TOTP secret (base32-encoded). Only set for TOTP method. Encrypted at rest. */
+  secret: text('secret'),
+  /** Comma-separated bcrypt-hashed backup codes. */
+  backupCodes: text('backup_codes'),
+  /** Whether this 2FA method is currently active. */
+  enabled: text('enabled').notNull().default('false'),
+  /** When the 2FA was verified and activated. */
+  verifiedAt: timestamp('verified_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index('idx_user_two_factor_user').on(table.userId)
+])
+
+/**
+ * Temporary 2FA verification tokens for the login flow.
+ * Created after password verification when 2FA is required.
+ */
+export const twoFactorTokens = pgTable('two_factor_tokens', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  userId: varchar('user_id', { length: 24 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  /** Random token string used to identify the pending 2FA verification. */
+  token: text('token').notNull().unique(),
+  /** Expiry time for this token (5 minutes). */
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+})
 
 /**
  * Tenant role type. Owner has full control, co_owner can moderate entries.

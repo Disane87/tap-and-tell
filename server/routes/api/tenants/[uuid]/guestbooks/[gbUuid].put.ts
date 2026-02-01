@@ -39,6 +39,8 @@ export default defineEventHandler(async (event) => {
     endDate: body?.endDate
   })
 
+  await recordAuditLog(event, 'guestbook.update', { tenantId: uuid, resourceType: 'guestbook', resourceId: gbUuid })
+
   return {
     success: true,
     data: updated

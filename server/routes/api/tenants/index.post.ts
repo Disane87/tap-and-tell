@@ -41,6 +41,8 @@ export default defineEventHandler(async (event) => {
   // Add creator as owner member
   await addTenantMember(id, user.id, 'owner')
 
+  await recordAuditLog(event, 'tenant.create', { tenantId: id, resourceType: 'tenant', resourceId: id })
+
   return {
     success: true,
     data: {

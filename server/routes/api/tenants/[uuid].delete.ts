@@ -26,5 +26,7 @@ export default defineEventHandler(async (event) => {
   // CASCADE will delete all entries and members too
   await db.delete(tenants).where(eq(tenants.id, uuid))
 
+  await recordAuditLog(event, 'tenant.delete', { tenantId: uuid, resourceType: 'tenant', resourceId: uuid })
+
   return { success: true }
 })

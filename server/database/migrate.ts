@@ -45,6 +45,9 @@ export async function runMigrations(connectionString: string): Promise<void> {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 
+      -- Key rotation support: add key_version column if not present
+      ALTER TABLE tenants ADD COLUMN IF NOT EXISTS key_version VARCHAR(10) NOT NULL DEFAULT '1';
+
       CREATE TABLE IF NOT EXISTS guestbooks (
         id VARCHAR(24) PRIMARY KEY,
         tenant_id VARCHAR(24) NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -100,6 +103,48 @@ export async function runMigrations(connectionString: string): Promise<void> {
 
       CREATE INDEX IF NOT EXISTS idx_tenant_invites_token ON tenant_invites(token);
       CREATE INDEX IF NOT EXISTS idx_tenant_invites_email ON tenant_invites(email);
+
+      CREATE TABLE IF NOT EXISTS audit_logs (
+        id VARCHAR(24) PRIMARY KEY,
+        tenant_id VARCHAR(24) REFERENCES tenants(id) ON DELETE SET NULL,
+        user_id VARCHAR(24) REFERENCES users(id) ON DELETE SET NULL,
+        action TEXT NOT NULL,
+        resource_type TEXT,
+        resource_id VARCHAR(24),
+        details JSONB,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_audit_logs_tenant ON audit_logs(tenant_id);
+      CREATE INDEX IF NOT EXISTS idx_audit_logs_user ON audit_logs(user_id);
+      CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action);
+      CREATE INDEX IF NOT EXISTS idx_audit_logs_created ON audit_logs(created_at);
+
+      CREATE TABLE IF NOT EXISTS user_two_factor (
+        id VARCHAR(24) PRIMARY KEY,
+        user_id VARCHAR(24) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        method TEXT NOT NULL CHECK(method IN ('totp', 'email')),
+        secret TEXT,
+        backup_codes TEXT,
+        enabled TEXT NOT NULL DEFAULT 'false',
+        verified_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_user_two_factor_user ON user_two_factor(user_id);
+
+      CREATE TABLE IF NOT EXISTS two_factor_tokens (
+        id VARCHAR(24) PRIMARY KEY,
+        user_id VARCHAR(24) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token TEXT NOT NULL UNIQUE,
+        expires_at TIMESTAMPTZ NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_two_factor_tokens_token ON two_factor_tokens(token);
     `)
 
     // ── Enable Row-Level Security ──────────────────────────────────
@@ -175,6 +220,17 @@ export async function runMigrations(connectionString: string): Promise<void> {
       'ALL',
       `tenant_id = current_setting('app.current_tenant_id', true)`,
       `tenant_id = current_setting('app.current_tenant_id', true)`
+    )
+
+    // ── Audit Logs RLS ──
+    await client.query(`ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY`)
+    await client.query(`ALTER TABLE audit_logs FORCE ROW LEVEL SECURITY`)
+    await createPolicy(
+      'audit_logs',
+      'audit_logs_isolation',
+      'ALL',
+      `tenant_id = current_setting('app.current_tenant_id', true) OR tenant_id IS NULL`,
+      `tenant_id = current_setting('app.current_tenant_id', true) OR tenant_id IS NULL`
     )
 
     console.log('[migrate] PostgreSQL migration complete with RLS policies')

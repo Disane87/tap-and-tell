@@ -30,5 +30,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Cannot remove this member' })
   }
 
+  await recordAuditLog(event, 'member.remove', { tenantId: uuid, resourceType: 'member', resourceId: userId })
+
   return { success: true }
 })

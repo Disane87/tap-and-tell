@@ -6,6 +6,13 @@ import type { CreateGuestEntryInput } from '~~/server/types/guest'
  * Uses the default tenant for backward compatibility.
  */
 export default defineEventHandler(async (event) => {
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+
+  const rateCheck = entryLimiter.check(ip)
+  if (!rateCheck.allowed) {
+    throw createError({ statusCode: 429, message: 'Too many submissions. Please try again later.' })
+  }
+
   const body = await readBody<CreateGuestEntryInput>(event)
 
   // Validate required fields
@@ -46,6 +53,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (body.photo && !validatePhotoMimeType(body.photo)) {
+    throw createError({
+      statusCode: 400,
+      message: 'Invalid photo format'
+    })
+  }
+
   const tenantId = await getDefaultTenantId()
   if (!tenantId) {
     throw createError({
@@ -64,13 +78,15 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  const sanitized = sanitizeEntryInput({ name: body.name, message: body.message, answers: body.answers })
+
   const entry = await createEntry(
     tenantId,
     guestbook.id,
-    body.name.trim(),
-    body.message.trim(),
+    sanitized.name.trim(),
+    sanitized.message.trim(),
     body.photo,
-    body.answers
+    sanitized.answers
   )
 
   return {

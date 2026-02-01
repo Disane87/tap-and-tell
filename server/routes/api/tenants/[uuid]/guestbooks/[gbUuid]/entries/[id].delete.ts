@@ -31,5 +31,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Entry not found' })
   }
 
+  await recordAuditLog(event, 'entry.delete', { tenantId: uuid, resourceType: 'entry', resourceId: id })
+
   return { success: true }
 })

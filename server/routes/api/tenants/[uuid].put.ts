@@ -48,6 +48,8 @@ export default defineEventHandler(async (event) => {
 
   const updatedRows = await db.select().from(tenants).where(eq(tenants.id, uuid))
 
+  await recordAuditLog(event, 'tenant.update', { tenantId: uuid, resourceType: 'tenant', resourceId: uuid })
+
   return {
     success: true,
     data: updatedRows[0]

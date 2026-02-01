@@ -7,7 +7,7 @@ import { createSession } from '~~/server/utils/session'
 /**
  * POST /api/auth/register
  * Registers a new owner account with email, password, and name.
- * Sets an HTTP-only auth cookie on success.
+ * Sets HTTP-only cookies for both access token and refresh token.
  */
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ email: string; password: string; name: string }>(event)
@@ -16,15 +16,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Email, password, and name are required' })
   }
 
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+
+  const rateCheck = registerLimiter.check(ip)
+  if (!rateCheck.allowed) {
+    throw createError({ statusCode: 429, message: 'Too many registration attempts. Please try again later.' })
+  }
+
   const email = body.email.trim().toLowerCase()
-  const name = body.name.trim()
+  const name = sanitizeText(body.name.trim())
 
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     throw createError({ statusCode: 400, message: 'Invalid email format' })
   }
 
-  if (body.password.length < 8) {
-    throw createError({ statusCode: 400, message: 'Password must be at least 8 characters' })
+  const policyResult = validatePasswordPolicy(body.password)
+  if (!policyResult.valid) {
+    throw createError({ statusCode: 400, message: policyResult.errors.join('. ') })
   }
 
   if (name.length < 1 || name.length > 100) {
@@ -49,15 +57,25 @@ export default defineEventHandler(async (event) => {
     name
   })
 
-  const token = await createSession(id, email)
+  const { accessToken, refreshToken } = await createSession(id, email)
 
-  setCookie(event, 'auth_token', token, {
+  setCookie(event, 'auth_token', accessToken, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60,
+    sameSite: 'strict',
+    maxAge: 15 * 60, // 15 minutes
     path: '/'
   })
+
+  setCookie(event, 'refresh_token', refreshToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    path: '/'
+  })
+
+  await recordAuditLog(event, 'auth.register', { userId: id, details: { email } })
 
   return {
     success: true,

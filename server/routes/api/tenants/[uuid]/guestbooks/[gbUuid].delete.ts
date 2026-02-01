@@ -26,5 +26,7 @@ export default defineEventHandler(async (event) => {
 
   await deleteGuestbook(gbUuid)
 
+  await recordAuditLog(event, 'guestbook.delete', { tenantId: uuid, resourceType: 'guestbook', resourceId: gbUuid })
+
   return { success: true }
 })

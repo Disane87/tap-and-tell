@@ -15,10 +15,11 @@ Tap & Tell is an NFC-enabled digital guestbook application built with Nuxt 3. Gu
 | UI Components | shadcn-vue / Radix Vue / Reka UI (under `app/components/ui/`) |
 | Styling | Tailwind CSS v4 (via `@tailwindcss/vite`) |
 | Icons | Iconify (`@iconify/vue`) / Lucide (`lucide-vue-next`) |
-| Database (local) | SQLite via better-sqlite3 |
-| Database (prod) | Turso (LibSQL) |
-| ORM | Drizzle ORM |
-| Auth | JWT via jose (HTTP-only cookies) |
+| Database | PostgreSQL 16+ with Row-Level Security (RLS) |
+| ORM | Drizzle ORM (`drizzle-orm/node-postgres`) |
+| Auth | JWT via jose (HTTP-only cookies, access + refresh tokens) |
+| 2FA | TOTP (RFC 6238) + Email OTP, mandatory for admin access |
+| Encryption | AES-256-GCM per-tenant photo encryption (HKDF-SHA256) |
 | i18n | @nuxtjs/i18n v10 |
 | PWA | @vite-pwa/nuxt |
 | PDF | jsPDF |
@@ -162,16 +163,17 @@ Tenant (name, plan, members)
 
 | Variable | Purpose | Default |
 |---|---|---|
-| `DATABASE_URL` | SQLite file path | `file:.data/data.db` |
-| `TURSO_DATABASE_URL` | Turso production URL | – |
-| `TURSO_AUTH_TOKEN` | Turso auth token | – |
+| `POSTGRES_URL` | PostgreSQL connection string | – |
+| `DATABASE_URL` | PostgreSQL connection string (fallback) | – |
 | `JWT_SECRET` | Owner auth JWT signing secret | insecure default |
+| `ENCRYPTION_MASTER_KEY` | 64-char hex key for photo encryption | dev fallback |
+| `CSRF_SECRET` | CSRF token signing secret | insecure default |
 | `ADMIN_PASSWORD` | Legacy admin password | `admin123` |
 | `TOKEN_SECRET` | Legacy token signing secret | `tap-and-tell-secret` |
 | `DATA_DIR` | Photo storage directory | `.data` |
 | `NODE_ENV` | Environment mode | `development` |
 
-> All secret defaults must be overridden in production.
+> **All secret defaults MUST be overridden in production**: `JWT_SECRET`, `ENCRYPTION_MASTER_KEY`, `CSRF_SECRET`, `ADMIN_PASSWORD`, `TOKEN_SECRET`.
 
 ## Implementation Plans
 

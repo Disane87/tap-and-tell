@@ -38,6 +38,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Entry not found' })
   }
 
+  await recordAuditLog(event, 'entry.update_status', { tenantId: uuid, resourceType: 'entry', resourceId: id, details: { status: body.status } })
+
   return {
     success: true,
     data: entry
