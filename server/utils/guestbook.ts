@@ -1,5 +1,4 @@
 import { eq, and, sql } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { guestbooks, tenants, entries } from '~~/server/database/schema'
 import type { GuestbookSettings, GuestbookType } from '~~/server/types/guestbook'
 
@@ -10,7 +9,7 @@ import type { GuestbookSettings, GuestbookType } from '~~/server/types/guestbook
  * @returns The guestbook row or undefined.
  */
 export async function getGuestbookById(id: string) {
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select().from(guestbooks).where(eq(guestbooks.id, id))
   return rows[0]
 }
@@ -22,7 +21,7 @@ export async function getGuestbookById(id: string) {
  * @returns Array of guestbooks with entry counts.
  */
 export async function getGuestbooksByTenant(tenantId: string) {
-  const db = useDb()
+  const db = useDrizzle()
   return db.select({
     id: guestbooks.id,
     tenantId: guestbooks.tenantId,
@@ -53,7 +52,7 @@ export async function createGuestbook(tenantId: string, input: {
   startDate?: string
   endDate?: string
 }) {
-  const db = useDb()
+  const db = useDrizzle()
   const id = generateId()
   const now = new Date()
 
@@ -97,7 +96,7 @@ export async function updateGuestbook(id: string, input: {
   startDate?: string
   endDate?: string
 }) {
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select().from(guestbooks).where(eq(guestbooks.id, id))
   const existing = rows[0]
   if (!existing) return undefined
@@ -125,7 +124,7 @@ export async function updateGuestbook(id: string, input: {
  * @returns True if the guestbook was deleted.
  */
 export async function deleteGuestbook(id: string): Promise<boolean> {
-  const db = useDb()
+  const db = useDrizzle()
   await db.delete(guestbooks).where(eq(guestbooks.id, id))
   return true
 }
@@ -138,7 +137,7 @@ export async function deleteGuestbook(id: string): Promise<boolean> {
  * @returns The guestbook with tenant info or undefined.
  */
 export async function getGuestbookWithTenant(guestbookId: string) {
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({
     id: guestbooks.id,
     tenantId: guestbooks.tenantId,

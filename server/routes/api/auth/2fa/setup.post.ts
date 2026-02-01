@@ -1,5 +1,4 @@
 import { eq, and } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { userTwoFactor } from '~~/server/database/schema'
 
 /**
@@ -19,7 +18,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Method must be "totp" or "email"' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   // Check if 2FA is already enabled
   const existing = await db.select().from(userTwoFactor)

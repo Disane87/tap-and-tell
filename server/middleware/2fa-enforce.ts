@@ -1,5 +1,4 @@
 import { eq, and } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { userTwoFactor } from '~~/server/database/schema'
 
 /**
@@ -27,7 +26,7 @@ export default defineEventHandler(async (event) => {
 
   // For all authenticated admin routes (/api/tenants/*, etc.), check 2FA
   if (path.startsWith('/api/tenants') || path.startsWith('/api/entries')) {
-    const db = useDb()
+    const db = useDrizzle()
     const tfaRows = await db.select().from(userTwoFactor)
       .where(and(eq(userTwoFactor.userId, user.id), eq(userTwoFactor.enabled, 'true')))
 

@@ -1,7 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } from 'fs'
 import { join } from 'path'
 import { eq, desc, and, inArray } from 'drizzle-orm'
-import { useDb, withTenantContext } from '~~/server/database'
 import { entries, tenants } from '~~/server/database/schema'
 import { encryptData, decryptData, deriveTenantKey } from '~~/server/utils/crypto'
 import type { EntryStatus, GuestEntry } from '~~/server/types/guest'
@@ -327,7 +326,7 @@ export function getPhotoMimeType(filename: string): string {
  * @returns The derived 32-byte tenant encryption key.
  */
 async function getTenantEncryptionKey(tenantId: string): Promise<Buffer> {
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select({ encryptionSalt: tenants.encryptionSalt })
     .from(tenants)
     .where(eq(tenants.id, tenantId))

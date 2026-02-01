@@ -1,5 +1,4 @@
 import { eq, and, gt } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { sessions, users } from '~~/server/database/schema'
 import { createAccessToken, createRefreshToken, verifyJwt } from '~~/server/utils/jwt'
 
@@ -23,7 +22,7 @@ export interface SessionTokens {
  * @returns Both the access token and refresh token.
  */
 export async function createSession(userId: string, email: string): Promise<SessionTokens> {
-  const db = useDb()
+  const db = useDrizzle()
   const accessToken = await createAccessToken({ sub: userId, email })
   const refreshToken = await createRefreshToken({ sub: userId, email })
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
@@ -49,7 +48,7 @@ export async function validateAccessToken(token: string) {
   const payload = await verifyJwt(token, 'access')
   if (!payload) return null
 
-  const db = useDb()
+  const db = useDrizzle()
   const userRows = await db.select({
     id: users.id,
     email: users.email,
@@ -78,7 +77,7 @@ export async function validateSession(token: string) {
   const payload = await verifyJwt(token)
   if (!payload) return null
 
-  const db = useDb()
+  const db = useDrizzle()
   const now = new Date()
 
   const sessionRows = await db.select()
@@ -116,7 +115,7 @@ export async function refreshSession(refreshTokenStr: string): Promise<SessionTo
   const payload = await verifyJwt(refreshTokenStr, 'refresh')
   if (!payload) return null
 
-  const db = useDb()
+  const db = useDrizzle()
   const now = new Date()
 
   // Look up session by refresh token
@@ -154,7 +153,7 @@ export async function refreshSession(refreshTokenStr: string): Promise<SessionTo
  * @param refreshTokenStr - The refresh token to invalidate.
  */
 export async function deleteSession(refreshTokenStr: string): Promise<void> {
-  const db = useDb()
+  const db = useDrizzle()
   await db.delete(sessions).where(eq(sessions.token, refreshTokenStr))
 }
 
@@ -164,6 +163,6 @@ export async function deleteSession(refreshTokenStr: string): Promise<void> {
  * @param userId - The user ID whose sessions should be invalidated.
  */
 export async function deleteAllUserSessions(userId: string): Promise<void> {
-  const db = useDb()
+  const db = useDrizzle()
   await db.delete(sessions).where(eq(sessions.userId, userId))
 }

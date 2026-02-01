@@ -1,4 +1,3 @@
-import { withTenantContext } from '~~/server/database'
 import { apiApps } from '~~/server/database/schema'
 import { sql } from 'drizzle-orm'
 

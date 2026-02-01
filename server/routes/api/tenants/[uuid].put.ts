@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
 import type { UpdateTenantInput } from '~~/server/types/tenant'
 import { canPerformAction } from '~~/server/utils/tenant'
@@ -24,7 +23,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
   const rows = await db.select().from(tenants).where(eq(tenants.id, uuid))
   const tenant = rows[0]
 

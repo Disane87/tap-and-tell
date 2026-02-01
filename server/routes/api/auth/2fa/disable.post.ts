@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { userTwoFactor, users } from '~~/server/database/schema'
 import { verifyPassword } from '~~/server/utils/password'
 
@@ -19,7 +18,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Current password is required' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   // Verify password
   const userRows = await db.select().from(users).where(eq(users.id, user.id))

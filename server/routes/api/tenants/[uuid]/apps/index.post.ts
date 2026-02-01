@@ -1,4 +1,3 @@
-import { useDb } from '~~/server/database'
 import { apiApps } from '~~/server/database/schema'
 
 /**
@@ -21,7 +20,7 @@ export default defineEventHandler(async (event) => {
   if (!body?.name?.trim()) throw createError({ statusCode: 400, message: 'App name is required' })
   if (body.name.length > 100) throw createError({ statusCode: 400, message: 'Name must be 100 chars or less' })
 
-  const db = useDb()
+  const db = useDrizzle()
   const id = generateId()
   const now = new Date()
 

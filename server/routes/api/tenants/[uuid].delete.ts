@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
 import { canPerformAction } from '~~/server/utils/tenant'
 
@@ -23,7 +22,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
   // CASCADE will delete all entries and members too
   await db.delete(tenants).where(eq(tenants.id, uuid))
 

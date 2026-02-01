@@ -1,4 +1,3 @@
-import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
 import type { CreateTenantInput } from '~~/server/types/tenant'
 import { addTenantMember } from '~~/server/utils/tenant'
@@ -26,7 +25,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Name must be 100 characters or less' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
   const id = generateId()
   const now = new Date()
 

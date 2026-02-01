@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { users } from '~~/server/database/schema'
 import { hashPassword } from '~~/server/utils/password'
 import { createSession } from '~~/server/utils/session'
@@ -39,7 +38,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Name must be between 1 and 100 characters' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   // Check if email already exists
   const existingRows = await db.select({ id: users.id }).from(users).where(eq(users.email, email))

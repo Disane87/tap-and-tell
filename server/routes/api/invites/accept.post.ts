@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenantInvites } from '~~/server/database/schema'
 import { addTenantMember, getUserTenantRole } from '~~/server/utils/tenant'
 import type { TenantRole } from '~~/server/database/schema'
@@ -22,7 +21,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Token is required' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
   const inviteRows = await db.select().from(tenantInvites).where(eq(tenantInvites.token, body.token))
   const invite = inviteRows[0]
 

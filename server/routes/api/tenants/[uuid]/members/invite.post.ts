@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenantInvites, tenants } from '~~/server/database/schema'
 import { canPerformAction } from '~~/server/utils/tenant'
 
@@ -32,7 +31,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Valid email is required' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   // Check tenant exists
   const tenantRows = await db.select({ id: tenants.id, name: tenants.name })

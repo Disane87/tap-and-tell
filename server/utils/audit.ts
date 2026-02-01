@@ -1,5 +1,4 @@
 import type { H3Event } from 'h3'
-import { useDb } from '~~/server/database'
 import { auditLogs } from '~~/server/database/schema'
 
 /** Audit action types for type safety. */
@@ -46,7 +45,7 @@ export async function recordAuditLog(
   } = {}
 ): Promise<void> {
   try {
-    const db = useDb()
+    const db = useDrizzle()
     const ip = getRequestIP(event, { xForwardedFor: true }) || null
     const userAgent = getRequestHeader(event, 'user-agent') || null
 

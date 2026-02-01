@@ -1,5 +1,4 @@
 import { eq, and, gt } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { userTwoFactor, twoFactorTokens, users } from '~~/server/database/schema'
 import { createSession } from '~~/server/utils/session'
 
@@ -15,7 +14,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Token and code are required' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
 
   // Look up the 2FA token
   const tokenRows = await db.select().from(twoFactorTokens)
