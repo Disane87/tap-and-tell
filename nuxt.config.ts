@@ -111,6 +111,19 @@ export default defineNuxtConfig({
     ]
   },
 
+  runtimeConfig: {
+    postgresUrl: process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
+  },
+
+  nitro: {
+    externals: {
+      inline: [],
+    },
+    rollupConfig: {
+      external: ['pg'],
+    },
+  },
+
   css: ['~/assets/css/main.css'],
 
   app: {

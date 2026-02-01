@@ -11,10 +11,8 @@
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
-    "@libsql/client": "^0.17.0",
     "@nuxtjs/i18n": "^10.2.1",
     "@vueuse/core": "^14.1.0",
-    "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
@@ -23,6 +21,7 @@
     "lucide-vue-next": "^0.563.0",
     "nanoid": "^5.1.6",
     "nuxt": "^4.3.0",
+    "pg": "^8.18.0",
     "qrcode": "^1.5.4",
     "radix-vue": "^1.9.17",
     "reka-ui": "^2.8.0",
@@ -34,7 +33,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/vite": "^4.1.18",
-    "@types/better-sqlite3": "^7.6.13",
+    "@types/pg": "^8.16.0",
     "@vite-pwa/nuxt": "^1.1.0",
     "@vitejs/plugin-basic-ssl": "^2.1.4",
     "drizzle-kit": "^0.31.8",

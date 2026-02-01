@@ -3,11 +3,12 @@
  * Deletes a guestbook and all its entries.
  * Requires owner permission.
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const user = event.context.user
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'guestbooks:write')
 
   const uuid = getRouterParam(event, 'uuid')
   const gbUuid = getRouterParam(event, 'gbUuid')
@@ -15,16 +16,18 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'delete')) {
+  if (!await canPerformAction(uuid, user.id, 'delete')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const existing = getGuestbookById(gbUuid)
+  const existing = await getGuestbookById(gbUuid)
   if (!existing || existing.tenantId !== uuid) {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
 
-  deleteGuestbook(gbUuid)
+  await deleteGuestbook(gbUuid)
+
+  await recordAuditLog(event, 'guestbook.delete', { tenantId: uuid, resourceType: 'guestbook', resourceId: gbUuid })
 
   return { success: true }
 })

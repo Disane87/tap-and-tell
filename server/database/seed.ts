@@ -1,8 +1,8 @@
 import { nanoid } from 'nanoid'
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
-import Database from 'better-sqlite3'
-import { runMigrations } from './migrate'
+import { Pool } from 'pg'
+import { generateEncryptionSalt } from '~~/server/utils/crypto'
 
 /**
  * Seeds the database with existing entries from the legacy JSON storage.
@@ -10,115 +10,103 @@ import { runMigrations } from './migrate'
  *
  * This script is idempotent — it skips seeding if entries already exist.
  *
- * @param dbPath - Path to the SQLite database file.
+ * @param connectionString - PostgreSQL connection string.
  * @param dataDir - Path to the legacy .data directory.
  */
-export function seedFromLegacy(dbPath: string, dataDir: string): void {
-  runMigrations(dbPath)
-
-  const db = new Database(dbPath)
-  db.pragma('journal_mode = WAL')
-  db.pragma('foreign_keys = ON')
-
-  // Check if entries already exist
-  const count = db.prepare('SELECT COUNT(*) as count FROM entries').get() as { count: number }
-  if (count.count > 0) {
-    db.close()
-    return
-  }
-
-  const entriesFile = join(dataDir, 'entries.json')
-  if (!existsSync(entriesFile)) {
-    db.close()
-    return
-  }
-
-  let legacyEntries: Array<{
-    id: string
-    name: string
-    message: string
-    photoUrl?: string
-    answers?: Record<string, unknown>
-    createdAt: string
-    status?: string
-    rejectionReason?: string
-  }>
+export async function seedFromLegacy(connectionString: string, dataDir: string): Promise<void> {
+  const pool = new Pool({ connectionString })
+  const client = await pool.connect()
 
   try {
-    const data = readFileSync(entriesFile, 'utf-8')
-    legacyEntries = JSON.parse(data)
-  } catch {
-    db.close()
-    return
-  }
+    // Check if entries already exist
+    const countResult = await client.query('SELECT COUNT(*) as count FROM entries')
+    if (parseInt(countResult.rows[0].count, 10) > 0) {
+      return
+    }
 
-  if (legacyEntries.length === 0) {
-    db.close()
-    return
-  }
+    const entriesFile = join(dataDir, 'entries.json')
+    if (!existsSync(entriesFile)) {
+      return
+    }
 
-  // Create a default owner user
-  const defaultUserId = nanoid(12)
-  const defaultTenantId = nanoid(12)
+    let legacyEntries: Array<{
+      id: string
+      name: string
+      message: string
+      photoUrl?: string
+      answers?: Record<string, unknown>
+      createdAt: string
+      status?: string
+      rejectionReason?: string
+    }>
 
-  const insertUser = db.prepare(
-    'INSERT INTO users (id, email, password_hash, name) VALUES (?, ?, ?, ?)'
-  )
-  // Default password hash for 'admin123' — owner should change this
-  insertUser.run(defaultUserId, 'admin@tap-and-tell.local', 'migrated:no-login', 'Admin')
+    try {
+      const data = readFileSync(entriesFile, 'utf-8')
+      legacyEntries = JSON.parse(data)
+    } catch {
+      return
+    }
 
-  // Create default tenant
-  const insertTenant = db.prepare(
-    'INSERT INTO tenants (id, name, owner_id) VALUES (?, ?, ?)'
-  )
-  insertTenant.run(defaultTenantId, 'Default Guestbook', defaultUserId)
+    if (legacyEntries.length === 0) {
+      return
+    }
 
-  // Create owner membership for default tenant
-  const insertMember = db.prepare(
-    'INSERT OR IGNORE INTO tenant_members (id, tenant_id, user_id, role) VALUES (?, ?, ?, ?)'
-  )
-  insertMember.run(nanoid(12), defaultTenantId, defaultUserId, 'owner')
+    await client.query('BEGIN')
 
-  // Migrate entries
-  const insertEntry = db.prepare(`
-    INSERT INTO entries (id, tenant_id, name, message, photo_url, answers, status, rejection_reason, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `)
+    // Create a default owner user
+    const defaultUserId = nanoid(12)
+    const defaultTenantId = nanoid(12)
+    const defaultGuestbookId = nanoid(12)
+    const encryptionSalt = generateEncryptionSalt()
 
-  const transaction = db.transaction(() => {
+    await client.query(
+      'INSERT INTO users (id, email, password_hash, name) VALUES ($1, $2, $3, $4)',
+      [defaultUserId, 'admin@tap-and-tell.local', 'migrated:no-login', 'Admin']
+    )
+
+    await client.query(
+      'INSERT INTO tenants (id, name, owner_id, encryption_salt) VALUES ($1, $2, $3, $4)',
+      [defaultTenantId, 'Default Guestbook', defaultUserId, encryptionSalt]
+    )
+
+    await client.query(
+      'INSERT INTO tenant_members (id, tenant_id, user_id, role) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING',
+      [nanoid(12), defaultTenantId, defaultUserId, 'owner']
+    )
+
+    // Create a default guestbook for legacy entries
+    await client.query(
+      `INSERT INTO guestbooks (id, tenant_id, name, type, settings) VALUES ($1, $2, $3, $4, $5)`,
+      [defaultGuestbookId, defaultTenantId, 'Default Guestbook', 'permanent', '{}']
+    )
+
+    // Migrate entries
     for (const entry of legacyEntries) {
-      insertEntry.run(
-        entry.id,
-        defaultTenantId,
-        entry.name,
-        entry.message,
-        entry.photoUrl || null,
-        entry.answers ? JSON.stringify(entry.answers) : null,
-        entry.status || 'approved',
-        entry.rejectionReason || null,
-        entry.createdAt
+      await client.query(
+        `INSERT INTO entries (id, guestbook_id, name, message, photo_url, answers, status, rejection_reason, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          entry.id,
+          defaultGuestbookId,
+          entry.name,
+          entry.message,
+          entry.photoUrl || null,
+          entry.answers ? JSON.stringify(entry.answers) : null,
+          entry.status || 'approved',
+          entry.rejectionReason || null,
+          new Date(entry.createdAt)
+        ]
       )
     }
-  })
 
-  transaction()
+    await client.query('COMMIT')
 
-  // Backfill tenant_members for any tenants missing owner membership
-  const tenantsWithoutMembers = db.prepare(`
-    SELECT t.id, t.owner_id FROM tenants t
-    WHERE NOT EXISTS (
-      SELECT 1 FROM tenant_members tm WHERE tm.tenant_id = t.id AND tm.role = 'owner'
-    )
-  `).all() as Array<{ id: string; owner_id: string }>
-
-  const insertOwnerMember = db.prepare(
-    'INSERT OR IGNORE INTO tenant_members (id, tenant_id, user_id, role) VALUES (?, ?, ?, ?)'
-  )
-  for (const t of tenantsWithoutMembers) {
-    insertOwnerMember.run(nanoid(12), t.id, t.owner_id, 'owner')
+    console.log(`Seeded ${legacyEntries.length} entries into default tenant ${defaultTenantId}`)
+  } catch (error) {
+    await client.query('ROLLBACK')
+    throw error
+  } finally {
+    client.release()
+    await pool.end()
   }
-
-  db.close()
-
-  console.log(`Seeded ${legacyEntries.length} entries into default tenant ${defaultTenantId}`)
 }

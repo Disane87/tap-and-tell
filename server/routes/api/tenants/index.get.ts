@@ -1,5 +1,4 @@
 import { sql } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenants, tenantMembers } from '~~/server/database/schema'
 import { eq } from 'drizzle-orm'
 
@@ -8,14 +7,15 @@ import { eq } from 'drizzle-orm'
  * Lists all tenants where the authenticated user is a member (owner or co_owner).
  * Includes guestbook count and the user's role for each tenant.
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const user = event.context.user
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'tenant:read')
 
-  const db = useDb()
-  const rows = db.select({
+  const db = useDrizzle()
+  const rows = await db.select({
     id: tenants.id,
     name: tenants.name,
     ownerId: tenants.ownerId,
@@ -27,7 +27,6 @@ export default defineEventHandler((event) => {
     .from(tenantMembers)
     .innerJoin(tenants, eq(tenantMembers.tenantId, tenants.id))
     .where(eq(tenantMembers.userId, user.id))
-    .all()
 
   return {
     success: true,

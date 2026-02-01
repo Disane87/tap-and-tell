@@ -10,13 +10,14 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'guestbooks:write')
 
   const uuid = getRouterParam(event, 'uuid')
   if (!uuid) {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'manage')) {
+  if (!await canPerformAction(uuid, user.id, 'manage')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
@@ -30,13 +31,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Name must be 100 characters or less' })
   }
 
-  const guestbook = createGuestbook(uuid, {
+  const guestbook = await createGuestbook(uuid, {
     name: body.name.trim(),
     type: body.type,
     settings: body.settings,
     startDate: body.startDate,
     endDate: body.endDate
   })
+
+  await recordAuditLog(event, 'guestbook.create', { tenantId: uuid, resourceType: 'guestbook', resourceId: guestbook.id })
 
   return {
     success: true,

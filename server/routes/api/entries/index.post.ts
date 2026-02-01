@@ -6,6 +6,13 @@ import type { CreateGuestEntryInput } from '~~/server/types/guest'
  * Uses the default tenant for backward compatibility.
  */
 export default defineEventHandler(async (event) => {
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+
+  const rateCheck = entryLimiter.check(ip)
+  if (!rateCheck.allowed) {
+    throw createError({ statusCode: 429, message: 'Too many submissions. Please try again later.' })
+  }
+
   const body = await readBody<CreateGuestEntryInput>(event)
 
   // Validate required fields
@@ -46,7 +53,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const tenantId = getDefaultTenantId()
+  if (body.photo && !validatePhotoMimeType(body.photo)) {
+    throw createError({
+      statusCode: 400,
+      message: 'Invalid photo format'
+    })
+  }
+
+  const tenantId = await getDefaultTenantId()
   if (!tenantId) {
     throw createError({
       statusCode: 500,
@@ -54,12 +68,25 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const entry = createEntry(
+  // Get the first guestbook for the default tenant
+  const guestbookList = await getGuestbooksByTenant(tenantId)
+  const guestbook = guestbookList[0]
+  if (!guestbook) {
+    throw createError({
+      statusCode: 500,
+      message: 'No guestbook configured for default tenant'
+    })
+  }
+
+  const sanitized = sanitizeEntryInput({ name: body.name, message: body.message, answers: body.answers })
+
+  const entry = await createEntry(
     tenantId,
-    body.name.trim(),
-    body.message.trim(),
+    guestbook.id,
+    sanitized.name.trim(),
+    sanitized.message.trim(),
     body.photo,
-    body.answers
+    sanitized.answers
   )
 
   return {

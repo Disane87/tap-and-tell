@@ -1,7 +1,7 @@
-import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
 import type { CreateTenantInput } from '~~/server/types/tenant'
 import { addTenantMember } from '~~/server/utils/tenant'
+import { generateEncryptionSalt } from '~~/server/utils/crypto'
 
 /**
  * POST /api/tenants
@@ -13,6 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'tenant:write')
 
   const body = await readBody<CreateTenantInput>(event)
 
@@ -24,20 +25,23 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Name must be 100 characters or less' })
   }
 
-  const db = useDb()
+  const db = useDrizzle()
   const id = generateId()
-  const now = new Date().toISOString()
+  const now = new Date()
 
-  db.insert(tenants).values({
+  await db.insert(tenants).values({
     id,
     name: body.name.trim(),
     ownerId: user.id,
+    encryptionSalt: generateEncryptionSalt(),
     createdAt: now,
     updatedAt: now
-  }).run()
+  })
 
   // Add creator as owner member
-  addTenantMember(id, user.id, 'owner')
+  await addTenantMember(id, user.id, 'owner')
+
+  await recordAuditLog(event, 'tenant.create', { tenantId: id, resourceType: 'tenant', resourceId: id })
 
   return {
     success: true,

@@ -3,7 +3,7 @@
  * Deletes a guest entry by ID.
  * NOTE: This endpoint is currently unprotected. Use /api/admin/entries/:id for authenticated deletion.
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
 
   if (!id) {
@@ -13,7 +13,12 @@ export default defineEventHandler((event) => {
     })
   }
 
-  const deleted = deleteEntry(id)
+  const tenantId = await getDefaultTenantId()
+  if (!tenantId) {
+    throw createError({ statusCode: 500, message: 'No default tenant configured' })
+  }
+
+  const deleted = await deleteEntry(tenantId, id)
 
   if (!deleted) {
     throw createError({
