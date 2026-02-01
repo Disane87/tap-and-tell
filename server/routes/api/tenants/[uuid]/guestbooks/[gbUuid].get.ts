@@ -1,5 +1,4 @@
 import { sql, eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { guestbooks } from '~~/server/database/schema'
 
 /**
@@ -7,11 +6,12 @@ import { guestbooks } from '~~/server/database/schema'
  * Returns guestbook details with entry count.
  * Requires authentication and tenant membership.
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const user = event.context.user
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'guestbooks:read')
 
   const uuid = getRouterParam(event, 'uuid')
   const gbUuid = getRouterParam(event, 'gbUuid')
@@ -19,12 +19,12 @@ export default defineEventHandler((event) => {
     throw createError({ statusCode: 400, message: 'Tenant ID and Guestbook ID are required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'read')) {
+  if (!await canPerformAction(uuid, user.id, 'read')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const db = useDb()
-  const guestbook = db.select({
+  const db = useDrizzle()
+  const rows = await db.select({
     id: guestbooks.id,
     tenantId: guestbooks.tenantId,
     name: guestbooks.name,
@@ -38,7 +38,8 @@ export default defineEventHandler((event) => {
   })
     .from(guestbooks)
     .where(eq(guestbooks.id, gbUuid))
-    .get()
+
+  const guestbook = rows[0]
 
   if (!guestbook || guestbook.tenantId !== uuid) {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })

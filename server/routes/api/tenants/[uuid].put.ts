@@ -1,5 +1,4 @@
 import { eq } from 'drizzle-orm'
-import { useDb } from '~~/server/database'
 import { tenants } from '~~/server/database/schema'
 import type { UpdateTenantInput } from '~~/server/types/tenant'
 import { canPerformAction } from '~~/server/utils/tenant'
@@ -13,18 +12,20 @@ export default defineEventHandler(async (event) => {
   if (!user) {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
+  requireScope(event, 'tenant:write')
 
   const uuid = getRouterParam(event, 'uuid')
   if (!uuid) {
     throw createError({ statusCode: 400, message: 'Tenant ID is required' })
   }
 
-  if (!canPerformAction(uuid, user.id, 'manage')) {
+  if (!await canPerformAction(uuid, user.id, 'manage')) {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const db = useDb()
-  const tenant = db.select().from(tenants).where(eq(tenants.id, uuid)).get()
+  const db = useDrizzle()
+  const rows = await db.select().from(tenants).where(eq(tenants.id, uuid))
+  const tenant = rows[0]
 
   if (!tenant) {
     throw createError({ statusCode: 404, message: 'Tenant not found' })
@@ -33,7 +34,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<UpdateTenantInput>(event)
 
   const updates: Record<string, unknown> = {
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date()
   }
 
   if (body?.name !== undefined) {
@@ -43,12 +44,14 @@ export default defineEventHandler(async (event) => {
     updates.name = body.name.trim()
   }
 
-  db.update(tenants).set(updates).where(eq(tenants.id, uuid)).run()
+  await db.update(tenants).set(updates).where(eq(tenants.id, uuid))
 
-  const updated = db.select().from(tenants).where(eq(tenants.id, uuid)).get()
+  const updatedRows = await db.select().from(tenants).where(eq(tenants.id, uuid))
+
+  await recordAuditLog(event, 'tenant.update', { tenantId: uuid, resourceType: 'tenant', resourceId: uuid })
 
   return {
     success: true,
-    data: updated
+    data: updatedRows[0]
   }
 })

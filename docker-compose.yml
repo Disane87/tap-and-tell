@@ -1,4 +1,21 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: tap-and-tell-db
+    environment:
+      POSTGRES_DB: tapandtell
+      POSTGRES_USER: tapandtell
+      POSTGRES_PASSWORD: tapandtell_dev
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tapandtell']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
@@ -6,21 +23,29 @@ services:
     container_name: tap-and-tell
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - '3000:3000'
     volumes:
       - tap-and-tell-data:/app/data
     environment:
       - NODE_ENV=production
+      - POSTGRES_URL=postgresql://tapandtell:tapandtell_dev@postgres:5432/tapandtell
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - TOKEN_SECRET=${TOKEN_SECRET:-change-me-in-production}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - ENCRYPTION_MASTER_KEY=${ENCRYPTION_MASTER_KEY}
       - DATA_DIR=/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
 
 volumes:
+  pgdata:
+    driver: local
   tap-and-tell-data:
     driver: local

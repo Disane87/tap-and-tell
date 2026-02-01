@@ -26,7 +26,12 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid status' })
   }
 
-  const updated = bulkUpdateEntryStatus(body.ids, body.status)
+  const tenantId = await getDefaultTenantId()
+  if (!tenantId) {
+    throw createError({ statusCode: 500, message: 'No default tenant configured' })
+  }
+
+  const updated = await bulkUpdateEntryStatus(tenantId, body.ids, body.status)
 
   return {
     success: true,
