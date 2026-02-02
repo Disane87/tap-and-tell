@@ -48,6 +48,10 @@ export async function runMigrations(connectionString: string): Promise<void> {
       -- Key rotation support: add key_version column if not present
       ALTER TABLE tenants ADD COLUMN IF NOT EXISTS key_version VARCHAR(10) NOT NULL DEFAULT '1';
 
+      -- Profile management: avatar URL on users, plan on tenants
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+      ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free';
+
       CREATE TABLE IF NOT EXISTS guestbooks (
         id VARCHAR(24) PRIMARY KEY,
         tenant_id VARCHAR(24) NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,

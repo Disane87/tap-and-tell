@@ -3,7 +3,7 @@
  * Tenant admin panel showing guestbook list and member management.
  * Entry moderation has moved to guestbook-scoped admin pages.
  */
-import { Trash2, Plus, Users, UserPlus, Shield, Copy, BookOpen, Calendar, Home } from 'lucide-vue-next'
+import { Trash2, Plus, Users, UserPlus, Shield, Copy, BookOpen, Calendar, Home, Eye } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import type { TenantRole } from '~/types/tenant'
 import type { Guestbook, CreateGuestbookInput } from '~/types/guestbook'
@@ -221,14 +221,14 @@ onMounted(async () => {
           </div>
 
           <div class="mt-4 flex gap-2">
-            <NuxtLink :to="`/t/${tenantId}/g/${gb.id}/admin`" class="flex-1">
+            <NuxtLink :to="`/g/${gb.id}/admin`" class="flex-1">
               <Button variant="outline" size="sm" class="w-full">
                 {{ $t('dashboard.manage') }}
               </Button>
             </NuxtLink>
-            <NuxtLink :to="`/t/${tenantId}/g/${gb.id}`" class="flex-1">
-              <Button variant="outline" size="sm" class="w-full">
-                {{ $t('dashboard.viewGuestbook') }}
+            <NuxtLink :to="`/g/${gb.id}`" target="_blank">
+              <Button variant="outline" size="icon-sm" class="h-8 w-8">
+                <Eye class="h-4 w-4" />
               </Button>
             </NuxtLink>
           </div>
@@ -373,5 +373,8 @@ onMounted(async () => {
         </Card>
       </div>
     </div>
+
+    <!-- API Apps Section (Owner only) -->
+    <AdminApiApps v-if="isOwner" :tenant-id="tenantId" class="mt-12" />
   </div>
 </template>

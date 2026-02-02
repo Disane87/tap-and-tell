@@ -19,6 +19,7 @@
     "subtitle": "Hinterlasse eine Nachricht und erzähl uns etwas über dich.",
     "cta": "Reinschreiben",
     "viewAll": "Alle Einträge ansehen",
+    "adminBar": "Gästebuch verwalten",
     "hero": {
       "badge": "Digitales Gästebuch",
       "title": "Tap & Tell",
@@ -247,7 +248,7 @@
       "license": "MIT Lizenz",
       "contributors": "Community-getriebene Entwicklung"
     },
-    "cta": {
+    "ctaSection": {
       "title": "Bereit, dein Gästebuch zu erstellen?",
       "subtitle": "Fang heute an, Erinnerungen deiner Gäste zu sammeln — kostenlos."
     },
@@ -535,6 +536,210 @@
     "deleteConfirm": "Das Gästebuch und alle Einträge werden unwiderruflich gelöscht.",
     "deleteSuccess": "Gästebuch gelöscht",
     "deleteFailed": "Gästebuch konnte nicht gelöscht werden"
+  },
+  "apiApps": {
+    "title": "API Apps",
+    "description": "Verwalte API-Integrationen und Zugriffstoken für externe Dienste.",
+    "empty": "Noch keine API Apps. Erstelle eine, um mit dem API-Zugang zu beginnen.",
+    "manage": "Apps verwalten",
+    "create": "Neue App",
+    "createTitle": "API App erstellen",
+    "createDescription": "Erstelle eine benannte Integration, um API-Token zu generieren.",
+    "appName": "App-Name",
+    "appNamePlaceholder": "z.B. Home Assistant, Zapier",
+    "appDescription": "Beschreibung",
+    "appDescriptionPlaceholder": "Wofür wird diese App verwendet?",
+    "createSuccess": "API App erstellt!",
+    "createFailed": "API App konnte nicht erstellt werden",
+    "editTitle": "API App bearbeiten",
+    "editSuccess": "API App aktualisiert!",
+    "editFailed": "API App konnte nicht aktualisiert werden",
+    "deleteTitle": "API App löschen?",
+    "deleteConfirm": "Die App und alle zugehörigen Token werden unwiderruflich gelöscht. Externe Integrationen, die diese Token verwenden, verlieren den Zugriff.",
+    "deleteSuccess": "API App gelöscht",
+    "deleteFailed": "API App konnte nicht gelöscht werden",
+    "tokens": "Token",
+    "tokenCount": "{count} Token | {count} Token",
+    "noTokens": "Noch keine Token. Erstelle einen, um API-Anfragen zu authentifizieren.",
+    "createToken": "Neuer Token",
+    "createTokenTitle": "API Token erstellen",
+    "createTokenDescription": "Der Token wird nur einmal angezeigt. Stelle sicher, dass du ihn kopierst.",
+    "tokenName": "Token-Name",
+    "tokenNamePlaceholder": "z.B. Produktion, Staging",
+    "tokenScopes": "Berechtigungen",
+    "tokenScopesHint": "Wähle die Berechtigungen für diesen Token.",
+    "tokenExpiry": "Ablauf",
+    "tokenNameRequired": "Token-Name ist erforderlich",
+    "scopeRequired": "Mindestens eine Berechtigung ist erforderlich",
+    "createTokenSuccess": "Token erstellt!",
+    "createTokenFailed": "Token konnte nicht erstellt werden",
+    "revokeTitle": "Token widerrufen?",
+    "revokeConfirm": "Dieser Token wird sofort widerrufen. Integrationen, die ihn verwenden, verlieren den Zugriff.",
+    "revokeSuccess": "Token widerrufen",
+    "revokeFailed": "Token konnte nicht widerrufen werden",
+    "revoke": "Widerrufen",
+    "tokenStatus": {
+      "active": "Aktiv",
+      "revoked": "Widerrufen",
+      "expired": "Abgelaufen"
+    },
+    "tokenReveal": {
+      "title": "Dein API Token",
+      "warning": "Dieser Token wird nur einmal angezeigt. Kopiere ihn jetzt und speichere ihn sicher. Du kannst ihn danach nicht mehr einsehen.",
+      "copied": "Token kopiert!",
+      "copyFailed": "Token konnte nicht kopiert werden",
+      "copyButton": "Token kopieren",
+      "confirmButton": "Ich habe den Token kopiert"
+    },
+    "scopeGroups": {
+      "entries": "Einträge",
+      "guestbooks": "Gästebücher",
+      "tenant": "Tenant",
+      "members": "Mitglieder",
+      "photos": "Fotos"
+    },
+    "expiryOptions": {
+      "30": "30 Tage",
+      "60": "60 Tage",
+      "90": "90 Tage",
+      "365": "1 Jahr",
+      "never": "Kein Ablauf"
+    },
+    "lastUsed": "Zuletzt verwendet",
+    "never": "Nie",
+    "created": "Erstellt",
+    "prefix": "Präfix",
+    "expiresAt": "Läuft ab"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "description": "Passe das Aussehen und Verhalten deines Gästebuchs an.",
+    "welcomeMessage": {
+      "label": "Willkommensnachricht",
+      "placeholder": "Schreibe eine Willkommensnachricht für deine Gäste..."
+    },
+    "themeColor": {
+      "label": "Akzentfarbe",
+      "customLabel": "Eigener Hex-Code",
+      "presets": {
+        "emerald": "Smaragd",
+        "indigo": "Indigo",
+        "amber": "Bernstein",
+        "rose": "Rosa",
+        "sky": "Himmelblau",
+        "violet": "Violett",
+        "orange": "Orange",
+        "slate": "Schiefergrau"
+      }
+    },
+    "moderation": {
+      "label": "Eintrags-Moderation",
+      "description": "Einträge müssen genehmigt werden, bevor sie öffentlich erscheinen."
+    },
+    "formSteps": {
+      "label": "Formular-Schritte",
+      "description": "Wähle, welche Schritte im Gästeformular angezeigt werden.",
+      "basics": "Basics",
+      "favorites": "Favoriten",
+      "funFacts": "Fun Facts",
+      "message": "Nachricht",
+      "alwaysEnabled": "Immer aktiviert"
+    },
+    "backgroundColor": {
+      "label": "Hintergrundfarbe",
+      "description": "Lege eine eigene Hintergrundfarbe für die Gästeseiten fest.",
+      "custom": "Eigene Farbe wählen"
+    },
+    "backgroundImage": {
+      "label": "Hintergrundbild",
+      "upload": "Klicke, um ein Hintergrundbild hochzuladen",
+      "replace": "Bild ersetzen",
+      "remove": "Entfernen",
+      "hint": "Lade ein Bild hoch, das hinter den Gästeseiten angezeigt wird (max. 5 MB).",
+      "tooLarge": "Das Bild ist zu groß (max. 5 MB).",
+      "invalidFormat": "Ungültiges Bildformat.",
+      "uploadSuccess": "Hintergrundbild hochgeladen!",
+      "uploadFailed": "Hintergrundbild konnte nicht hochgeladen werden.",
+      "removeSuccess": "Hintergrundbild entfernt.",
+      "removeFailed": "Hintergrundbild konnte nicht entfernt werden."
+    },
+    "cardColor": {
+      "label": "Kartenfarbe",
+      "description": "Lege eine eigene Hintergrundfarbe für die Info-Karte auf der Landingpage fest."
+    },
+    "cardOpacity": {
+      "label": "Karten-Transparenz",
+      "description": "Stelle die Transparenz der Info-Karte ein (0 = vollständig transparent, 100 = vollständig undurchsichtig)."
+    },
+    "cardBlur": {
+      "label": "Karten-Unschärfe",
+      "description": "Stelle die Hintergrund-Unschärfe der Info-Karte ein (0 = keine Unschärfe, 30 = maximale Unschärfe)."
+    },
+    "titleFont": {
+      "label": "Titel-Schriftart",
+      "description": "Wähle die Schriftart für den Gästebuch-Titel auf der Landingpage."
+    },
+    "bodyFont": {
+      "label": "Text-Schriftart",
+      "description": "Wähle die Schriftart für den Fließtext auf der Landingpage."
+    },
+    "fonts": {
+      "handwritten": "Handschrift (Caveat)",
+      "display": "Display (DM Sans)",
+      "sans": "Sans-Serif (Inter)"
+    },
+    "preview": "Vorschau",
+    "save": "Einstellungen speichern",
+    "reset": "Zurücksetzen",
+    "saveSuccess": "Einstellungen gespeichert!",
+    "saveFailed": "Einstellungen konnten nicht gespeichert werden.",
+    "resetDone": "Einstellungen zurückgesetzt."
+  },
+  "profile": {
+    "title": "Profil",
+    "avatar": {
+      "upload": "Foto hochladen",
+      "delete": "Foto entfernen"
+    },
+    "personalInfo": "Persönliche Daten",
+    "name": "Name",
+    "email": "E-Mail",
+    "save": "Speichern",
+    "plan": "Abo",
+    "planFree": "Kostenlos",
+    "planPro": "Pro",
+    "planBusiness": "Business",
+    "planUpgrade": "Upgrade",
+    "security": "Sicherheit",
+    "changePassword": "Passwort ändern",
+    "currentPassword": "Aktuelles Passwort",
+    "newPassword": "Neues Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "passwordMismatch": "Passwörter stimmen nicht überein",
+    "twoFactor": "Zwei-Faktor-Authentifizierung",
+    "twoFactorEnabled": "Aktiviert",
+    "twoFactorDisabled": "Nicht eingerichtet",
+    "twoFactorSetup": "2FA einrichten",
+    "dangerZone": "Gefahrenzone",
+    "deleteAccount": "Account löschen",
+    "deleteAccountDescription": "Account und alle Daten unwiderruflich löschen.",
+    "deleteAccountConfirm": "Passwort zur Bestätigung eingeben",
+    "deleteAccountButton": "Account löschen",
+    "saved": "Profil aktualisiert",
+    "saveFailed": "Profil konnte nicht aktualisiert werden",
+    "passwordChanged": "Passwort geändert",
+    "passwordChangeFailed": "Passwort konnte nicht geändert werden",
+    "avatarUploaded": "Avatar hochgeladen",
+    "avatarUploadFailed": "Avatar konnte nicht hochgeladen werden",
+    "avatarDeleted": "Avatar entfernt",
+    "avatarDeleteFailed": "Avatar konnte nicht entfernt werden",
+    "accountDeleted": "Account gelöscht",
+    "accountDeleteFailed": "Account konnte nicht gelöscht werden"
+  },
+  "userMenu": {
+    "profile": "Profil",
+    "dashboard": "Dashboard",
+    "logout": "Abmelden"
   },
   "entry": {
     "subtitle": "Digitaler Gästebuch-Eintrag",

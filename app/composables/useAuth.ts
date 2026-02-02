@@ -103,6 +103,112 @@ export function useAuth() {
     user.value = null
   }
 
+  /**
+   * Updates the current user's profile (name and/or email).
+   *
+   * @param data - Fields to update.
+   * @returns True if the update succeeded.
+   */
+  async function updateProfile(data: { name?: string; email?: string }): Promise<boolean> {
+    try {
+      const response = await $fetch<{ success: boolean; data?: AuthUser }>('/api/auth/me', {
+        method: 'PUT',
+        body: data
+      })
+      if (response.success && response.data) {
+        user.value = response.data
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Changes the current user's password.
+   *
+   * @param data - Current and new password.
+   * @returns True if the change succeeded.
+   */
+  async function changePassword(data: { currentPassword: string; newPassword: string }): Promise<boolean> {
+    try {
+      const response = await $fetch<{ success: boolean }>('/api/auth/password', {
+        method: 'PUT',
+        body: data
+      })
+      return response.success
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Deletes the current user's account.
+   *
+   * @param password - Password confirmation.
+   * @returns True if the deletion succeeded.
+   */
+  async function deleteAccount(password: string): Promise<boolean> {
+    try {
+      const response = await $fetch<{ success: boolean }>('/api/auth/me', {
+        method: 'DELETE',
+        body: { password }
+      })
+      if (response.success) {
+        user.value = null
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Uploads a new avatar image for the current user.
+   *
+   * @param file - The image file to upload.
+   * @returns True if the upload succeeded.
+   */
+  async function uploadAvatar(file: File): Promise<boolean> {
+    try {
+      const formData = new FormData()
+      formData.append('avatar', file)
+      const response = await $fetch<{ success: boolean; data?: { avatarUrl: string } }>('/api/auth/avatar', {
+        method: 'POST',
+        body: formData
+      })
+      if (response.success && response.data && user.value) {
+        user.value = { ...user.value, avatarUrl: response.data.avatarUrl }
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Deletes the current user's avatar.
+   *
+   * @returns True if the deletion succeeded.
+   */
+  async function deleteAvatar(): Promise<boolean> {
+    try {
+      const response = await $fetch<{ success: boolean }>('/api/auth/avatar', {
+        method: 'DELETE'
+      })
+      if (response.success && user.value) {
+        user.value = { ...user.value, avatarUrl: null }
+        return true
+      }
+      return false
+    } catch {
+      return false
+    }
+  }
+
   return {
     user: readonly(user),
     loading: readonly(loading),
@@ -111,6 +217,11 @@ export function useAuth() {
     fetchMe,
     register,
     login,
-    logout
+    logout,
+    updateProfile,
+    changePassword,
+    deleteAccount,
+    uploadAvatar,
+    deleteAvatar
   }
 }

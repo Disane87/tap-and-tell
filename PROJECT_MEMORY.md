@@ -63,12 +63,28 @@ and avoid repeating documented issues.
 - **Fix**: Escape `@` using `{'@'}` syntax in JSON locale files: `"you{'@'}example.com"`.
 - **Rule**: Always escape `@` characters in i18n locale values using `{'@'}`.
 
+### Radix Vue Dialog `@update:open` Does Not Fire on External State Changes
+- **Problem**: Using `@update:open` on a Radix Vue `Dialog` component to trigger side-effects (e.g., generating a QR code) does not work when the dialog's open state is changed from outside via a reactive boolean (e.g., `showQrCode = true`). The `@update:open` event only fires on internal state changes (escape key, overlay click).
+- **Fix**: Use `watch(showQrCode, (open) => { if (open) doSomething() })` instead of relying on `@update:open` for external triggers.
+- **Rule**: Never rely on Radix Vue Dialog's `@update:open` for side-effects triggered by external state changes. Use a `watch` on the controlling reactive ref instead.
+
+### shadcn-vue Component Naming: No `Ui` Prefix
+- **Problem**: Components installed via `npx shadcn-vue@latest add` are placed under `app/components/ui/<name>/`. The `shadcn-nuxt` module registers them with the `prefix` configured in `nuxt.config.ts` → `shadcn.prefix`. In this project, `prefix` is set to `''` (empty string), so components are registered under their **bare file name** (e.g., `Button`, `Card`, `AlertDialog`, `AvatarImage`). Using an `Ui` prefix (e.g., `<UiButton>`, `<UiAvatarImage>`) causes "Failed to resolve component" errors at runtime.
+- **Fix**: Always use the bare component name without any prefix: `<Button>`, `<Card>`, `<Avatar>`, `<AvatarImage>`, `<DropdownMenu>`, `<DropdownMenuItem>`, `<Separator>`, `<AlertDialog>`, etc.
+- **Rule**: When adding new shadcn-vue components, reference them in templates using their **exact file name** — never add a `Ui` prefix. Check `nuxt.config.ts` → `shadcn.prefix` to confirm the configured prefix (currently `''`).
+
+### vue-sonner (Toasts) Hidden Behind Radix Vue Dialogs
+- **Problem**: Toast notifications from vue-sonner were rendered behind Radix Vue dialogs/sheets because Radix Vue uses very high z-index values.
+- **Fix**: Set `z-index: 99999` on the `<Sonner>` component to ensure toasts always appear on top.
+- **Rule**: The `<Sonner>` component must have a z-index higher than Radix Vue's default (which can go up to ~9999).
+
 ---
 
 ## Architecture Notes
 
 For full architecture details, see:
 - `CLAUDE.md` → Architecture (storage, API routes, composables, data flow, pages)
+- `DESIGN_SYSTEM.md` → Glassmorphism patterns, component styles, do's and don'ts
 - `plans/26_tenant_system.md` → Multi-tenant data model, URL structure, migration
 - `plans/27_user_registration.md` → Owner auth, user schema
 - `plans/27b_roles_and_permissions.md` → 3-role system, permission matrix, invite flow
@@ -77,6 +93,9 @@ For full architecture details, see:
 - **nanoid instead of UUID**: All `randomUUID()` calls replaced with `nanoid(12)` via `server/utils/id.ts`. 12-character URL-safe strings. Backward-compatible — existing UUIDs in DB remain valid. Migration file uses `nanoid` directly (no Nitro auto-imports).
 - **Legacy compatibility**: `/` is now a marketing page (no longer guest form). Root-level `/guestbook` and `/slideshow` routes removed. `createEntry()` requires `guestbookId` as first parameter. `getDefaultTenantId()` returns first tenant for legacy routes. Legacy admin auth (Bearer tokens) still works for `/admin` pages.
 - **`verifyTenantOwnership()`**: Deprecated, replaced by `canPerformAction()`.
+- **Flat route architecture (`/g/[id]`)**: Public guest pages use flat URLs (`/g/[id]`, `/g/[id]/view`, `/g/[id]/slideshow`) instead of tenant-nested URLs. The `guestbook-resolver.ts` utility resolves guestbook ID → tenant ID for RLS context. Both route structures coexist — flat for guest sharing, nested for admin. NFC/QR should always use flat URLs.
+- **Glassmorphism design system**: All UI follows the design system documented in `DESIGN_SYSTEM.md`. CSS utilities defined in `app/assets/css/main.css` (`.glass-card`, `.status-badge`, `.card-polaroid`, `.action-btn`, etc.). Uses Tailwind v4 `@theme` syntax.
+- **CSP server plugin**: `server/plugins/csp.ts` sets Content Security Policy headers allowing Google Fonts, Iconify API, and blob: workers. Required for external font loading and icon resolution.
 
 ---
 
@@ -155,3 +174,12 @@ For full architecture details, see:
 
 ### Important: All default secrets MUST be overridden in production
 - `JWT_SECRET`, `ADMIN_PASSWORD`, `TOKEN_SECRET`, `ENCRYPTION_MASTER_KEY`, `CSRF_SECRET`
+
+---
+
+## UX Preferences
+
+### Settings and Sub-Pages as Modals
+- **Rule**: Settings pages, QR code generators, and similar secondary views should open as **modals/dialogs/sheets** rather than navigating to separate pages. Keep the user in context.
+- **Pattern**: Use `Sheet` or `Dialog` components from shadcn-vue for overlays. Toggle visibility with a reactive boolean (e.g., `showSettings`, `showQrCode`).
+- **Example**: The admin page (`/g/[id]/admin.vue`) already uses an inline collapsible panel for settings — this pattern should be followed for QR codes and similar features.

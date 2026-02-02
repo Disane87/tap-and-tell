@@ -11,6 +11,8 @@ export type AuditAction =
   | 'auth.2fa_verify'
   | 'auth.2fa_disable'
   | 'auth.password_change'
+  | 'auth.profile_update'
+  | 'auth.account_delete'
   | 'entry.create'
   | 'entry.delete'
   | 'entry.update_status'

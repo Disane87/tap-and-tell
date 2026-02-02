@@ -952,10 +952,10 @@ onUnmounted(() => {
     <section class="px-6 py-28">
       <div class="reveal-on-scroll mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-emerald-600 p-12 text-center sm:p-20">
         <h2 class="text-3xl font-bold tracking-tight text-white sm:text-5xl">
-          {{ t('landing.cta.title') }}
+          {{ t('landing.ctaSection.title') }}
         </h2>
         <p class="mx-auto mt-5 max-w-md text-lg text-white/80">
-          {{ t('landing.cta.subtitle') }}
+          {{ t('landing.ctaSection.subtitle') }}
         </p>
         <div class="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <ClientOnly>

@@ -4,7 +4,7 @@
  * URL: /g/[id]
  */
 import { useSwipe } from '@vueuse/core'
-import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Settings } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 
 definePageMeta({
@@ -17,9 +17,90 @@ const guestbookId = computed(() => route.params.id as string)
 
 // Use simplified composable (we'll create this next)
 const { entries, fetchEntries, createEntry } = useGuestbook(guestbookId)
-const { formState, status, reset, setStatus, setError, getSubmitData, validate } = useGuestForm()
+const { formState, status, reset, setStatus, setError, getSubmitData, validate, applyFormConfig } = useGuestForm()
+
+// Admin bar: check if current user can manage this guestbook
+const { isAuthenticated, fetchMe } = useAuth()
+const canAdmin = ref(false)
 
 const guestbookInfo = ref<{ id: string; name: string; tenantId: string; settings: Record<string, unknown> } | null>(null)
+
+/** Apply custom theme color from guestbook settings. */
+watchEffect(() => {
+  const color = (guestbookInfo.value?.settings?.themeColor as string) || undefined
+  if (color) {
+    document.documentElement.style.setProperty('--color-primary', color)
+  }
+})
+
+/** Whether the admin has set a custom background (color or image). */
+const hasCustomBackground = computed(() => {
+  const settings = guestbookInfo.value?.settings
+  return !!(settings?.backgroundColor || settings?.backgroundImageUrl)
+})
+
+/** Computed background styles from guestbook settings. */
+const backgroundStyles = computed(() => {
+  const settings = guestbookInfo.value?.settings
+  if (!settings) return {}
+  const styles: Record<string, string> = {}
+  const bgColor = settings.backgroundColor as string | undefined
+  const bgImage = settings.backgroundImageUrl as string | undefined
+  if (bgColor) {
+    styles.backgroundColor = bgColor
+  }
+  if (bgImage) {
+    styles.backgroundImage = `url(${bgImage})`
+    styles.backgroundSize = 'cover'
+    styles.backgroundPosition = 'center'
+    styles.backgroundRepeat = 'no-repeat'
+  }
+  return styles
+})
+
+/** Computed inline styles for the info card based on cardColor, cardOpacity & cardBlur settings. */
+const cardStyles = computed(() => {
+  const settings = guestbookInfo.value?.settings
+  const styles: Record<string, string> = {}
+  const color = settings?.cardColor as string | undefined
+  if (color) {
+    const opacity = (settings?.cardOpacity as number | undefined) ?? 70
+    const r = parseInt(color.slice(1, 3), 16)
+    const g = parseInt(color.slice(3, 5), 16)
+    const b = parseInt(color.slice(5, 7), 16)
+    styles.backgroundColor = `rgba(${r}, ${g}, ${b}, ${opacity / 100})`
+  }
+  const blur = (settings?.cardBlur as number | undefined) ?? 20
+  styles.backdropFilter = `blur(${blur}px)`
+  styles.WebkitBackdropFilter = `blur(${blur}px)`
+  return styles
+})
+
+/** Whether a custom card color is configured. */
+const hasCustomCardColor = computed(() => !!(guestbookInfo.value?.settings?.cardColor))
+
+/** Resolved welcome message from settings or default. */
+const welcomeMessage = computed(() =>
+  (guestbookInfo.value?.settings?.welcomeMessage as string) || t('landing.subtitle')
+)
+
+/** Font class for the title. */
+const titleFontClass = computed(() => {
+  switch (guestbookInfo.value?.settings?.titleFont as string | undefined) {
+    case 'display': return 'font-display'
+    case 'sans': return 'font-sans'
+    default: return 'font-handwritten'
+  }
+})
+
+/** Font class for body text. */
+const bodyFontClass = computed(() => {
+  switch (guestbookInfo.value?.settings?.bodyFont as string | undefined) {
+    case 'handwritten': return 'font-handwritten'
+    case 'display': return 'font-display'
+    default: return 'font-sans'
+  }
+})
 const sheetOpen = ref(false)
 const currentSlide = ref(0)
 const slideDirection = ref<'forward' | 'backward'>('forward')
@@ -94,6 +175,18 @@ onMounted(async () => {
     )
     if (response.success && response.data) {
       guestbookInfo.value = response.data
+      applyFormConfig(response.data.settings as import('~/types/guestbook').GuestbookSettings)
+
+      // Check if logged-in user can admin this guestbook
+      await fetchMe()
+      if (isAuthenticated.value && response.data.tenantId) {
+        try {
+          await $fetch(`/api/tenants/${response.data.tenantId}`)
+          canAdmin.value = true
+        } catch {
+          // Not a member — canAdmin stays false
+        }
+      }
     }
   } catch (error) {
     console.error('Failed to fetch guestbook info:', error)
@@ -104,6 +197,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
+  document.documentElement.style.removeProperty('--color-primary')
 })
 </script>
 
@@ -111,21 +205,42 @@ onUnmounted(() => {
   <div
     ref="swiperEl"
     class="relative min-h-screen overflow-hidden"
-    style="touch-action: pan-y;"
+    :style="{ touchAction: 'pan-y', ...backgroundStyles }"
   >
+    <!-- Admin bar for authenticated owners -->
+    <NuxtLink
+      v-if="canAdmin"
+      :to="`/g/${guestbookId}/admin`"
+      class="fixed left-0 right-0 top-0 z-50 flex items-center justify-center gap-2 border-b border-border/20 bg-card/70 px-4 py-2 text-sm text-foreground backdrop-blur-xl transition-colors hover:bg-card/90"
+    >
+      <Settings class="h-4 w-4" />
+      {{ t('landing.adminBar') }}
+    </NuxtLink>
+
     <Transition :name="transitionName" mode="out-in">
       <!-- Slide 0: Intro -->
       <div
         v-if="currentSlide === 0"
         :key="'intro'"
-        class="landing-gradient flex min-h-screen flex-col items-center justify-center px-6"
+        class="flex min-h-screen flex-col items-center justify-center px-6"
+        :class="{ 'landing-gradient': !hasCustomBackground }"
       >
-        <div class="info-card mx-auto max-w-sm text-center">
-          <h1 class="font-handwritten text-5xl text-foreground">
+        <div
+          class="mx-auto max-w-sm rounded-2xl border border-border/20 p-8 text-center shadow-xl"
+          :class="{ 'bg-card/70': !hasCustomCardColor }"
+          :style="cardStyles"
+        >
+          <h1
+            class="text-5xl text-foreground"
+            :class="titleFontClass"
+          >
             {{ guestbookInfo?.name || t('landing.title') }}
           </h1>
-          <p class="mt-3 text-sm text-muted-foreground">
-            {{ t('landing.subtitle') }}
+          <p
+            class="mt-3 text-sm text-muted-foreground"
+            :class="bodyFontClass"
+          >
+            {{ welcomeMessage }}
           </p>
           <Button class="mt-6 w-full" size="lg" @click="sheetOpen = true">
             {{ t('landing.cta') }}
@@ -201,7 +316,7 @@ onUnmounted(() => {
           <SheetDescription>{{ t('form.addEntryDescription') }}</SheetDescription>
         </SheetHeader>
         <div class="mt-4 pb-8">
-          <Wizard @submit="handleSubmit" />
+          <FormWizard @submit="handleSubmit" />
           <p
             v-if="status === 'submitting'"
             class="mt-3 animate-gentle-pulse text-center text-sm text-muted-foreground"

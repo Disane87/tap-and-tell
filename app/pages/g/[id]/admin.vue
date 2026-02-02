@@ -1,9 +1,12 @@
 <script setup lang="ts">
 /**
- * Guestbook-scoped admin panel for entry moderation and settings.
+ * Flat guestbook admin panel for entry moderation and settings.
+ * URL: /g/[id]/admin
+ * Resolves tenantId dynamically from /api/g/[id]/info.
  * Requires authentication and tenant membership.
  */
-import { Trash2, QrCode, Check, X, Clock, CheckCircle, XCircle } from 'lucide-vue-next'
+import QRCode from 'qrcode'
+import { Trash2, QrCode, Check, X, Clock, CheckCircle, XCircle, Settings, Download, Copy, RefreshCw, Eye } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import type { EntryStatus, GuestEntry } from '~/types/guest'
 import type { TenantRole } from '~/types/tenant'
@@ -12,10 +15,11 @@ import type { Guestbook } from '~/types/guestbook'
 const { t, locale } = useI18n()
 const route = useRoute()
 const router = useRouter()
-const tenantId = computed(() => route.params.uuid as string)
-const guestbookId = computed(() => route.params.guestbookUuid as string)
+const guestbookId = computed(() => route.params.id as string)
 const { isAuthenticated } = useAuth()
-const { fetchEntries, deleteEntry, updateEntryStatus, bulkUpdateStatus } = useTenantAdmin(tenantId, guestbookId)
+
+const resolvedTenantId = ref('')
+const tenantId = computed(() => resolvedTenantId.value)
 
 const userRole = ref<TenantRole | null>(null)
 const guestbookInfo = ref<Guestbook | null>(null)
@@ -24,6 +28,82 @@ const entries = ref<GuestEntry[]>([])
 const loading = ref(true)
 const selectedIds = ref<Set<string>>(new Set())
 const activeTab = ref<'all' | EntryStatus>('all')
+const showSettings = ref(false)
+const showQrCode = ref(false)
+const settingsRef = ref<InstanceType<typeof AdminGuestbookSettings> | null>(null)
+
+// QR Code state
+const eventName = ref('')
+const qrDataUrl = ref('')
+const qrSvg = ref('')
+const qrCopied = ref(false)
+const qrGenerating = ref(false)
+
+const qrBaseUrl = computed(() => {
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/g/${guestbookId.value}`
+  }
+  return ''
+})
+
+const qrFullUrl = computed(() => {
+  let url = qrBaseUrl.value
+  if (eventName.value.trim()) {
+    url += `?source=nfc&event=${encodeURIComponent(eventName.value.trim())}`
+  }
+  return url
+})
+
+async function generateQrCode(): Promise<void> {
+  if (!qrFullUrl.value) return
+  qrGenerating.value = true
+  try {
+    qrDataUrl.value = await QRCode.toDataURL(qrFullUrl.value, {
+      width: 512, margin: 2,
+      color: { dark: '#000000', light: '#ffffff' }
+    })
+    qrSvg.value = await QRCode.toString(qrFullUrl.value, {
+      type: 'svg', width: 512, margin: 2
+    })
+  } catch {
+    toast.error(t('admin.qr.generateFailed'))
+  } finally {
+    qrGenerating.value = false
+  }
+}
+
+function downloadQrPng(): void {
+  if (!qrDataUrl.value) return
+  const link = document.createElement('a')
+  link.download = `guestbook-qr${eventName.value ? `-${eventName.value}` : ''}.png`
+  link.href = qrDataUrl.value
+  link.click()
+}
+
+function downloadQrSvg(): void {
+  if (!qrSvg.value) return
+  const blob = new Blob([qrSvg.value], { type: 'image/svg+xml' })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.download = `guestbook-qr${eventName.value ? `-${eventName.value}` : ''}.svg`
+  link.href = url
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+async function copyQrUrl(): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(qrFullUrl.value)
+    qrCopied.value = true
+    toast.success(t('admin.qr.copied'))
+    setTimeout(() => { qrCopied.value = false }, 2000)
+  } catch {
+    toast.error(t('admin.qr.copyFailed'))
+  }
+}
+
+watch(qrFullUrl, () => { generateQrCode() })
+watch(showQrCode, (open) => { if (open && !qrDataUrl.value) generateQrCode() })
 
 const filteredEntries = computed(() => {
   if (activeTab.value === 'all') return entries.value
@@ -49,6 +129,7 @@ function formatDate(iso: string): string {
 
 async function loadEntries(): Promise<void> {
   loading.value = true
+  const { fetchEntries } = useTenantAdmin(tenantId, guestbookId)
   const data = await fetchEntries()
   if (data) {
     entries.value = data
@@ -57,6 +138,7 @@ async function loadEntries(): Promise<void> {
 }
 
 async function handleDelete(id: string): Promise<void> {
+  const { deleteEntry } = useTenantAdmin(tenantId, guestbookId)
   const success = await deleteEntry(id)
   if (success) {
     entries.value = entries.value.filter(e => e.id !== id)
@@ -68,6 +150,7 @@ async function handleDelete(id: string): Promise<void> {
 }
 
 async function handleStatusUpdate(id: string, status: EntryStatus): Promise<void> {
+  const { updateEntryStatus } = useTenantAdmin(tenantId, guestbookId)
   const updated = await updateEntryStatus(id, status)
   if (updated) {
     const index = entries.value.findIndex(e => e.id === id)
@@ -84,6 +167,7 @@ async function handleBulkAction(status: EntryStatus): Promise<void> {
   const ids = Array.from(selectedIds.value)
   if (ids.length === 0) return
 
+  const { bulkUpdateStatus } = useTenantAdmin(tenantId, guestbookId)
   const count = await bulkUpdateStatus(ids, status)
   if (count > 0) {
     await loadEntries()
@@ -121,13 +205,42 @@ function getStatusBadgeColor(status?: EntryStatus): string {
   }
 }
 
+async function reloadGuestbookInfo(): Promise<void> {
+  try {
+    const gbResponse = await $fetch<{ success: boolean; data?: Guestbook }>(
+      `/api/tenants/${tenantId.value}/guestbooks/${guestbookId.value}`
+    )
+    if (gbResponse.data) {
+      guestbookInfo.value = gbResponse.data
+    }
+  } catch {
+    // Ignore reload errors
+  }
+}
+
 onMounted(async () => {
   if (!isAuthenticated.value) {
     router.push('/login')
     return
   }
 
-  // Fetch role and guestbook info
+  // Resolve tenantId from guestbook info
+  try {
+    const infoResponse = await $fetch<{ success: boolean; data?: { id: string; name: string; tenantId: string } }>(
+      `/api/g/${guestbookId.value}/info`
+    )
+    if (infoResponse.data?.tenantId) {
+      resolvedTenantId.value = infoResponse.data.tenantId
+    } else {
+      router.push('/dashboard')
+      return
+    }
+  } catch {
+    router.push('/dashboard')
+    return
+  }
+
+  // Fetch role and guestbook details
   try {
     const [tenantResponse, gbResponse] = await Promise.all([
       $fetch<{ success: boolean; data?: { role?: TenantRole } }>(
@@ -144,7 +257,7 @@ onMounted(async () => {
       guestbookInfo.value = gbResponse.data
     }
   } catch {
-    router.push(`/t/${tenantId.value}/admin`)
+    router.push('/dashboard')
     return
   }
 
@@ -165,19 +278,124 @@ onMounted(async () => {
         </p>
       </div>
       <div class="flex items-center gap-2">
-        <NuxtLink :to="`/t/${tenantId}/g/${guestbookId}/admin/qr`">
-          <Button variant="outline" size="sm" class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50">
-            <QrCode class="mr-2 h-4 w-4" />
-            {{ $t('admin.qr.title') }}
+        <NuxtLink :to="`/g/${guestbookId}`" target="_blank">
+          <Button
+            variant="outline"
+            size="sm"
+            class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
+          >
+            <Eye class="mr-2 h-4 w-4" />
+            {{ $t('dashboard.viewGuestbook') }}
           </Button>
         </NuxtLink>
-        <NuxtLink :to="`/t/${tenantId}/admin`">
+        <Button
+          variant="outline"
+          size="sm"
+          class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
+          @click="showSettings = true"
+        >
+          <Settings class="mr-2 h-4 w-4" />
+          {{ $t('settings.title') }}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
+          @click="showQrCode = true"
+        >
+          <QrCode class="mr-2 h-4 w-4" />
+          {{ $t('admin.qr.title') }}
+        </Button>
+        <NuxtLink v-if="resolvedTenantId" :to="`/t/${resolvedTenantId}/admin`">
           <Button variant="outline" size="sm" class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50">
             {{ $t('common.back') }}
           </Button>
         </NuxtLink>
       </div>
     </div>
+
+    <!-- Settings Modal -->
+    <Dialog v-model:open="showSettings">
+      <DialogContent class="max-h-[85vh] overflow-y-auto sm:max-w-4xl">
+        <DialogHeader>
+          <DialogTitle class="font-display text-lg">{{ $t('settings.title') }}</DialogTitle>
+          <DialogDescription>{{ $t('settings.description') }}</DialogDescription>
+        </DialogHeader>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div class="overflow-y-auto sm:max-h-[65vh] sm:pr-4">
+            <AdminGuestbookSettings
+              v-if="guestbookInfo && resolvedTenantId"
+              ref="settingsRef"
+              :guestbook="guestbookInfo"
+              :tenant-id="resolvedTenantId"
+              @saved="reloadGuestbookInfo"
+            />
+          </div>
+          <div class="sticky top-0 hidden sm:block">
+            <AdminGuestbookPreview
+              v-if="guestbookInfo && settingsRef?.localSettings"
+              :settings="settingsRef.localSettings"
+              :guestbook-name="guestbookInfo.name"
+            />
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+
+    <!-- QR Code Modal -->
+    <Dialog v-model:open="showQrCode">
+      <DialogContent class="max-h-[85vh] overflow-y-auto sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle class="font-display text-lg">{{ $t('admin.qr.title') }}</DialogTitle>
+          <DialogDescription>{{ $t('admin.qr.description') }}</DialogDescription>
+        </DialogHeader>
+
+        <div class="space-y-5">
+          <div class="space-y-2">
+            <Label for="eventName">{{ $t('admin.qr.eventName') }}</Label>
+            <Input id="eventName" v-model="eventName" :placeholder="$t('admin.qr.eventPlaceholder')" />
+            <p class="text-xs text-muted-foreground">{{ $t('admin.qr.eventHint') }}</p>
+          </div>
+
+          <div class="space-y-2">
+            <Label>{{ $t('admin.qr.urlPreview') }}</Label>
+            <div class="flex items-center gap-2">
+              <code class="flex-1 rounded-lg bg-muted px-3 py-2 text-xs break-all">{{ qrFullUrl }}</code>
+              <Button variant="outline" size="icon" class="shrink-0" @click="copyQrUrl">
+                <Check v-if="qrCopied" class="h-4 w-4 text-emerald-500" />
+                <Copy v-else class="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center space-y-4">
+            <div class="rounded-2xl border border-border/20 bg-white p-4 shadow-sm" :class="{ 'animate-pulse': qrGenerating }">
+              <img v-if="qrDataUrl" :src="qrDataUrl" :alt="$t('admin.qr.title')" class="h-56 w-56">
+              <div v-else class="flex h-56 w-56 items-center justify-center">
+                <RefreshCw class="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <Button variant="outline" size="sm" @click="downloadQrPng">
+                <Download class="mr-2 h-4 w-4" /> PNG
+              </Button>
+              <Button variant="outline" size="sm" @click="downloadQrSvg">
+                <Download class="mr-2 h-4 w-4" /> SVG
+              </Button>
+            </div>
+          </div>
+
+          <div class="rounded-xl bg-muted/50 p-4">
+            <p class="text-sm font-medium text-foreground">{{ $t('admin.qr.instructions') }}</p>
+            <ul class="mt-2 space-y-1 text-sm text-muted-foreground">
+              <li>{{ $t('admin.qr.instruction1') }}</li>
+              <li>{{ $t('admin.qr.instruction2') }}</li>
+              <li>{{ $t('admin.qr.instruction3') }}</li>
+            </ul>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
 
     <!-- Status Tabs -->
     <div class="mb-6 flex flex-wrap gap-2">

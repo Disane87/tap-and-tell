@@ -27,6 +27,7 @@ Tap & Tell is an NFC-enabled digital guestbook application built with Nuxt 3. Gu
 | Notifications | vue-sonner |
 | Utilities | @vueuse/core |
 | Package Manager | pnpm |
+| Design System | Glassmorphism (see `DESIGN_SYSTEM.md`) |
 | Deployment | Vercel (primary), Docker (self-hosted) |
 
 ## Development Commands
@@ -65,15 +66,15 @@ On startup in development mode (`NODE_ENV !== 'production'`), a dev tenant is au
 | Page | URL |
 |---|---|
 | Login | `/login` |
+| Profile | `/profile` |
 | Dashboard | `/dashboard` |
 | Tenant Admin | `/t/dev000tenant/admin` |
-| Guest Form (GB1) | `/t/dev000tenant/g/dev00000gb01` |
-| Guestbook (GB1) | `/t/dev000tenant/g/dev00000gb01/guestbook` |
-| Moderation (GB1) | `/t/dev000tenant/g/dev00000gb01/admin` |
-| QR Code (GB1) | `/t/dev000tenant/g/dev00000gb01/admin/qr` |
-| Slideshow (GB1) | `/t/dev000tenant/g/dev00000gb01/slideshow` |
+| Guest Landing (flat) | `/g/dev00000gb01` |
+| Guestbook View (flat) | `/g/dev00000gb01/view` |
+| Slideshow (flat) | `/g/dev00000gb01/slideshow` |
+| Guestbook Admin (flat) | `/g/dev00000gb01/admin` |
 
-**Reset:** Delete `.data/data.db` and restart the dev server to re-seed from scratch.
+**Reset:** Drop and recreate the PostgreSQL database and restart the dev server to re-seed from scratch.
 
 ## Architecture
 
@@ -83,21 +84,55 @@ On startup in development mode (`NODE_ENV !== 'production'`), a dev tenant is au
 
 ### Storage Layer
 
-SQLite database at `.data/data.db` with Drizzle ORM. Photos stored at `.data/photos/[guestbookId]/[entryId].[ext]`.
+PostgreSQL 16+ database with Row-Level Security (RLS) via Drizzle ORM. Photos stored at `.data/photos/[guestbookId]/[entryId].[ext]` with AES-256-GCM per-tenant encryption. User avatars stored at `.data/avatars/[userId].[ext]` (unencrypted, publicly served).
 
-Storage logic lives in `server/utils/storage.ts`.
+Storage logic lives in `server/utils/storage.ts`. Database connection in `server/utils/drizzle.ts`.
+
+### Dual Route Architecture
+
+The app supports two parallel route structures for guest access:
+
+**Flat routes (preferred for all guest + admin access):**
+```
+/g/[id]           → Guest landing page (swipeable entry view + form)
+/g/[id]/view      → Guestbook entries grid
+/g/[id]/slideshow → Full-screen slideshow
+/g/[id]/admin     → Guestbook admin (moderation, settings, QR)
+/g/[id]/admin/qr  → QR code generator page
+```
+Guests access guestbooks directly by ID — no tenant UUID exposed. The server resolves the tenant context internally via `server/utils/guestbook-resolver.ts`.
+
+**Tenant-level routes (dashboard & management):**
+```
+/t/[uuid]         → Tenant root (redirects to first guestbook)
+/t/[uuid]/admin   → Tenant admin (guestbook list, members, API apps)
+```
+
+NFC tags and QR codes should use the flat `/g/[id]` URLs for simplicity.
+
+> **Note:** The legacy tenant-nested guestbook routes (`/t/[uuid]/g/[gbUuid]/*`) have been removed. All guestbook-level pages now use flat `/g/[id]` routes.
 
 ### Data Model
 
 ```
-Tenant (name, plan, members)
-  └── Guestbook 1 (type: permanent, settings, entries)
-  └── Guestbook 2 (type: event, settings, date, entries)
+User (email, name, avatarUrl, passwordHash)
+  └── Tenant (name, plan, members)
+       └── Guestbook 1 (type: permanent, settings, entries)
+       └── Guestbook 2 (type: event, settings, date, entries)
 ```
+
+**Key columns:**
+- `users.avatar_url` — Optional avatar image URL (served via `/api/auth/avatar/[userId]`)
+- `tenants.plan` — Current plan: `free` (default), `pro`, or `business`
 
 ### API Routes (`server/routes/api/`)
 
-**Public (no auth):**
+**Public — flat routes (no auth, preferred for sharing):**
+- `GET /api/g/[id]/info` — Guestbook info (name, settings, type)
+- `GET /api/g/[id]/entries` — Approved entries
+- `POST /api/g/[id]/entries` — Create entry (rate-limited, sanitized)
+
+**Public — tenant-scoped (no auth, legacy):**
 - `GET /api/t/[uuid]/guestbooks` — List guestbooks for tenant
 - `GET /api/t/[uuid]/g/[gbUuid]/info` — Guestbook info (name, settings)
 - `GET /api/t/[uuid]/g/[gbUuid]/entries` — Approved entries
@@ -113,6 +148,15 @@ Tenant (name, plan, members)
 - `PATCH /api/tenants/[uuid]/guestbooks/[gbUuid]/entries/[id]` — Update status
 - `POST /api/tenants/[uuid]/guestbooks/[gbUuid]/entries/bulk` — Bulk status update
 
+**Authenticated — Profile Management (JWT cookie):**
+- `GET /api/auth/me` — Current user (id, email, name, avatarUrl)
+- `PUT /api/auth/me` — Update name and/or email
+- `DELETE /api/auth/me` — Delete account (requires password confirmation)
+- `PUT /api/auth/password` — Change password (validates policy, invalidates sessions)
+- `POST /api/auth/avatar` — Upload avatar (multipart, JPEG/PNG/WebP, max 5 MB)
+- `DELETE /api/auth/avatar` — Delete avatar
+- `GET /api/auth/avatar/[userId]` — Serve avatar image (public, no auth)
+
 **Legacy Admin (Bearer token):**
 - `POST /api/admin/login` — Authenticate with password
 - `GET /api/admin/entries` — Fetch entries
@@ -120,38 +164,99 @@ Tenant (name, plan, members)
 
 ### Key Composables (`app/composables/`)
 
+- **`useAuth`** — JWT cookie-based authentication (login, register, logout, fetchMe, token refresh, updateProfile, changePassword, deleteAccount, uploadAvatar, deleteAvatar). Module-level `ref()` state.
+- **`useGuestbook`** — Simplified public guest operations using flat `/api/g/[id]` endpoints. Preferred for guest-facing pages.
 - **`useGuestbooks`** — Guestbook CRUD for a tenant. Module-level `ref()` state.
-- **`useTenantGuests(tenantId, guestbookId)`** — Public guest entry operations (fetch approved, create).
+- **`useTenantGuests(tenantId, guestbookId)`** — Public guest entry operations (tenant-scoped, legacy).
 - **`useTenantAdmin(tenantId, guestbookId)`** — Admin entry operations (fetch all, delete, update status, bulk).
 - **`useTenants`** — Tenant CRUD operations.
+- **`useTenantMembers`** — Tenant member CRUD and invite operations.
+- **`useApiApps`** — API app and token management per tenant.
 - **`useGuestForm`** — 4-step wizard state (Basics → Favorites → Fun → Message) with per-step validation.
+- **`useEntryFilters`** — Entry filtering and search logic for guestbook views.
+- **`useImageCompression`** — Client-side photo compression before upload.
+- **`usePdfExport`** — PDF generation and export for guestbook entries.
+- **`useSlideshow`** — Slideshow state management (auto-advance, interval, controls).
 - **`useAdmin`** — Token-based legacy admin auth using `sessionStorage`.
 - **`useNfc`** — Detects NFC context from URL query params (`?source=nfc&event=EventName`).
+- **`useOfflineQueue`** — Offline entry queuing with automatic submission on reconnect.
 - **`useTheme`** — Light/dark/system theme with `localStorage` persistence and FOUC prevention via inline head script.
 
 ### Data Flow
 
-1. User visits `/t/[uuid]/g/[gbUuid]` (optionally via NFC tag with `?source=nfc&event=...`)
+**Flat route flow (preferred for guests):**
+1. User visits `/g/[id]` (via NFC tag or QR code, optionally with `?source=nfc&event=...`)
+2. Multi-step wizard collects name, photo, answers, message
+3. On submit → `useGuestbook.createEntry()` → `POST /api/g/[id]/entries`
+4. Server resolves tenant via `guestbook-resolver.ts`, saves entry to database + encrypted photo
+5. Guestbook page (`/g/[id]/view`) displays approved entries
+
+**Tenant-nested flow (admin / legacy):**
+1. User visits `/t/[uuid]/g/[gbUuid]`
 2. Multi-step wizard (`app/components/form/FormWizard.vue`) collects name, photo, answers, message
 3. On submit → `useTenantGuests.createEntry()` → `POST /api/t/[uuid]/g/[gbUuid]/entries`
-4. Server saves entry to database + photo file to `.data/photos/[guestbookId]/`
+4. Server saves entry to database + encrypted photo
 5. Guestbook page (`/t/[uuid]/g/[gbUuid]/guestbook`) displays approved entries via `GuestCard` components
 
 ### Pages
 
+**Public guest pages (flat routes, preferred):**
+- `/g/[id]` — Guestbook guest landing page (swipeable entry view + form sheet). Shows admin bar for authenticated owners.
+- `/g/[id]/view` — Guestbook entries grid with search/filter/PDF export
+- `/g/[id]/slideshow` — Full-screen auto-advancing slideshow
+
+**Guestbook admin (flat routes):**
+- `/g/[id]/admin` — Guestbook admin (entry moderation, settings dialog with live preview, QR code dialog)
+- `/g/[id]/admin/qr` — Guestbook QR code generator page
+
+**Marketing & auth:**
 - `/` — Marketing landing page (hero, features, how it works)
 - `/login` — Owner login
 - `/register` — Owner registration
+- `/accept-invite` — Team member invite acceptance
+
+**Owner/admin:**
+- `/profile` — User profile management (avatar, personal info, plan, security, account deletion)
 - `/dashboard` — Redirect to user's tenant admin (`/t/[uuid]/admin`), or create-tenant flow
 - `/t/[uuid]` — Tenant root — redirects to first guestbook
-- `/t/[uuid]/admin` — Tenant admin (guestbook list, members)
-- `/t/[uuid]/g/[gbUuid]` — Guestbook guest form (multi-step wizard)
-- `/t/[uuid]/g/[gbUuid]/guestbook` — Guestbook entries view
-- `/t/[uuid]/g/[gbUuid]/slideshow` — Guestbook slideshow
-- `/t/[uuid]/g/[gbUuid]/admin` — Guestbook admin (entry moderation)
-- `/t/[uuid]/g/[gbUuid]/admin/qr` — Guestbook QR code generator
+- `/t/[uuid]/admin` — Tenant admin (guestbook list with eye-open buttons, members, API apps)
+
+**Legacy admin:**
 - `/admin/login` — Legacy admin login
 - `/admin` — Legacy admin dashboard
+
+### Key Header Components
+
+- **`UserMenu.vue`** — Avatar-based dropdown menu in the header. Authenticated users see avatar (initials fallback) with dropdown containing profile link, dashboard link, language toggle, theme cycling, and logout. Unauthenticated users see login button with standalone language and theme toggles.
+- **`LanguageSwitcher.vue`** — Toggles between EN/DE locales.
+- **`ThemeToggle.vue`** — Cycles through light/dark/system themes.
+
+### Key Admin Components (`app/components/admin/`)
+
+- **`GuestbookSettings.vue`** — Settings editor panel (moderation, welcome message, theme color, background, card styling, fonts). Exposes `localSettings` via `defineExpose`.
+- **`GuestbookPreview.vue`** — Live preview of landing card, reactively bound to settings. Used in two-column dialog layout.
+- **`ColorPicker.vue`** — Color picker input component.
+- **`BackgroundPicker.vue`** — Background image/color picker with upload support.
+- **`AdminApiApps.vue`** — API app management (CRUD, token management).
+- **`CreateTokenDialog.vue`** — Dialog for creating new API tokens with scope selection.
+- **`ApiTokenList.vue`** — Token list with revoke functionality.
+- **`TokenRevealDialog.vue`** — One-time token reveal dialog after creation.
+
+### Key Server Utils
+
+- **`guestbook-resolver.ts`** — Maps guestbook ID → tenant context for flat routes. Exports `resolveGuestbook(id)` and `resolveTenantFromGuestbook(id)`.
+- **`storage.ts`** — Photo file I/O (read/write/delete).
+- **`crypto.ts`** — AES-256-GCM encryption/decryption with HKDF-SHA256 per-tenant key derivation.
+- **`sanitize.ts`** — HTML stripping, input sanitization, photo magic byte validation.
+- **`rate-limit.ts`** — In-memory sliding window rate limiters.
+- **`audit.ts`** — Non-blocking audit log recording.
+- **`csrf.ts`** — Double-submit cookie CSRF protection.
+- **`drizzle.ts`** — PostgreSQL connection pool, `useDrizzle()` and `withTenantContext()` for RLS.
+
+### Server Plugins
+
+- **`database.ts`** — Database initialization on startup.
+- **`csp.ts`** — Content Security Policy headers (allows Google Fonts, Iconify, blob: workers in dev).
 
 ### Theme System (3-Layer Initialization)
 
@@ -185,8 +290,8 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 ## General Rules
 
 ### Communication
-- **Respond in German** — all explanations, questions, and summaries should be in German
-- **Code comments and JSDoc in English** — keep code documentation in English for consistency
+- **Respond in German** — all conversational explanations, questions, and summaries should be in German
+- **Technical documentation in English** — all `.md` files (plans, PRD, CLAUDE.md, DESIGN_SYSTEM.md, PROJECT_MEMORY.md), code comments, JSDoc, and API docs must be written in English
 - **Commit messages in English** — use conventional commit style in English
 
 ### Internationalization (i18n)
@@ -217,6 +322,7 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 - Write modular, reusable code; avoid duplication
 - Ensure accessibility (a11y) best practices are followed in all UI components
 - Document API routes with JSDoc comments describing request/response formats
+- All new features must be responsive and mobile-friendly
 
 ## Required Reading
 
@@ -224,6 +330,7 @@ Before doing any work, read these files (they are authoritative):
 - `CLAUDE.md` — development rules, architecture, workflow (this file)
 - `PRD.md` — product requirements, features, data model
 - `PROJECT_MEMORY.md` — known issues, lessons learned, hard constraints
+- `DESIGN_SYSTEM.md` — glassmorphism design system, component patterns, do's and don'ts
 - `plans/*.md` — implementation plans (do not contradict them)
 
 If something is unclear, ask before acting. If new features are added or changed, update the relevant docs accordingly.

@@ -16,6 +16,27 @@ const { generatePdf, isGenerating } = usePdfExport()
 
 const selectedEntry = ref<GuestEntry | null>(null)
 const sheetOpen = ref(false)
+const guestbookInfo = ref<{ settings?: Record<string, unknown> } | null>(null)
+
+/** Computed background styles from guestbook settings. */
+const backgroundStyles = computed(() => {
+  const settings = guestbookInfo.value?.settings
+  if (!settings) return {}
+  const styles: Record<string, string> = {}
+  const bgColor = settings.backgroundColor as string | undefined
+  const bgImage = settings.backgroundImageUrl as string | undefined
+  if (bgColor) {
+    styles.backgroundColor = bgColor
+  }
+  if (bgImage) {
+    styles.backgroundImage = `url(${bgImage})`
+    styles.backgroundSize = 'cover'
+    styles.backgroundPosition = 'center'
+    styles.backgroundRepeat = 'no-repeat'
+    styles.backgroundAttachment = 'fixed'
+  }
+  return styles
+})
 
 async function exportToPdf(): Promise<void> {
   if (entries.value.length === 0 || isGenerating.value) return
@@ -33,12 +54,24 @@ function toggleSortOrder(): void {
   sortOrder.value = sortOrder.value === 'newest' ? 'oldest' : 'newest'
 }
 
-onMounted(() => {
-  fetchEntries()
+onMounted(async () => {
+  try {
+    const response = await $fetch<{ success: boolean; data?: typeof guestbookInfo.value }>(
+      `/api/g/${guestbookId.value}/info`
+    )
+    if (response.success && response.data) {
+      guestbookInfo.value = response.data
+    }
+  } catch {
+    // Non-critical, page still works without background
+  }
+
+  await fetchEntries()
 })
 </script>
 
 <template>
+  <div class="min-h-screen" :style="backgroundStyles">
   <div class="mx-auto max-w-4xl px-4 py-8">
     <div class="mb-6 text-center">
       <h1 class="font-handwritten text-4xl text-foreground">
@@ -149,5 +182,6 @@ onMounted(() => {
       :open="sheetOpen"
       @update:open="sheetOpen = $event"
     />
+  </div>
   </div>
 </template>

@@ -12,6 +12,8 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   name: text('name').notNull(),
+  /** Optional avatar image URL. */
+  avatarUrl: text('avatar_url'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 })
@@ -37,6 +39,8 @@ export const tenants = pgTable('tenants', {
   id: varchar('id', { length: 24 }).primaryKey(),
   name: text('name').notNull(),
   ownerId: varchar('owner_id', { length: 24 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  /** Current plan: free, pro, or business. */
+  plan: text('plan').notNull().default('free'),
   /** Per-tenant encryption salt for photo encryption key derivation (hex-encoded). */
   encryptionSalt: varchar('encryption_salt', { length: 64 }),
   /** Current encryption key version for key rotation support. */
