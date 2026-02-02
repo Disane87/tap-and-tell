@@ -7,7 +7,9 @@
     "dev": "nuxt dev --host",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",
@@ -39,6 +41,7 @@
     "drizzle-kit": "^0.31.8",
     "shadcn-nuxt": "^2.4.3",
     "tailwindcss": "4",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

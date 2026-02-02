@@ -158,23 +158,43 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Loading -->
-    <div v-if="loading" class="flex justify-center py-12">
-      <p class="animate-gentle-pulse text-muted-foreground">{{ $t('common.loading') }}</p>
+    <!-- Loading Skeleton -->
+    <div v-if="loading" class="grid gap-4 sm:grid-cols-2">
+      <Card v-for="i in 4" :key="i">
+        <CardContent class="p-4">
+          <div class="flex items-start gap-3">
+            <Skeleton class="h-10 w-10 rounded-lg" />
+            <div class="flex-1 space-y-2">
+              <Skeleton class="h-4 w-32" />
+              <Skeleton class="h-3 w-24" />
+            </div>
+          </div>
+          <div class="mt-4 flex gap-2">
+            <Skeleton class="h-8 flex-1 rounded-md" />
+            <Skeleton class="h-8 w-8 rounded-md" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
 
     <!-- Empty guestbooks -->
-    <div v-else-if="guestbooks.length === 0" class="py-12 text-center">
-      <BookOpen class="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-      <p class="text-muted-foreground">{{ $t('guestbookAdmin.empty') }}</p>
-      <Button v-if="isOwner" class="mt-4" @click="showCreateDialog = true">
-        <Plus class="mr-2 h-4 w-4" />
-        {{ $t('guestbookAdmin.create') }}
-      </Button>
-    </div>
+    <EmptyState
+      v-else-if="guestbooks.length === 0"
+      :title="$t('guestbookAdmin.empty')"
+    >
+      <template #icon>
+        <BookOpen class="h-8 w-8 text-muted-foreground" />
+      </template>
+      <template #action>
+        <Button v-if="isOwner" @click="showCreateDialog = true">
+          <Plus class="mr-2 h-4 w-4" />
+          {{ $t('guestbookAdmin.create') }}
+        </Button>
+      </template>
+    </EmptyState>
 
     <!-- Guestbook list -->
-    <div v-else class="grid gap-4 sm:grid-cols-2">
+    <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <Card v-for="gb in guestbooks" :key="gb.id" class="group">
         <CardContent class="p-4">
           <div class="flex items-start justify-between">

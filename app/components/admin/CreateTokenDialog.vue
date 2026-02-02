@@ -109,8 +109,8 @@ watch(() => props.open, (open) => {
               <div v-for="scope in groupScopes" :key="scope.scope" class="flex items-center gap-2">
                 <Checkbox
                   :id="`scope-${scope.scope}`"
-                  :checked="selectedScopes.includes(scope.scope)"
-                  @update:checked="toggleScope(scope.scope)"
+                  :model-value="selectedScopes.includes(scope.scope)"
+                  @update:model-value="toggleScope(scope.scope)"
                 />
                 <label :for="`scope-${scope.scope}`" class="cursor-pointer text-sm text-foreground">
                   <code class="rounded bg-muted px-1 py-0.5 text-xs">{{ scope.scope }}</code>

@@ -24,3 +24,11 @@ export interface RegisterData {
   password: string
   name: string
 }
+
+/**
+ * Result type for the login flow.
+ * - 'success': Login completed, user is authenticated
+ * - '2fa': Two-factor authentication required, show verification form
+ * - 'error': Login failed (invalid credentials, etc.)
+ */
+export type LoginResult = 'success' | '2fa' | 'error'

@@ -26,7 +26,7 @@ const guestbookInfo = ref<Guestbook | null>(null)
 
 const entries = ref<GuestEntry[]>([])
 const loading = ref(true)
-const selectedIds = ref<Set<string>>(new Set())
+const selectedIds = ref<string[]>([])
 const activeTab = ref<'all' | EntryStatus>('all')
 const showSettings = ref(false)
 const showQrCode = ref(false)
@@ -142,7 +142,7 @@ async function handleDelete(id: string): Promise<void> {
   const success = await deleteEntry(id)
   if (success) {
     entries.value = entries.value.filter(e => e.id !== id)
-    selectedIds.value.delete(id)
+    selectedIds.value = selectedIds.value.filter(sid => sid !== id)
     toast.success(t('admin.deleteSuccess'))
   } else {
     toast.error(t('admin.deleteFailed'))
@@ -164,33 +164,50 @@ async function handleStatusUpdate(id: string, status: EntryStatus): Promise<void
 }
 
 async function handleBulkAction(status: EntryStatus): Promise<void> {
-  const ids = Array.from(selectedIds.value)
+  const ids = [...selectedIds.value]
   if (ids.length === 0) return
 
   const { bulkUpdateStatus } = useTenantAdmin(tenantId, guestbookId)
   const count = await bulkUpdateStatus(ids, status)
   if (count > 0) {
     await loadEntries()
-    selectedIds.value.clear()
+    selectedIds.value = []
     toast.success(t('admin.moderation.bulkSuccess', { count }))
   } else {
     toast.error(t('admin.moderation.updateFailed'))
   }
 }
 
-function toggleSelection(id: string): void {
-  if (selectedIds.value.has(id)) {
-    selectedIds.value.delete(id)
+async function handleBulkDelete(): Promise<void> {
+  const ids = [...selectedIds.value]
+  if (ids.length === 0) return
+
+  const { bulkDeleteEntries } = useTenantAdmin(tenantId, guestbookId)
+  const count = await bulkDeleteEntries(ids)
+  if (count > 0) {
+    const deletedSet = new Set(ids)
+    entries.value = entries.value.filter(e => !deletedSet.has(e.id))
+    selectedIds.value = []
+    toast.success(t('admin.moderation.bulkDeleteSuccess', { count }))
   } else {
-    selectedIds.value.add(id)
+    toast.error(t('admin.deleteFailed'))
+  }
+}
+
+function toggleSelection(id: string): void {
+  const idx = selectedIds.value.indexOf(id)
+  if (idx >= 0) {
+    selectedIds.value = selectedIds.value.filter(sid => sid !== id)
+  } else {
+    selectedIds.value = [...selectedIds.value, id]
   }
 }
 
 function toggleSelectAll(): void {
-  if (selectedIds.value.size === filteredEntries.value.length) {
-    selectedIds.value.clear()
+  if (selectedIds.value.length === filteredEntries.value.length) {
+    selectedIds.value = []
   } else {
-    selectedIds.value = new Set(filteredEntries.value.map(e => e.id))
+    selectedIds.value = filteredEntries.value.map(e => e.id)
   }
 }
 
@@ -316,13 +333,13 @@ onMounted(async () => {
 
     <!-- Settings Modal -->
     <Dialog v-model:open="showSettings">
-      <DialogContent class="max-h-[85vh] overflow-y-auto sm:max-w-4xl">
+      <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle class="font-display text-lg">{{ $t('settings.title') }}</DialogTitle>
           <DialogDescription>{{ $t('settings.description') }}</DialogDescription>
         </DialogHeader>
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div class="overflow-y-auto sm:max-h-[65vh] sm:pr-4">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div class="overflow-y-auto md:max-h-[65vh] md:pr-4">
             <AdminGuestbookSettings
               v-if="guestbookInfo && resolvedTenantId"
               ref="settingsRef"
@@ -331,7 +348,7 @@ onMounted(async () => {
               @saved="reloadGuestbookInfo"
             />
           </div>
-          <div class="sticky top-0 hidden sm:block">
+          <div class="sticky top-0 hidden md:block">
             <AdminGuestbookPreview
               v-if="guestbookInfo && settingsRef?.localSettings"
               :settings="settingsRef.localSettings"
@@ -406,7 +423,7 @@ onMounted(async () => {
         size="sm"
         class="rounded-xl backdrop-blur-md"
         :class="activeTab === tab ? 'shadow-lg' : 'border-border/20 hover:bg-muted/50'"
-        @click="activeTab = tab; selectedIds.clear()"
+        @click="activeTab = tab; selectedIds = []"
       >
         <Clock v-if="tab === 'pending'" class="mr-1.5 h-3.5 w-3.5" />
         <CheckCircle v-else-if="tab === 'approved'" class="mr-1.5 h-3.5 w-3.5" />
@@ -417,9 +434,9 @@ onMounted(async () => {
     </div>
 
     <!-- Bulk Actions -->
-    <div v-if="selectedIds.size > 0" class="mb-4 flex items-center gap-2 rounded-2xl bg-muted/50 backdrop-blur-md p-4 border border-border/10 shadow-md animate-scale-in">
+    <div v-if="selectedIds.length > 0" class="mb-4 flex items-center gap-2 rounded-2xl bg-muted/50 backdrop-blur-md p-4 border border-border/10 shadow-md animate-scale-in">
       <span class="text-sm font-medium text-foreground">
-        {{ $t('admin.moderation.selected', { count: selectedIds.size }) }}
+        {{ $t('admin.moderation.selected', { count: selectedIds.length }) }}
       </span>
       <div class="ml-auto flex gap-2">
         <Button size="sm" variant="outline" class="rounded-xl border-border/20 hover:bg-green-500/10 hover:border-green-500/30" @click="handleBulkAction('approved')">
@@ -430,14 +447,18 @@ onMounted(async () => {
           <X class="mr-1.5 h-3.5 w-3.5" />
           {{ $t('admin.moderation.rejectAll') }}
         </Button>
+        <Button size="sm" variant="outline" class="rounded-xl border-border/20 hover:bg-red-500/10 hover:border-red-500/30" @click="handleBulkDelete">
+          <Trash2 class="mr-1.5 h-3.5 w-3.5" />
+          {{ $t('admin.moderation.deleteAll') }}
+        </Button>
       </div>
     </div>
 
     <!-- Select All -->
     <div v-if="!loading && filteredEntries.length > 0" class="mb-4 flex items-center gap-2">
       <Checkbox
-        :checked="selectedIds.size === filteredEntries.length && filteredEntries.length > 0"
-        @update:checked="toggleSelectAll"
+        :model-value="selectedIds.length === filteredEntries.length && filteredEntries.length > 0"
+        @update:model-value="toggleSelectAll"
       />
       <span class="text-sm text-muted-foreground">{{ $t('admin.moderation.selectAll') }}</span>
     </div>
@@ -463,15 +484,15 @@ onMounted(async () => {
         v-for="entry in filteredEntries"
         :key="entry.id"
         class="flex items-start gap-4 rounded-3xl p-6 transition-all duration-300"
-        :class="selectedIds.has(entry.id)
+        :class="selectedIds.includes(entry.id)
           ? 'bg-primary/10 backdrop-blur-xl border border-primary/30 shadow-lg shadow-primary/20'
           : 'bg-card/70 backdrop-blur-xl border border-border/20 shadow-lg hover:shadow-xl hover:-translate-y-1'"
         style="backdrop-filter: blur(20px) saturate(180%)"
       >
         <Checkbox
-          :checked="selectedIds.has(entry.id)"
+          :model-value="selectedIds.includes(entry.id)"
           class="mt-5"
-          @update:checked="toggleSelection(entry.id)"
+          @update:model-value="toggleSelection(entry.id)"
         />
 
         <div

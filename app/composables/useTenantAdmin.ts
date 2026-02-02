@@ -106,10 +106,24 @@ export function useTenantAdmin(tenantId: Ref<string> | string, guestbookId: Ref<
     }
   }
 
+  /**
+   * Bulk deletes multiple entries.
+   *
+   * @param ids - The entry IDs to delete.
+   * @returns Number of entries successfully deleted.
+   */
+  async function bulkDeleteEntries(ids: string[]): Promise<number> {
+    const results = await Promise.allSettled(
+      ids.map(id => deleteEntry(id))
+    )
+    return results.filter(r => r.status === 'fulfilled' && r.value).length
+  }
+
   return {
     fetchEntries,
     deleteEntry,
     updateEntryStatus,
-    bulkUpdateStatus
+    bulkUpdateStatus,
+    bulkDeleteEntries
   }
 }

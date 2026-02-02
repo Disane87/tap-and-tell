@@ -71,10 +71,10 @@ async function handleLogout(): Promise<void> {
         <DropdownMenuTrigger as-child>
           <button
             type="button"
-            class="flex items-center rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+            class="flex items-center rounded-full p-1 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
             :aria-label="t('userMenu.profile')"
           >
-            <Avatar class="h-8 w-8 cursor-pointer">
+            <Avatar class="h-9 w-9 cursor-pointer sm:h-8 sm:w-8">
               <AvatarImage
                 v-if="user.avatarUrl"
                 :src="user.avatarUrl"

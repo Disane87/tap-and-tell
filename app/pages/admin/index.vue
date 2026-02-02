@@ -227,8 +227,8 @@ onMounted(async () => {
     <!-- Select All -->
     <div v-if="!loading && filteredEntries.length > 0" class="mb-4 flex items-center gap-2">
       <Checkbox
-        :checked="selectedIds.size === filteredEntries.length && filteredEntries.length > 0"
-        @update:checked="toggleSelectAll"
+        :model-value="selectedIds.size === filteredEntries.length && filteredEntries.length > 0"
+        @update:model-value="toggleSelectAll"
       />
       <span class="text-sm text-muted-foreground">{{ $t('admin.moderation.selectAll') }}</span>
     </div>
@@ -260,8 +260,8 @@ onMounted(async () => {
         <CardContent class="flex items-start gap-4 p-4">
           <!-- Checkbox -->
           <Checkbox
-            :checked="selectedIds.has(entry.id)"
-            @update:checked="toggleSelection(entry.id)"
+            :model-value="selectedIds.has(entry.id)"
+            @update:model-value="toggleSelection(entry.id)"
             class="mt-5"
           />
 

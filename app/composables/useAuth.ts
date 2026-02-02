@@ -1,4 +1,4 @@
-import type { AuthUser, LoginCredentials, RegisterData } from '~/types/auth'
+import type { AuthUser, LoginCredentials, LoginResult, RegisterData } from '~/types/auth'
 
 /**
  * Module-level state for owner authentication.
@@ -8,8 +8,12 @@ const user = ref<AuthUser | null>(null)
 const loading = ref(false)
 const initialized = ref(false)
 
+/** 2FA intermediate state — set when login returns requires2fa. */
+const twoFactorToken = ref<string | null>(null)
+const twoFactorMethod = ref<'totp' | 'email' | null>(null)
+
 /**
- * Composable for owner authentication (register, login, logout, fetchMe).
+ * Composable for owner authentication (register, login, logout, fetchMe, 2FA).
  *
  * Uses HTTP-only cookies for session management.
  * State is shared across all components via module-level refs.
@@ -68,19 +72,64 @@ export function useAuth() {
 
   /**
    * Logs in with email and password.
+   * Returns a LoginResult indicating the next step in the flow.
    *
    * @param credentials - Login credentials.
-   * @returns True if login succeeded.
+   * @returns 'success' if logged in, '2fa' if verification needed, 'error' on failure.
    */
-  async function login(credentials: LoginCredentials): Promise<boolean> {
+  async function login(credentials: LoginCredentials): Promise<LoginResult> {
     loading.value = true
     try {
-      const response = await $fetch<{ success: boolean; data?: AuthUser }>('/api/auth/login', {
+      const response = await $fetch<{
+        success: boolean
+        data?: AuthUser
+        requires2fa?: boolean
+        twoFactorToken?: string
+        twoFactorMethod?: 'totp' | 'email'
+      }>('/api/auth/login', {
         method: 'POST',
         body: credentials
       })
+
+      if (response.requires2fa && response.twoFactorToken) {
+        twoFactorToken.value = response.twoFactorToken
+        twoFactorMethod.value = response.twoFactorMethod ?? 'totp'
+        return '2fa'
+      }
+
       if (response.success && response.data) {
         user.value = response.data
+        return 'success'
+      }
+      return 'error'
+    } catch {
+      return 'error'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /**
+   * Verifies a 2FA code during login.
+   *
+   * @param code - The 6-digit verification code.
+   * @returns True if verification succeeded and user is now authenticated.
+   */
+  async function verify2fa(code: string): Promise<boolean> {
+    if (!twoFactorToken.value) return false
+    loading.value = true
+    try {
+      const response = await $fetch<{ success: boolean; data?: AuthUser }>('/api/auth/2fa/verify', {
+        method: 'POST',
+        body: {
+          token: twoFactorToken.value,
+          code
+        }
+      })
+      if (response.success && response.data) {
+        user.value = response.data
+        twoFactorToken.value = null
+        twoFactorMethod.value = null
         return true
       }
       return false
@@ -89,6 +138,32 @@ export function useAuth() {
     } finally {
       loading.value = false
     }
+  }
+
+  /**
+   * Resends the email OTP code during 2FA login.
+   *
+   * @returns True if the code was resent.
+   */
+  async function resend2faCode(): Promise<boolean> {
+    if (!twoFactorToken.value) return false
+    try {
+      const response = await $fetch<{ success: boolean }>('/api/auth/2fa/resend', {
+        method: 'POST',
+        body: { token: twoFactorToken.value }
+      })
+      return response.success
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * Clears the 2FA state, returning to the credentials phase.
+   */
+  function clear2fa(): void {
+    twoFactorToken.value = null
+    twoFactorMethod.value = null
   }
 
   /**
@@ -214,9 +289,14 @@ export function useAuth() {
     loading: readonly(loading),
     isAuthenticated,
     initialized: readonly(initialized),
+    twoFactorToken: readonly(twoFactorToken),
+    twoFactorMethod: readonly(twoFactorMethod),
     fetchMe,
     register,
     login,
+    verify2fa,
+    resend2faCode,
+    clear2fa,
     logout,
     updateProfile,
     changePassword,

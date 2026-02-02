@@ -6,7 +6,7 @@
  * Auth-guarded: redirects to /login if not authenticated.
  */
 import {
-  User, Upload, Trash2, Shield, ShieldCheck, ShieldAlert,
+  User, Upload, Trash2, Shield, ShieldCheck, ShieldAlert, ShieldOff,
   AlertTriangle, Eye, EyeOff
 } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
@@ -127,10 +127,13 @@ async function handleChangePassword(): Promise<void> {
 
 // ── 2FA Status ──
 const twoFactorEnabled = ref(false)
-const twoFactorMethod = ref<string | null>(null)
+const twoFactorMethodDisplay = ref<string | null>(null)
 const loadingTwoFactor = ref(true)
+const showSetupDialog = ref(false)
+const showDisableDialog = ref(false)
 
-onMounted(async () => {
+async function loadTwoFactorStatus(): Promise<void> {
+  loadingTwoFactor.value = true
   try {
     const response = await $fetch<{
       success: boolean
@@ -138,14 +141,20 @@ onMounted(async () => {
     }>('/api/auth/2fa/status')
     if (response.success && response.data) {
       twoFactorEnabled.value = response.data.enabled
-      twoFactorMethod.value = response.data.method ?? null
+      twoFactorMethodDisplay.value = response.data.method ?? null
     }
   } catch {
     // Ignore — 2FA status is optional display
   } finally {
     loadingTwoFactor.value = false
   }
-})
+}
+
+onMounted(() => { loadTwoFactorStatus() })
+
+function handleTwoFactorCompleted(): void {
+  loadTwoFactorStatus()
+}
 
 // ── Plan ──
 const tenantPlan = ref('free')
@@ -299,8 +308,9 @@ const initials = computed(() => {
       <!-- Plan -->
       <Card class="p-6">
         <h2 class="mb-4 text-lg font-semibold text-foreground">{{ t('profile.plan') }}</h2>
-        <div v-if="loadingPlan" class="text-sm text-muted-foreground">
-          {{ t('common.loading') }}
+        <div v-if="loadingPlan" class="space-y-3">
+          <Skeleton class="h-8 w-24 rounded-full" />
+          <Skeleton class="h-4 w-48" />
         </div>
         <div v-else class="flex items-center justify-between">
           <div>
@@ -383,22 +393,35 @@ const initials = computed(() => {
             <div>
               <p class="text-sm font-medium text-foreground">{{ t('profile.twoFactor') }}</p>
               <p class="text-xs text-muted-foreground">
-                <template v-if="loadingTwoFactor">{{ t('common.loading') }}</template>
+                <template v-if="loadingTwoFactor">
+                  <Skeleton class="mt-1 h-3 w-20 inline-block" />
+                </template>
                 <template v-else-if="twoFactorEnabled">
                   {{ t('profile.twoFactorEnabled') }}
-                  <span v-if="twoFactorMethod">({{ twoFactorMethod.toUpperCase() }})</span>
+                  <span v-if="twoFactorMethodDisplay">({{ twoFactorMethodDisplay.toUpperCase() }})</span>
                 </template>
                 <template v-else>{{ t('profile.twoFactorDisabled') }}</template>
               </p>
             </div>
           </div>
           <Button
-            v-if="!twoFactorEnabled && !loadingTwoFactor"
+            v-if="!loadingTwoFactor && !twoFactorEnabled"
             variant="outline"
             size="sm"
+            @click="showSetupDialog = true"
           >
             <Shield class="mr-2 h-4 w-4" />
             {{ t('profile.twoFactorSetup') }}
+          </Button>
+          <Button
+            v-if="!loadingTwoFactor && twoFactorEnabled"
+            variant="outline"
+            size="sm"
+            class="text-destructive hover:text-destructive"
+            @click="showDisableDialog = true"
+          >
+            <ShieldOff class="mr-2 h-4 w-4" />
+            {{ t('profile.twoFactorDisable') }}
           </Button>
         </div>
       </Card>
@@ -449,5 +472,17 @@ const initials = computed(() => {
         </AlertDialog>
       </Card>
     </div>
+
+    <!-- 2FA Dialogs -->
+    <TwoFactorSetupDialog
+      :open="showSetupDialog"
+      @update:open="showSetupDialog = $event"
+      @completed="handleTwoFactorCompleted"
+    />
+    <TwoFactorDisableDialog
+      :open="showDisableDialog"
+      @update:open="showDisableDialog = $event"
+      @completed="handleTwoFactorCompleted"
+    />
   </div>
 </template>
