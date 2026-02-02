@@ -70,7 +70,9 @@ export async function withTenantContext<T>(
 
   try {
     await client.query('BEGIN')
-    await client.query(`SET LOCAL app.current_tenant_id = $1`, [tenantId])
+    // Note: SET LOCAL doesn't support parameter binding, so we use literal string.
+    // tenantId is already validated as nanoid (alphanumeric), so this is safe.
+    await client.query(`SET LOCAL app.current_tenant_id = '${tenantId}'`)
 
     const txDb = drizzle(client as any, { schema })
     const result = await callback(txDb)
@@ -102,7 +104,9 @@ export async function withTenantClient<T>(
 
   try {
     await client.query('BEGIN')
-    await client.query(`SET LOCAL app.current_tenant_id = $1`, [tenantId])
+    // Note: SET LOCAL doesn't support parameter binding, so we use literal string.
+    // tenantId is already validated as nanoid (alphanumeric), so this is safe.
+    await client.query(`SET LOCAL app.current_tenant_id = '${tenantId}'`)
 
     const result = await callback(client)
 
