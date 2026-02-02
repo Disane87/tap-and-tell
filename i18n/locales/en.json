@@ -402,6 +402,8 @@
       "pendingSuccess": "Entry set to pending",
       "updateFailed": "Failed to update status",
       "bulkSuccess": "{count} entries updated",
+      "bulkDeleteSuccess": "{count} entries deleted",
+      "deleteAll": "Delete selected",
       "noEntries": "No entries in this category."
     }
   },
@@ -449,9 +451,9 @@
     "passwordPlaceholder": "Your password",
     "name": "Name",
     "namePlaceholder": "Your name",
-    "passwordHint": "At least 8 characters",
+    "passwordHint": "At least 12 characters",
     "fieldsRequired": "All fields are required",
-    "passwordTooShort": "Password must be at least 8 characters",
+    "passwordTooShort": "Password must be at least 12 characters",
     "loginSuccess": "Signed in!",
     "loginFailed": "Invalid email or password",
     "registerSuccess": "Account created!",
@@ -460,7 +462,20 @@
     "noAccount": "Don't have an account?",
     "registerLink": "Create one",
     "hasAccount": "Already have an account?",
-    "loginLink": "Sign in"
+    "loginLink": "Sign in",
+    "twoFactorTitle": "Two-Factor Authentication",
+    "twoFactorTotpHint": "Enter the 6-digit code from your authenticator app.",
+    "twoFactorEmailHint": "We sent a 6-digit code to your email address.",
+    "twoFactorCode": "Verification Code",
+    "twoFactorCodePlaceholder": "000000",
+    "twoFactorCodeInvalid": "Please enter a 6-digit code.",
+    "twoFactorCodeWrong": "Invalid code. Please try again.",
+    "verify": "Verify",
+    "resendCode": "Resend Code",
+    "resendCodeSuccess": "A new code has been sent.",
+    "resendCodeFailed": "Failed to resend code.",
+    "backToLogin": "Back to Login",
+    "passwordHintStrong": "At least 12 characters with uppercase, lowercase, digit, and special character"
   },
   "dashboard": {
     "title": "My Guestbooks",
@@ -720,6 +735,7 @@
     "twoFactorEnabled": "Enabled",
     "twoFactorDisabled": "Not set up",
     "twoFactorSetup": "Set up 2FA",
+    "twoFactorDisable": "Disable 2FA",
     "dangerZone": "Danger Zone",
     "deleteAccount": "Delete Account",
     "deleteAccountDescription": "Permanently delete your account and all data.",
@@ -740,6 +756,42 @@
     "profile": "Profile",
     "dashboard": "Dashboard",
     "logout": "Logout"
+  },
+  "twoFactor": {
+    "setupTitle": "Set Up Two-Factor Authentication",
+    "chooseMethod": "Choose your preferred 2FA method.",
+    "totpTitle": "Authenticator App",
+    "totpDescription": "Use an app like Google Authenticator or Authy.",
+    "emailTitle": "Email Code",
+    "emailDescription": "Receive a verification code via email.",
+    "scanQr": "Scan this QR code with your authenticator app, then enter the code below.",
+    "manualEntry": "Can't scan? Enter this secret manually:",
+    "emailSent": "We sent a verification code to your email.",
+    "backupCodesTitle": "Backup Codes",
+    "backupCodesDescription": "Save these backup codes in a secure place. Each can be used once if you lose access to your 2FA method.",
+    "copyBackupCodes": "Copy Codes",
+    "codesCopied": "Backup codes copied!",
+    "codesCopyFailed": "Failed to copy codes.",
+    "confirmSaved": "I have saved these backup codes",
+    "done": "Done",
+    "setupFailed": "Failed to set up 2FA. Please try again.",
+    "disableTitle": "Disable Two-Factor Authentication",
+    "disableDescription": "Enter your password to disable 2FA. Your account will be less secure.",
+    "disableButton": "Disable 2FA",
+    "disableSuccess": "Two-factor authentication has been disabled.",
+    "disableFailed": "Failed to disable 2FA. Check your password."
+  },
+  "error": {
+    "notFound": "The page you're looking for doesn't exist.",
+    "serverError": "Something went wrong. Please try again later.",
+    "backHome": "Back to Home"
+  },
+  "validation": {
+    "minLength": "At least 12 characters",
+    "uppercase": "At least one uppercase letter",
+    "lowercase": "At least one lowercase letter",
+    "digit": "At least one digit",
+    "special": "At least one special character"
   },
   "entry": {
     "subtitle": "Digital Guestbook Entry",

@@ -1,4 +1,6 @@
 import { randomInt, timingSafeEqual } from 'crypto'
+import { sendEmail } from './email'
+import { otpEmailHtml } from './email-templates'
 
 /** OTP entry stored in memory. */
 interface OtpEntry {
@@ -39,8 +41,14 @@ export function generateEmailOtp(userId: string, email: string): string {
     console.log(`[email-otp] Code for ${email}: ${code}`)
   }
 
-  // TODO: Integrate with email service (SendGrid, Resend, etc.) for production
-  // await sendEmail(email, 'Your Tap & Tell verification code', `Your code is: ${code}`)
+  // Send OTP email via Resend (falls back to console.log if no API key)
+  sendEmail({
+    to: email,
+    subject: 'Your Tap & Tell verification code',
+    html: otpEmailHtml(code)
+  }).catch((err) => {
+    console.error('[email-otp] Failed to send email:', err)
+  })
 
   return code
 }

@@ -87,11 +87,11 @@ const answerBadges = computed(() => {
     class="card-polaroid w-full cursor-pointer text-left"
     @click="$emit('click')"
   >
-    <div v-if="entry.photoUrl" class="mb-3">
+    <div v-if="entry.photoUrl" class="photo-frame mb-3 aspect-square w-full bg-muted">
       <img
         :src="entry.photoUrl"
         :alt="$t('entry.photoBy', { name: entry.name })"
-        class="photo-frame aspect-square w-full object-cover"
+        class="h-full w-full object-cover"
       >
     </div>
     <h3 class="font-handwritten text-2xl text-foreground">

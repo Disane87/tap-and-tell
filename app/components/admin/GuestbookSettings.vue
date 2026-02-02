@@ -209,8 +209,8 @@ function handleBackgroundImageChanged(): void {
     <!-- Moderation -->
     <div class="flex items-start gap-3">
       <Checkbox
-        :checked="localSettings.moderationEnabled"
-        @update:checked="(val: boolean) => localSettings.moderationEnabled = val"
+        :model-value="localSettings.moderationEnabled"
+        @update:model-value="(val: boolean) => localSettings.moderationEnabled = val"
         class="mt-0.5"
       />
       <div>
@@ -229,7 +229,7 @@ function handleBackgroundImageChanged(): void {
       <div class="space-y-2">
         <!-- Basics (always enabled) -->
         <div class="flex items-center gap-3">
-          <Checkbox :checked="true" disabled />
+          <Checkbox :model-value="true" disabled />
           <span class="text-sm text-muted-foreground">
             {{ t('settings.formSteps.basics') }}
             <span class="text-xs italic">({{ t('settings.formSteps.alwaysEnabled') }})</span>
@@ -239,8 +239,8 @@ function handleBackgroundImageChanged(): void {
         <!-- Favorites (toggleable) -->
         <div class="flex items-center gap-3">
           <Checkbox
-            :checked="localSettings.formConfig?.steps?.favorites ?? true"
-            @update:checked="(val: boolean) => { if (localSettings.formConfig?.steps) localSettings.formConfig.steps.favorites = val }"
+            :model-value="localSettings.formConfig?.steps?.favorites ?? true"
+            @update:model-value="(val: boolean) => { if (localSettings.formConfig?.steps) localSettings.formConfig.steps.favorites = val }"
           />
           <span class="text-sm">{{ t('settings.formSteps.favorites') }}</span>
         </div>
@@ -248,15 +248,15 @@ function handleBackgroundImageChanged(): void {
         <!-- Fun Facts (toggleable) -->
         <div class="flex items-center gap-3">
           <Checkbox
-            :checked="localSettings.formConfig?.steps?.funFacts ?? true"
-            @update:checked="(val: boolean) => { if (localSettings.formConfig?.steps) localSettings.formConfig.steps.funFacts = val }"
+            :model-value="localSettings.formConfig?.steps?.funFacts ?? true"
+            @update:model-value="(val: boolean) => { if (localSettings.formConfig?.steps) localSettings.formConfig.steps.funFacts = val }"
           />
           <span class="text-sm">{{ t('settings.formSteps.funFacts') }}</span>
         </div>
 
         <!-- Message (always enabled) -->
         <div class="flex items-center gap-3">
-          <Checkbox :checked="true" disabled />
+          <Checkbox :model-value="true" disabled />
           <span class="text-sm text-muted-foreground">
             {{ t('settings.formSteps.message') }}
             <span class="text-xs italic">({{ t('settings.formSteps.alwaysEnabled') }})</span>

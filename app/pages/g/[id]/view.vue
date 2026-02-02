@@ -145,18 +145,32 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- Loading state -->
-    <div v-if="loading" class="flex justify-center py-12">
-      <p class="animate-gentle-pulse text-muted-foreground">{{ $t('common.loading') }}</p>
+    <!-- Loading Skeleton -->
+    <div v-if="loading" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <Card v-for="i in 6" :key="i" class="overflow-hidden">
+        <Skeleton class="h-48 w-full" />
+        <CardContent class="p-4 space-y-2">
+          <Skeleton class="h-5 w-24" />
+          <Skeleton class="h-3 w-full" />
+          <Skeleton class="h-3 w-2/3" />
+        </CardContent>
+      </Card>
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="entries.length === 0" class="py-12 text-center">
-      <p class="text-muted-foreground">{{ $t('guestbook.empty') }}</p>
-      <NuxtLink :to="`/g/${guestbookId}`">
-        <Button class="mt-4">{{ $t('guestbook.createFirst') }}</Button>
-      </NuxtLink>
-    </div>
+    <EmptyState
+      v-else-if="entries.length === 0"
+      :title="$t('guestbook.empty')"
+    >
+      <template #icon>
+        <Search class="h-8 w-8 text-muted-foreground" />
+      </template>
+      <template #action>
+        <NuxtLink :to="`/g/${guestbookId}`">
+          <Button>{{ $t('guestbook.createFirst') }}</Button>
+        </NuxtLink>
+      </template>
+    </EmptyState>
 
     <!-- No results -->
     <div v-else-if="filteredEntries.length === 0" class="py-12 text-center">

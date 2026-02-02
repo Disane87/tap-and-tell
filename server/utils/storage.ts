@@ -1,8 +1,9 @@
-import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } from 'fs'
+import { existsSync } from 'fs'
 import { join } from 'path'
 import { eq, desc, and, inArray } from 'drizzle-orm'
 import { entries, tenants } from '~~/server/database/schema'
 import { encryptData, decryptData, deriveTenantKey } from '~~/server/utils/crypto'
+import { getStorageDriver } from '~~/server/utils/storage-driver'
 import type { EntryStatus, GuestEntry } from '~~/server/types/guest'
 
 /**
@@ -12,16 +13,12 @@ const DATA_DIR = process.env.DATA_DIR || '.data'
 const PHOTOS_DIR = join(DATA_DIR, 'photos')
 
 /**
- * Ensures the photos directory exists for a given guestbook.
+ * Returns the photos directory path for a given guestbook.
  *
  * @param guestbookId - The guestbook ID for namespaced photo storage.
  */
-function ensurePhotosDir(guestbookId?: string): string {
-  const dir = guestbookId ? join(PHOTOS_DIR, guestbookId) : PHOTOS_DIR
-  if (!existsSync(dir)) {
-    mkdirSync(dir, { recursive: true })
-  }
-  return dir
+function getPhotosDir(guestbookId?: string): string {
+  return guestbookId ? join(PHOTOS_DIR, guestbookId) : PHOTOS_DIR
 }
 
 /**
@@ -120,14 +117,15 @@ export async function createEntry(
       const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
       const base64Data = match[2]
       const filename = `${id}.${ext}.enc`
-      const photosDir = ensurePhotosDir(guestbookId)
+      const photosDir = getPhotosDir(guestbookId)
       const filePath = join(photosDir, filename)
 
       const plainData = Buffer.from(base64Data, 'base64')
       const tenantKey = await getTenantEncryptionKey(tenantId)
       const encryptedData = encryptData(plainData, tenantKey)
 
-      writeFileSync(filePath, encryptedData)
+      const driver = getStorageDriver()
+      await driver.write(filePath, encryptedData)
       photoUrl = `/api/photos/${guestbookId}/${filename}`
     }
   }
@@ -180,9 +178,8 @@ export async function deleteEntry(tenantId: string, id: string): Promise<boolean
       } else {
         filePath = join(PHOTOS_DIR, parts[0])
       }
-      if (existsSync(filePath)) {
-        unlinkSync(filePath)
-      }
+      const driver = getStorageDriver()
+      await driver.delete(filePath)
     }
 
     await db.delete(entries).where(eq(entries.id, id))
@@ -260,9 +257,9 @@ export async function readEncryptedPhoto(
   filename: string
 ): Promise<Buffer | undefined> {
   const filePath = join(PHOTOS_DIR, guestbookId, filename)
-  if (!existsSync(filePath)) return undefined
-
-  const encryptedData = readFileSync(filePath)
+  const driver = getStorageDriver()
+  const encryptedData = await driver.read(filePath)
+  if (!encryptedData) return undefined
 
   // If file is not encrypted (legacy), return as-is
   if (!filename.endsWith('.enc')) {
@@ -287,6 +284,7 @@ export function getPhotoPath(...args: string[]): string | undefined {
   } else {
     filePath = join(PHOTOS_DIR, args[0])
   }
+  // Synchronous check for backwards compat — local driver only
   if (existsSync(filePath)) {
     return filePath
   }

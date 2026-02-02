@@ -402,6 +402,8 @@
       "pendingSuccess": "Eintrag auf ausstehend gesetzt",
       "updateFailed": "Status konnte nicht aktualisiert werden",
       "bulkSuccess": "{count} Einträge aktualisiert",
+      "bulkDeleteSuccess": "{count} Einträge gelöscht",
+      "deleteAll": "Ausgewählte löschen",
       "noEntries": "Keine Einträge in dieser Kategorie."
     }
   },
@@ -449,9 +451,9 @@
     "passwordPlaceholder": "Dein Passwort",
     "name": "Name",
     "namePlaceholder": "Dein Name",
-    "passwordHint": "Mindestens 8 Zeichen",
+    "passwordHint": "Mindestens 12 Zeichen",
     "fieldsRequired": "Alle Felder sind erforderlich",
-    "passwordTooShort": "Passwort muss mindestens 8 Zeichen lang sein",
+    "passwordTooShort": "Passwort muss mindestens 12 Zeichen lang sein",
     "loginSuccess": "Angemeldet!",
     "loginFailed": "Ungültige E-Mail oder Passwort",
     "registerSuccess": "Konto erstellt!",
@@ -460,7 +462,20 @@
     "noAccount": "Noch kein Konto?",
     "registerLink": "Erstelle eins",
     "hasAccount": "Bereits ein Konto?",
-    "loginLink": "Anmelden"
+    "loginLink": "Anmelden",
+    "twoFactorTitle": "Zwei-Faktor-Authentifizierung",
+    "twoFactorTotpHint": "Gib den 6-stelligen Code aus deiner Authenticator-App ein.",
+    "twoFactorEmailHint": "Wir haben einen 6-stelligen Code an deine E-Mail-Adresse gesendet.",
+    "twoFactorCode": "Verifizierungscode",
+    "twoFactorCodePlaceholder": "000000",
+    "twoFactorCodeInvalid": "Bitte gib einen 6-stelligen Code ein.",
+    "twoFactorCodeWrong": "Ungültiger Code. Bitte versuche es erneut.",
+    "verify": "Verifizieren",
+    "resendCode": "Code erneut senden",
+    "resendCodeSuccess": "Ein neuer Code wurde gesendet.",
+    "resendCodeFailed": "Code konnte nicht erneut gesendet werden.",
+    "backToLogin": "Zurück zur Anmeldung",
+    "passwordHintStrong": "Mindestens 12 Zeichen mit Groß-, Kleinbuchstaben, Ziffer und Sonderzeichen"
   },
   "dashboard": {
     "title": "Meine Gästebücher",
@@ -720,6 +735,7 @@
     "twoFactorEnabled": "Aktiviert",
     "twoFactorDisabled": "Nicht eingerichtet",
     "twoFactorSetup": "2FA einrichten",
+    "twoFactorDisable": "2FA deaktivieren",
     "dangerZone": "Gefahrenzone",
     "deleteAccount": "Account löschen",
     "deleteAccountDescription": "Account und alle Daten unwiderruflich löschen.",
@@ -740,6 +756,42 @@
     "profile": "Profil",
     "dashboard": "Dashboard",
     "logout": "Abmelden"
+  },
+  "twoFactor": {
+    "setupTitle": "Zwei-Faktor-Authentifizierung einrichten",
+    "chooseMethod": "Wähle deine bevorzugte 2FA-Methode.",
+    "totpTitle": "Authenticator-App",
+    "totpDescription": "Verwende eine App wie Google Authenticator oder Authy.",
+    "emailTitle": "E-Mail-Code",
+    "emailDescription": "Erhalte einen Verifizierungscode per E-Mail.",
+    "scanQr": "Scanne diesen QR-Code mit deiner Authenticator-App und gib den Code unten ein.",
+    "manualEntry": "Scannen nicht möglich? Gib diesen Schlüssel manuell ein:",
+    "emailSent": "Wir haben einen Verifizierungscode an deine E-Mail gesendet.",
+    "backupCodesTitle": "Backup-Codes",
+    "backupCodesDescription": "Speichere diese Backup-Codes an einem sicheren Ort. Jeder kann einmal verwendet werden, falls du keinen Zugriff auf deine 2FA-Methode hast.",
+    "copyBackupCodes": "Codes kopieren",
+    "codesCopied": "Backup-Codes kopiert!",
+    "codesCopyFailed": "Codes konnten nicht kopiert werden.",
+    "confirmSaved": "Ich habe diese Backup-Codes gespeichert",
+    "done": "Fertig",
+    "setupFailed": "2FA konnte nicht eingerichtet werden. Bitte versuche es erneut.",
+    "disableTitle": "Zwei-Faktor-Authentifizierung deaktivieren",
+    "disableDescription": "Gib dein Passwort ein, um 2FA zu deaktivieren. Dein Konto wird weniger sicher sein.",
+    "disableButton": "2FA deaktivieren",
+    "disableSuccess": "Zwei-Faktor-Authentifizierung wurde deaktiviert.",
+    "disableFailed": "2FA konnte nicht deaktiviert werden. Überprüfe dein Passwort."
+  },
+  "error": {
+    "notFound": "Die Seite, die du suchst, existiert nicht.",
+    "serverError": "Etwas ist schiefgelaufen. Bitte versuche es später erneut.",
+    "backHome": "Zur Startseite"
+  },
+  "validation": {
+    "minLength": "Mindestens 12 Zeichen",
+    "uppercase": "Mindestens ein Großbuchstabe",
+    "lowercase": "Mindestens ein Kleinbuchstabe",
+    "digit": "Mindestens eine Ziffer",
+    "special": "Mindestens ein Sonderzeichen"
   },
   "entry": {
     "subtitle": "Digitaler Gästebuch-Eintrag",

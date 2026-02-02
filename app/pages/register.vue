@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * Owner registration page with email, password, and name form.
+ * Owner registration page with email, password, name form and password strength indicator.
  */
 import { UserPlus } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
@@ -25,7 +25,7 @@ async function handleRegister() {
     return
   }
 
-  if (password.value.length < 8) {
+  if (password.value.length < 12) {
     errorMessage.value = t('auth.passwordTooShort')
     return
   }
@@ -88,7 +88,8 @@ async function handleRegister() {
               autocomplete="new-password"
               required
             />
-            <p class="text-xs text-muted-foreground">{{ t('auth.passwordHint') }}</p>
+            <PasswordStrengthIndicator :password="password" />
+            <p v-if="!password" class="text-xs text-muted-foreground">{{ t('auth.passwordHintStrong') }}</p>
           </div>
 
           <p v-if="errorMessage" class="text-sm text-destructive">
