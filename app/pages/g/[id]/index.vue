@@ -226,7 +226,7 @@ onUnmounted(() => {
         :class="{ 'landing-gradient': !hasCustomBackground }"
       >
         <div
-          class="mx-auto max-w-sm rounded-2xl border border-border/20 p-8 text-center shadow-xl"
+          class="mx-auto max-w-sm rounded-2xl border border-border/20 p-8 text-center shadow-xl shadow-black"
           :class="{ 'bg-card/70': !hasCustomCardColor }"
           :style="cardStyles"
         >
