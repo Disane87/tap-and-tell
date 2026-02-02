@@ -24,3 +24,6 @@ logs
 !.env.example
 tmpclaude-*
 nul
+
+# SSL certificates
+certs/

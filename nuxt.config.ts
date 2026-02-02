@@ -1,5 +1,7 @@
 import tailwindcss from '@tailwindcss/vite'
 import basicSsl from '@vitejs/plugin-basic-ssl'
+import fs from 'fs'
+import path from 'path'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -8,8 +10,11 @@ export default defineNuxtConfig({
   ssr: false,
 
   devServer: {
-    host: '192.168.1.116',
-    https: true
+    host: 'localhost',
+    https: {
+      key: fs.readFileSync(path.resolve(__dirname, 'certs/localhost-key.pem'), 'utf-8'),
+      cert: fs.readFileSync(path.resolve(__dirname, 'certs/localhost-cert.pem'), 'utf-8')
+    }
   },
 
   modules: [

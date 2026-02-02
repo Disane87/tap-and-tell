@@ -16,7 +16,8 @@ onMounted(async () => {
       `/api/t/${tenantId.value}/guestbooks`
     )
     if (response.success && response.data && response.data.length > 0) {
-      router.replace(`/t/${tenantId.value}/g/${response.data[0].id}`)
+      // Redirect to new simplified URL structure
+      router.replace(`/g/${response.data[0].id}`)
     } else {
       notFound.value = true
     }

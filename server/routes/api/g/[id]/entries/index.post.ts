@@ -1,0 +1,67 @@
+import type { CreateGuestEntryInput } from '~~/server/types/guest'
+
+/**
+ * POST /api/g/:id/entries
+ * Creates a new entry for a guestbook.
+ * No authentication required (guest submission).
+ */
+export default defineEventHandler(async (event) => {
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+
+  const rateCheck = entryLimiter.check(ip)
+  if (!rateCheck.allowed) {
+    throw createError({ statusCode: 429, message: 'Too many submissions. Please try again later.' })
+  }
+
+  const guestbookId = getRouterParam(event, 'id')
+  if (!guestbookId) {
+    throw createError({ statusCode: 400, message: 'Guestbook ID is required' })
+  }
+
+  const guestbook = await getGuestbookById(guestbookId)
+  if (!guestbook) {
+    throw createError({ statusCode: 404, message: 'Guestbook not found' })
+  }
+
+  const body = await readBody<CreateGuestEntryInput>(event)
+
+  if (!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {
+    throw createError({ statusCode: 400, message: 'Name is required' })
+  }
+
+  if (!body.message || typeof body.message !== 'string' || body.message.trim().length === 0) {
+    throw createError({ statusCode: 400, message: 'Message is required' })
+  }
+
+  if (body.name.length > 100) {
+    throw createError({ statusCode: 400, message: 'Name must be 100 characters or less' })
+  }
+
+  if (body.message.length > 1000) {
+    throw createError({ statusCode: 400, message: 'Message must be 1000 characters or less' })
+  }
+
+  if (body.photo && body.photo.length > 7_000_000) {
+    throw createError({ statusCode: 400, message: 'Photo must be 5MB or less' })
+  }
+
+  if (body.photo && !validatePhotoMimeType(body.photo)) {
+    throw createError({ statusCode: 400, message: 'Invalid photo format' })
+  }
+
+  const sanitized = sanitizeEntryInput({ name: body.name, message: body.message, answers: body.answers })
+
+  const entry = await createEntry(
+    guestbook.tenantId,
+    guestbookId,
+    sanitized.name.trim(),
+    sanitized.message.trim(),
+    body.photo,
+    sanitized.answers
+  )
+
+  return {
+    success: true,
+    data: entry
+  }
+})

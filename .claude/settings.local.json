@@ -10,7 +10,16 @@
       "Bash(pnpm run dev)",
       "Bash(timeout:*)",
       "Bash(^d \")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(curl:*)",
+      "Bash(tail:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(tee:*)",
+      "Bash(pnpm exec nuxi:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

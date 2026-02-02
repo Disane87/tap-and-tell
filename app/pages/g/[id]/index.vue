@@ -1,11 +1,7 @@
 <script setup lang="ts">
 /**
- * Guestbook guest landing page with swipeable entry view.
- *
- * Slide 0: Intro with guestbook name and CTA.
- * Slides 1+: Individual guest entries displayed fullscreen.
- *
- * The form wizard opens as a full-screen bottom sheet.
+ * Simplified guestbook guest landing page.
+ * URL: /g/[id]
  */
 import { useSwipe } from '@vueuse/core'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
@@ -17,13 +13,13 @@ definePageMeta({
 
 const { t } = useI18n()
 const route = useRoute()
-const tenantId = computed(() => route.params.uuid as string)
-const guestbookId = computed(() => route.params.guestbookUuid as string)
+const guestbookId = computed(() => route.params.id as string)
 
-const { entries, fetchEntries, createEntry } = useTenantGuests(tenantId, guestbookId)
+// Use simplified composable (we'll create this next)
+const { entries, fetchEntries, createEntry } = useGuestbook(guestbookId)
 const { formState, status, reset, setStatus, setError, getSubmitData, validate } = useGuestForm()
 
-const guestbookInfo = ref<{ id: string; name: string; settings: Record<string, unknown> } | null>(null)
+const guestbookInfo = ref<{ id: string; name: string; tenantId: string; settings: Record<string, unknown> } | null>(null)
 const sheetOpen = ref(false)
 const currentSlide = ref(0)
 const slideDirection = ref<'forward' | 'backward'>('forward')
@@ -55,22 +51,12 @@ function prevSlide(): void {
   }
 }
 
-useSwipe(swiperEl, {
-  onSwipeEnd(_e, direction) {
-    if (direction === 'left') nextSlide()
-    if (direction === 'right') prevSlide()
-  }
-})
-
 function handleKeydown(e: KeyboardEvent): void {
   if (sheetOpen.value) return
   if (e.key === 'ArrowRight') nextSlide()
   if (e.key === 'ArrowLeft') prevSlide()
 }
 
-/**
- * Handles form submission.
- */
 async function handleSubmit(): Promise<void> {
   if (!validate()) return
 
@@ -91,24 +77,29 @@ async function handleSubmit(): Promise<void> {
   }
 }
 
-/**
- * Fetches guestbook info and entries on mount.
- */
 onMounted(async () => {
+  // Setup swipe gestures
+  useSwipe(swiperEl, {
+    onSwipeEnd(_e, direction) {
+      if (direction === 'left') nextSlide()
+      if (direction === 'right') prevSlide()
+    }
+  })
+
   window.addEventListener('keydown', handleKeydown)
 
   try {
     const response = await $fetch<{ success: boolean; data?: typeof guestbookInfo.value }>(
-      `/api/t/${tenantId.value}/g/${guestbookId.value}/info`
+      `/api/g/${guestbookId.value}/info`
     )
     if (response.success && response.data) {
       guestbookInfo.value = response.data
     }
-  } catch {
-    // Guestbook not found
+  } catch (error) {
+    console.error('Failed to fetch guestbook info:', error)
   }
 
-  fetchEntries()
+  await fetchEntries()
 })
 
 onUnmounted(() => {
@@ -141,7 +132,7 @@ onUnmounted(() => {
           </Button>
           <NuxtLink
             v-if="hasEntries"
-            :to="`/t/${tenantId}/g/${guestbookId}/guestbook`"
+            :to="`/g/${guestbookId}/view`"
             class="mt-3 block text-sm text-muted-foreground underline hover:text-foreground"
           >
             {{ t('landing.viewAll') }}
@@ -210,7 +201,7 @@ onUnmounted(() => {
           <SheetDescription>{{ t('form.addEntryDescription') }}</SheetDescription>
         </SheetHeader>
         <div class="mt-4 pb-8">
-          <FormWizard @submit="handleSubmit" />
+          <Wizard @submit="handleSubmit" />
           <p
             v-if="status === 'submitting'"
             class="mt-3 animate-gentle-pulse text-center text-sm text-muted-foreground"
