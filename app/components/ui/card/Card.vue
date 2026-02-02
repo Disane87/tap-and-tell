@@ -11,10 +11,11 @@ const props = defineProps<{
   <div
     :class="
       cn(
-        'rounded-lg border bg-card text-card-foreground shadow-sm',
+        'rounded-2xl border border-border/10 bg-card/70 backdrop-blur-xl text-card-foreground shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5',
         props.class,
       )
     "
+    style="backdrop-filter: blur(20px) saturate(180%)"
   >
     <slot />
   </div>
