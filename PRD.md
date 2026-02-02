@@ -23,7 +23,7 @@ export entries as PDF, and manage everything from a personal dashboard.
 
 ### Guest Flow
 
-1. Guest taps NFC tag or scans QR code
+1. Guest taps NFC tag or scans QR code → opens flat URL `/g/[id]` (short, no tenant UUID exposed)
 2. App opens with a personalized welcome (event name from URL params)
 3. Multi-step wizard collects:
    - **Step 1 – Basics** (required): Name, optional photo
@@ -32,6 +32,7 @@ export entries as PDF, and manage everything from a personal dashboard.
    - **Step 4 – Message** (required): Personal message, how we met, best memory
 4. Entry is submitted and (optionally) queued for moderation
 5. Confirmation screen
+6. Guest can view all approved entries at `/g/[id]/view` or slideshow at `/g/[id]/slideshow`
 
 ### Host / Owner Flow
 
@@ -69,12 +70,14 @@ export entries as PDF, and manage everything from a personal dashboard.
 | Registration & login | Email/password auth with JWT in HTTP-only cookies |
 | Tenant management | Each user has one tenant; tenant can have N guestbooks (plan-dependent) |
 | Guestbook management | Create permanent or event guestbooks with individual settings |
-| Guestbook settings | Moderation toggle, custom welcome message, theme color per guestbook |
+| Guestbook settings | Moderation toggle, custom welcome message, theme color, background, card styling (color/opacity/blur), font selection, with live preview |
 | Entry moderation | Approve / reject entries with optional rejection reason per guestbook |
 | Bulk operations | Bulk approve/reject/delete entries |
 | Slideshow mode | Full-screen auto-advancing display (3–30 sec interval, keyboard/touch controls) |
 | PDF export | Styled PDF with cover page, entry pages, photos, and answers |
-| QR code generator | Generate QR codes as PNG/SVG for sharing |
+| QR code generator | Generate QR codes as PNG/SVG for sharing (uses flat `/g/[id]` URLs) |
+| Admin bar on landing page | Authenticated owners see a glassmorphic bar linking to guestbook admin |
+| Live settings preview | Two-column settings dialog with real-time visual preview of customization changes |
 
 ### System-Wide
 
@@ -85,7 +88,16 @@ export entries as PDF, and manage everything from a personal dashboard.
 | Responsive design | Mobile-first, works on all screen sizes |
 | Accessibility | a11y best practices in all UI components |
 
-## Pages
+## URL Structure
+
+### Flat URLs (guest-facing + admin, for NFC/QR sharing)
+- `/g/[id]` — Guest landing page (swipeable entries + form). Shows admin bar for authenticated owners.
+- `/g/[id]/view` — Guestbook entries grid (search, filter, PDF export)
+- `/g/[id]/slideshow` — Full-screen slideshow
+- `/g/[id]/admin` — Guestbook admin (moderation, settings with live preview, QR code)
+
+### Tenant-level URLs (dashboard & management)
+- `/t/[uuid]/admin` — Tenant admin (guestbook list, members, API apps)
 
 See `CLAUDE.md` → Pages for the full route table.
 
@@ -138,9 +150,15 @@ See `CLAUDE.md` → Pages for the full route table.
 
 - `moderationEnabled` (boolean) – require approval before display
 - `welcomeMessage` (string) – custom welcome text
-- `themeColor` (string) – custom theme color
+- `themeColor` (string) – custom theme color (applied as CSS `--color-primary`)
 - `headerImageUrl` (string) – custom header image
-- `backgroundImageUrl` (string) – custom background image
+- `backgroundImageUrl` (string) – custom background image (cover, centered)
+- `backgroundColor` (string) – custom page background color
+- `cardColor` (string) – custom card background color (hex)
+- `cardOpacity` (number) – card background opacity 0–100 (default: 70)
+- `cardBlur` (number) – card backdrop blur 0–30px (default: 20)
+- `titleFont` (`handwritten` | `display` | `sans`) – title font family (default: `handwritten`)
+- `bodyFont` (`sans` | `display` | `handwritten`) – body text font family (default: `sans`)
 - `formConfig` (object) – form step configuration
 - `customLabels` (Record) – custom label overrides
 
@@ -153,6 +171,10 @@ See `CLAUDE.md` → Pages for the full route table.
 | name | string | yes |
 | passwordHash | string | yes |
 | createdAt | ISO timestamp | yes |
+
+## Design System
+
+The app follows a **glassmorphism design system** documented in `DESIGN_SYSTEM.md`. Key principles: subtle transparency, backdrop-blur effects, no prominent borders, handwritten fonts for personal elements, soft rounded corners, and pulsing status indicators.
 
 ## Tech Stack
 

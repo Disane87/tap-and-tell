@@ -1,4 +1,4 @@
-import { defineEventHandler, getMethod, getRequestURL, getHeader, readBody, createError } from 'h3'
+import { defineEventHandler, getMethod, getRequestURL, getHeader, createError } from 'h3'
 
 /**
  * CSRF protection middleware using the double-submit cookie pattern.
@@ -25,7 +25,10 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Skip public guest entry submission: POST /api/t/[uuid]/g/[gbUuid]/entries
+  // Skip public guest entry submissions (no auth, no CSRF token available)
+  if (method === 'POST' && /^\/api\/g\/[^/]+\/entries\/?$/.test(pathname)) {
+    return
+  }
   if (method === 'POST' && /^\/api\/t\/[^/]+\/g\/[^/]+\/entries\/?$/.test(pathname)) {
     return
   }
@@ -46,19 +49,9 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  // Read token from header (preferred) or request body fallback
-  let token = getHeader(event, 'x-csrf-token')
-
-  if (!token) {
-    try {
-      const body = await readBody(event)
-      if (body && typeof body === 'object' && typeof body._csrf === 'string') {
-        token = body._csrf
-      }
-    } catch {
-      // Body may not be parseable; token remains undefined
-    }
-  }
+  // Read token from header (do NOT read body — it consumes the stream
+  // and breaks multipart uploads and subsequent handler readBody calls)
+  const token = getHeader(event, 'x-csrf-token')
 
   if (!token || !validateCsrfToken(token)) {
     throw createError({

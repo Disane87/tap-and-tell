@@ -28,6 +28,26 @@ const showControls = ref(true)
 const showSettings = ref(false)
 const isFullscreen = ref(false)
 let hideControlsTimeout: ReturnType<typeof setTimeout> | null = null
+const guestbookInfo = ref<{ settings?: Record<string, unknown> } | null>(null)
+
+/** Computed background styles from guestbook settings. */
+const backgroundStyles = computed(() => {
+  const settings = guestbookInfo.value?.settings
+  if (!settings) return {}
+  const styles: Record<string, string> = {}
+  const bgColor = settings.backgroundColor as string | undefined
+  const bgImage = settings.backgroundImageUrl as string | undefined
+  if (bgColor) {
+    styles.backgroundColor = bgColor
+  }
+  if (bgImage) {
+    styles.backgroundImage = `url(${bgImage})`
+    styles.backgroundSize = 'cover'
+    styles.backgroundPosition = 'center'
+    styles.backgroundRepeat = 'no-repeat'
+  }
+  return styles
+})
 
 function handleKeydown(e: KeyboardEvent): void {
   if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next() }
@@ -67,6 +87,17 @@ function changeInterval(seconds: number): void {
 }
 
 onMounted(async () => {
+  try {
+    const response = await $fetch<{ success: boolean; data?: typeof guestbookInfo.value }>(
+      `/api/g/${guestbookId.value}/info`
+    )
+    if (response.success && response.data) {
+      guestbookInfo.value = response.data
+    }
+  } catch {
+    // Non-critical, page still works without background
+  }
+
   await fetchEntries()
   if (hasEntries.value) play()
 
@@ -86,6 +117,7 @@ onUnmounted(() => {
   <div
     ref="slideshowEl"
     class="slideshow-container"
+    :style="backgroundStyles"
     @mousemove="onMouseMove"
   >
     <!-- Empty state -->
@@ -219,7 +251,7 @@ onUnmounted(() => {
 .slideshow-container {
   position: relative;
   overflow: hidden;
-  background: black;
+  background-color: black;
 }
 
 .slideshow-controls {

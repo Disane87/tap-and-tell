@@ -130,7 +130,7 @@ const youtubeEmbed = computed(() => {
 </script>
 
 <template>
-  <div class="relative min-h-screen overflow-hidden bg-black">
+  <div class="relative min-h-screen overflow-hidden">
     <!-- Top image (fixed, no scroll) -->
     <section class="h-[45vh] w-full">
       <img

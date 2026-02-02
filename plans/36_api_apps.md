@@ -96,9 +96,18 @@ Implement an API app/token system modeled after GitHub's approach. Users create 
 - [x] **36.21** Updated PROJECT_MEMORY.md ✔
 - [x] **36.22** Plan complete ✔
 
-## Remaining (Frontend)
+### Phase 8: Frontend
 
-- App management UI (create/list/delete apps)
-- Token creation UI with scope selection checkboxes
-- Token display modal (show plaintext once)
+- [x] **36.23** Create `app/types/api-app.ts` — TypeScript interfaces ✔
+- [x] **36.24** Create `app/composables/useApiApps.ts` — instance-level composable ✔
+- [x] **36.25** Add `apiApps` i18n namespace to en.json and de.json ✔
+- [x] **36.26** Create `app/components/admin/TokenRevealDialog.vue` — non-dismissable token reveal ✔
+- [x] **36.27** Create `app/components/admin/CreateTokenDialog.vue` — scope selection + expiry ✔
+- [x] **36.28** Create `app/components/admin/ApiTokenList.vue` — token list with status badges ✔
+- [x] **36.29** Create `app/components/admin/AdminApiApps.vue` — main section component ✔
+- [x] **36.30** Wire `AdminApiApps` into `app/pages/t/[uuid]/admin.vue` (owner-only) ✔
+- [x] **36.31** `pnpm build` passes — 3.25 MB, no errors ✔
+
+## Remaining
+
 - API documentation page for external developers

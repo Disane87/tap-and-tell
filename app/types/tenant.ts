@@ -11,6 +11,7 @@ export interface Tenant {
   id: string
   name: string
   ownerId: string
+  plan?: string
   createdAt: string
   updatedAt: string
   guestbookCount?: number

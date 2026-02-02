@@ -19,6 +19,7 @@
     "subtitle": "Leave a message and tell us something about yourself.",
     "cta": "Sign the Guestbook",
     "viewAll": "View all entries",
+    "adminBar": "Manage Guestbook",
     "hero": {
       "badge": "Digital Guestbook",
       "title": "Tap & Tell",
@@ -247,7 +248,7 @@
       "license": "MIT License",
       "contributors": "Community-driven development"
     },
-    "cta": {
+    "ctaSection": {
       "title": "Ready to Create Your Guestbook?",
       "subtitle": "Start collecting memories from your guests today — for free."
     },
@@ -535,6 +536,210 @@
     "deleteConfirm": "This will permanently delete the guestbook and all its entries.",
     "deleteSuccess": "Guestbook deleted",
     "deleteFailed": "Failed to delete guestbook"
+  },
+  "apiApps": {
+    "title": "API Apps",
+    "description": "Manage API integrations and access tokens for external services.",
+    "empty": "No API apps yet. Create one to get started with API access.",
+    "manage": "Manage Apps",
+    "create": "New App",
+    "createTitle": "Create API App",
+    "createDescription": "Create a named integration to generate API tokens.",
+    "appName": "App Name",
+    "appNamePlaceholder": "e.g. Home Assistant, Zapier",
+    "appDescription": "Description",
+    "appDescriptionPlaceholder": "What is this app used for?",
+    "createSuccess": "API app created!",
+    "createFailed": "Failed to create API app",
+    "editTitle": "Edit API App",
+    "editSuccess": "API app updated!",
+    "editFailed": "Failed to update API app",
+    "deleteTitle": "Delete API app?",
+    "deleteConfirm": "This will permanently delete the app and revoke all its tokens. External integrations using these tokens will stop working.",
+    "deleteSuccess": "API app deleted",
+    "deleteFailed": "Failed to delete API app",
+    "tokens": "Tokens",
+    "tokenCount": "{count} token | {count} tokens",
+    "noTokens": "No tokens yet. Create one to authenticate API requests.",
+    "createToken": "New Token",
+    "createTokenTitle": "Create API Token",
+    "createTokenDescription": "The token will be shown only once. Make sure to copy it.",
+    "tokenName": "Token Name",
+    "tokenNamePlaceholder": "e.g. Production, Staging",
+    "tokenScopes": "Scopes",
+    "tokenScopesHint": "Select the permissions this token should have.",
+    "tokenExpiry": "Expiry",
+    "tokenNameRequired": "Token name is required",
+    "scopeRequired": "At least one scope is required",
+    "createTokenSuccess": "Token created!",
+    "createTokenFailed": "Failed to create token",
+    "revokeTitle": "Revoke token?",
+    "revokeConfirm": "This token will be immediately revoked. Any integration using it will lose access.",
+    "revokeSuccess": "Token revoked",
+    "revokeFailed": "Failed to revoke token",
+    "revoke": "Revoke",
+    "tokenStatus": {
+      "active": "Active",
+      "revoked": "Revoked",
+      "expired": "Expired"
+    },
+    "tokenReveal": {
+      "title": "Your API Token",
+      "warning": "This token will only be shown once. Copy it now and store it securely. You won't be able to see it again.",
+      "copied": "Token copied!",
+      "copyFailed": "Failed to copy token",
+      "copyButton": "Copy Token",
+      "confirmButton": "I've copied this token"
+    },
+    "scopeGroups": {
+      "entries": "Entries",
+      "guestbooks": "Guestbooks",
+      "tenant": "Tenant",
+      "members": "Members",
+      "photos": "Photos"
+    },
+    "expiryOptions": {
+      "30": "30 days",
+      "60": "60 days",
+      "90": "90 days",
+      "365": "1 year",
+      "never": "No expiry"
+    },
+    "lastUsed": "Last used",
+    "never": "Never",
+    "created": "Created",
+    "prefix": "Prefix",
+    "expiresAt": "Expires"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Customize your guestbook appearance and behavior.",
+    "welcomeMessage": {
+      "label": "Welcome Message",
+      "placeholder": "Write a welcome message for your guests..."
+    },
+    "themeColor": {
+      "label": "Theme Color",
+      "customLabel": "Custom Hex",
+      "presets": {
+        "emerald": "Emerald",
+        "indigo": "Indigo",
+        "amber": "Amber",
+        "rose": "Rose",
+        "sky": "Sky",
+        "violet": "Violet",
+        "orange": "Orange",
+        "slate": "Slate"
+      }
+    },
+    "moderation": {
+      "label": "Entry Moderation",
+      "description": "Require approval before entries appear publicly."
+    },
+    "formSteps": {
+      "label": "Form Steps",
+      "description": "Choose which steps are shown in the guest form.",
+      "basics": "Basics",
+      "favorites": "Favorites",
+      "funFacts": "Fun Facts",
+      "message": "Message",
+      "alwaysEnabled": "Always enabled"
+    },
+    "backgroundColor": {
+      "label": "Background Color",
+      "description": "Set a custom background color for guest-facing pages.",
+      "custom": "Pick custom color"
+    },
+    "backgroundImage": {
+      "label": "Background Image",
+      "upload": "Click to upload a background image",
+      "replace": "Replace Image",
+      "remove": "Remove",
+      "hint": "Upload an image to display behind guest-facing pages (max 5MB).",
+      "tooLarge": "Image is too large (max 5MB).",
+      "invalidFormat": "Invalid image format.",
+      "uploadSuccess": "Background image uploaded!",
+      "uploadFailed": "Failed to upload background image.",
+      "removeSuccess": "Background image removed.",
+      "removeFailed": "Failed to remove background image."
+    },
+    "cardColor": {
+      "label": "Card Color",
+      "description": "Set a custom background color for the info card on the landing page."
+    },
+    "cardOpacity": {
+      "label": "Card Opacity",
+      "description": "Set the transparency of the info card (0 = fully transparent, 100 = fully opaque)."
+    },
+    "cardBlur": {
+      "label": "Card Blur",
+      "description": "Set the backdrop blur intensity for the info card (0 = no blur, 30 = maximum blur)."
+    },
+    "titleFont": {
+      "label": "Title Font",
+      "description": "Choose the font for the guestbook title on the landing page."
+    },
+    "bodyFont": {
+      "label": "Body Font",
+      "description": "Choose the font for body text on the landing page."
+    },
+    "fonts": {
+      "handwritten": "Handwritten (Caveat)",
+      "display": "Display (DM Sans)",
+      "sans": "Sans-Serif (Inter)"
+    },
+    "preview": "Preview",
+    "save": "Save Settings",
+    "reset": "Reset",
+    "saveSuccess": "Settings saved!",
+    "saveFailed": "Failed to save settings.",
+    "resetDone": "Settings reset."
+  },
+  "profile": {
+    "title": "Profile",
+    "avatar": {
+      "upload": "Upload Photo",
+      "delete": "Remove Photo"
+    },
+    "personalInfo": "Personal Information",
+    "name": "Name",
+    "email": "Email",
+    "save": "Save",
+    "plan": "Plan",
+    "planFree": "Free",
+    "planPro": "Pro",
+    "planBusiness": "Business",
+    "planUpgrade": "Upgrade",
+    "security": "Security",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "passwordMismatch": "Passwords do not match",
+    "twoFactor": "Two-Factor Authentication",
+    "twoFactorEnabled": "Enabled",
+    "twoFactorDisabled": "Not set up",
+    "twoFactorSetup": "Set up 2FA",
+    "dangerZone": "Danger Zone",
+    "deleteAccount": "Delete Account",
+    "deleteAccountDescription": "Permanently delete your account and all data.",
+    "deleteAccountConfirm": "Type your password to confirm",
+    "deleteAccountButton": "Delete my account",
+    "saved": "Profile updated",
+    "saveFailed": "Failed to update profile",
+    "passwordChanged": "Password changed",
+    "passwordChangeFailed": "Failed to change password",
+    "avatarUploaded": "Avatar uploaded",
+    "avatarUploadFailed": "Failed to upload avatar",
+    "avatarDeleted": "Avatar removed",
+    "avatarDeleteFailed": "Failed to remove avatar",
+    "accountDeleted": "Account deleted",
+    "accountDeleteFailed": "Failed to delete account"
+  },
+  "userMenu": {
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "logout": "Logout"
   },
   "entry": {
     "subtitle": "Digital Guestbook Entry",

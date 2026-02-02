@@ -52,7 +52,8 @@ export async function validateAccessToken(token: string) {
   const userRows = await db.select({
     id: users.id,
     email: users.email,
-    name: users.name
+    name: users.name,
+    avatarUrl: users.avatarUrl
   })
     .from(users)
     .where(eq(users.id, payload.sub))
@@ -95,7 +96,8 @@ export async function validateSession(token: string) {
   const userRows = await db.select({
     id: users.id,
     email: users.email,
-    name: users.name
+    name: users.name,
+    avatarUrl: users.avatarUrl
   })
     .from(users)
     .where(eq(users.id, session.userId))

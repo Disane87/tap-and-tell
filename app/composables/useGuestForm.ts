@@ -1,4 +1,5 @@
 import type { GuestAnswers, CreateGuestEntryInput, FavoriteSong, FavoriteVideo } from '~/types/guest'
+import type { GuestbookSettings } from '~/types/guestbook'
 
 /**
  * Form submission status.
@@ -74,6 +75,9 @@ function getDefaultState(): GuestFormState {
   }
 }
 
+/** All possible step numbers. */
+const ALL_STEPS = [1, 2, 3, 4] as const
+
 /**
  * Module-level shared state for the form wizard.
  * This ensures all components share the same form state.
@@ -82,7 +86,12 @@ const formState = reactive<GuestFormState>(getDefaultState())
 const errors = reactive<FormErrors>({})
 const status = ref<FormStatus>('idle')
 const currentStep = ref(1)
-const totalSteps = 4
+
+/**
+ * Enabled step numbers. Steps 1 (Basics) and 4 (Message) are always enabled.
+ * Steps 2 (Favorites) and 3 (Fun Facts) can be toggled via formConfig.
+ */
+const enabledSteps = ref<number[]>([...ALL_STEPS])
 
 /**
  * Composable for the 4-step guest form wizard.
@@ -98,6 +107,33 @@ const totalSteps = 4
  * @returns Form state, validation, step navigation, and submission helpers.
  */
 export function useGuestForm() {
+  /** Total number of enabled steps. */
+  const totalSteps = computed(() => enabledSteps.value.length)
+
+  /** Current position index within enabled steps (1-based for display). */
+  const currentStepIndex = computed(() => {
+    const idx = enabledSteps.value.indexOf(currentStep.value)
+    return idx >= 0 ? idx + 1 : 1
+  })
+
+  /**
+   * Applies guestbook settings to configure which steps are enabled.
+   * Steps 1 (Basics) and 4 (Message) are always enabled.
+   */
+  function applyFormConfig(settings?: GuestbookSettings): void {
+    const steps: number[] = [1] // Basics always enabled
+    const config = settings?.formConfig?.steps
+    if (!config || config.favorites !== false) steps.push(2)
+    if (!config || config.funFacts !== false) steps.push(3)
+    steps.push(4) // Message always enabled
+    enabledSteps.value = steps
+
+    // If current step is disabled, go to step 1
+    if (!enabledSteps.value.includes(currentStep.value)) {
+      currentStep.value = 1
+    }
+  }
+
   /**
    * Validates the current step.
    * Step 1: name required, photo size limit.
@@ -180,37 +216,41 @@ export function useGuestForm() {
   }
 
   /**
-   * Moves to the next step if current step is valid.
+   * Moves to the next enabled step if current step is valid.
    *
    * @returns True if navigation succeeded.
    */
   function nextStep(): boolean {
     if (!validateCurrentStep()) return false
-    if (currentStep.value < totalSteps) {
-      currentStep.value++
+    const idx = enabledSteps.value.indexOf(currentStep.value)
+    if (idx < enabledSteps.value.length - 1) {
+      currentStep.value = enabledSteps.value[idx + 1]
       return true
     }
     return false
   }
 
   /**
-   * Moves to the previous step.
+   * Moves to the previous enabled step.
    */
   function prevStep(): void {
-    if (currentStep.value > 1) {
-      currentStep.value--
+    const idx = enabledSteps.value.indexOf(currentStep.value)
+    if (idx > 0) {
+      currentStep.value = enabledSteps.value[idx - 1]
     }
   }
 
   /**
-   * Goes to a specific step.
+   * Goes to a specific step (must be an enabled step).
    * Only allows going back, or forward if current step is valid.
    */
   function goToStep(step: number): void {
-    if (step < 1 || step > totalSteps) return
-    if (step < currentStep.value) {
+    if (!enabledSteps.value.includes(step)) return
+    const targetIdx = enabledSteps.value.indexOf(step)
+    const currentIdx = enabledSteps.value.indexOf(currentStep.value)
+    if (targetIdx < currentIdx) {
       currentStep.value = step
-    } else if (step > currentStep.value && validateCurrentStep()) {
+    } else if (targetIdx > currentIdx && validateCurrentStep()) {
       currentStep.value = step
     }
   }
@@ -308,7 +348,9 @@ export function useGuestForm() {
     errors,
     status: readonly(status),
     currentStep: readonly(currentStep),
+    enabledSteps: readonly(enabledSteps),
     totalSteps,
+    currentStepIndex,
     validateCurrentStep,
     validate,
     nextStep,
@@ -318,6 +360,7 @@ export function useGuestForm() {
     setStatus,
     setError,
     reset,
-    isStepComplete
+    isStepComplete,
+    applyFormConfig
   }
 }

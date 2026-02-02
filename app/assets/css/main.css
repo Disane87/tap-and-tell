@@ -22,6 +22,24 @@
   --color-card: #ffffff;
   --color-card-foreground: #171717;
 
+  /* Secondary (muted UI surfaces) */
+  --color-secondary: #f5f5f5;
+  --color-secondary-foreground: #171717;
+
+  /* Popover / Dropdown */
+  --color-popover: #ffffff;
+  --color-popover-foreground: #171717;
+
+  /* Accent (hover highlights in menus) */
+  --color-accent: #f5f5f5;
+  --color-accent-foreground: #171717;
+
+  /* Ring (focus ring) */
+  --color-ring: #10b981;
+
+  /* Input border */
+  --color-input: #e5e5e5;
+
   /* Semantic colors */
   --color-destructive: #ef4444;
   --color-destructive-foreground: #ffffff;
@@ -43,6 +61,14 @@
   --color-border: #404040;
   --color-card: #171717;
   --color-card-foreground: #fafafa;
+  --color-secondary: #262626;
+  --color-secondary-foreground: #fafafa;
+  --color-popover: #171717;
+  --color-popover-foreground: #fafafa;
+  --color-accent: #262626;
+  --color-accent-foreground: #fafafa;
+  --color-ring: #10b981;
+  --color-input: #404040;
 }
 
 /* ============================================

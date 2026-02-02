@@ -16,6 +16,8 @@ export interface GuestbookSettings {
   themeColor?: string
   /** URL for a header image. */
   headerImageUrl?: string
+  /** Custom background color for guest-facing pages. */
+  backgroundColor?: string
   /** URL for a background image. */
   backgroundImageUrl?: string
   /** Form configuration controlling which steps and fields are shown. */
@@ -23,6 +25,16 @@ export interface GuestbookSettings {
     steps: { basics: boolean; favorites: boolean; funFacts: boolean; message: boolean }
     fields?: Record<string, boolean>
   }
+  /** Custom hex color for the info card background on the landing page. */
+  cardColor?: string
+  /** Card background opacity 0–100 (percentage), default 70. */
+  cardOpacity?: number
+  /** Card backdrop blur in pixels (0–30), default 20. */
+  cardBlur?: number
+  /** Font for titles/headings: 'handwritten' (Caveat), 'display' (DM Sans), or 'sans' (Inter). */
+  titleFont?: 'handwritten' | 'display' | 'sans'
+  /** Font for body text: 'sans' (Inter), 'display' (DM Sans), or 'handwritten' (Caveat). */
+  bodyFont?: 'sans' | 'display' | 'handwritten'
   /** Custom labels for form fields. */
   customLabels?: Record<string, string>
 }
