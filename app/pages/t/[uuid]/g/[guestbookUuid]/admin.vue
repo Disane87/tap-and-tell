@@ -110,14 +110,14 @@ function toggleSelectAll(): void {
   }
 }
 
-function getStatusColor(status?: EntryStatus): string {
+function getStatusBadgeColor(status?: EntryStatus): string {
   switch (status) {
     case 'approved':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+      return 'badge-emerald'
     case 'rejected':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+      return 'badge-pink'
     default:
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+      return 'badge-yellow'
   }
 }
 
@@ -166,13 +166,13 @@ onMounted(async () => {
       </div>
       <div class="flex items-center gap-2">
         <NuxtLink :to="`/t/${tenantId}/g/${guestbookId}/admin/qr`">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50">
             <QrCode class="mr-2 h-4 w-4" />
             {{ $t('admin.qr.title') }}
           </Button>
         </NuxtLink>
         <NuxtLink :to="`/t/${tenantId}/admin`">
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50">
             {{ $t('common.back') }}
           </Button>
         </NuxtLink>
@@ -186,27 +186,29 @@ onMounted(async () => {
         :key="tab"
         :variant="activeTab === tab ? 'default' : 'outline'"
         size="sm"
+        class="rounded-xl backdrop-blur-md"
+        :class="activeTab === tab ? 'shadow-lg' : 'border-border/20 hover:bg-muted/50'"
         @click="activeTab = tab; selectedIds.clear()"
       >
         <Clock v-if="tab === 'pending'" class="mr-1.5 h-3.5 w-3.5" />
         <CheckCircle v-else-if="tab === 'approved'" class="mr-1.5 h-3.5 w-3.5" />
         <XCircle v-else-if="tab === 'rejected'" class="mr-1.5 h-3.5 w-3.5" />
         {{ $t(`admin.moderation.tabs.${tab}`) }}
-        <span class="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs">{{ statusCounts[tab] }}</span>
+        <Badge variant="secondary" class="ml-2">{{ statusCounts[tab] }}</Badge>
       </Button>
     </div>
 
     <!-- Bulk Actions -->
-    <div v-if="selectedIds.size > 0" class="mb-4 flex items-center gap-2 rounded-lg bg-muted p-3">
-      <span class="text-sm text-muted-foreground">
+    <div v-if="selectedIds.size > 0" class="mb-4 flex items-center gap-2 rounded-2xl bg-muted/50 backdrop-blur-md p-4 border border-border/10 shadow-md animate-scale-in">
+      <span class="text-sm font-medium text-foreground">
         {{ $t('admin.moderation.selected', { count: selectedIds.size }) }}
       </span>
       <div class="ml-auto flex gap-2">
-        <Button size="sm" variant="outline" @click="handleBulkAction('approved')">
+        <Button size="sm" variant="outline" class="rounded-xl border-border/20 hover:bg-green-500/10 hover:border-green-500/30" @click="handleBulkAction('approved')">
           <Check class="mr-1.5 h-3.5 w-3.5" />
           {{ $t('admin.moderation.approveAll') }}
         </Button>
-        <Button size="sm" variant="outline" @click="handleBulkAction('rejected')">
+        <Button size="sm" variant="outline" class="rounded-xl border-border/20 hover:bg-red-500/10 hover:border-red-500/30" @click="handleBulkAction('rejected')">
           <X class="mr-1.5 h-3.5 w-3.5" />
           {{ $t('admin.moderation.rejectAll') }}
         </Button>
@@ -238,92 +240,95 @@ onMounted(async () => {
     </div>
 
     <!-- Entry list -->
-    <div v-else class="space-y-4">
-      <Card v-for="entry in filteredEntries" :key="entry.id">
-        <CardContent class="flex items-start gap-4 p-4">
-          <Checkbox
-            :checked="selectedIds.has(entry.id)"
-            class="mt-5"
-            @update:checked="toggleSelection(entry.id)"
-          />
+    <div v-else class="space-y-3">
+      <div
+        v-for="entry in filteredEntries"
+        :key="entry.id"
+        class="flex items-start gap-4 rounded-3xl p-6 transition-all duration-300"
+        :class="selectedIds.has(entry.id)
+          ? 'bg-primary/10 backdrop-blur-xl border border-primary/30 shadow-lg shadow-primary/20'
+          : 'bg-card/70 backdrop-blur-xl border border-border/20 shadow-lg hover:shadow-xl hover:-translate-y-1'"
+        style="backdrop-filter: blur(20px) saturate(180%)"
+      >
+        <Checkbox
+          :checked="selectedIds.has(entry.id)"
+          class="mt-5"
+          @update:checked="toggleSelection(entry.id)"
+        />
 
-          <div
-            v-if="entry.photoUrl"
-            class="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg"
-          >
-            <img :src="entry.photoUrl" :alt="entry.name" class="h-full w-full object-cover">
-          </div>
-          <div
-            v-else
-            class="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-muted"
-          >
-            <span class="font-handwritten text-2xl text-muted-foreground">{{ entry.name.charAt(0) }}</span>
-          </div>
+        <div
+          v-if="entry.photoUrl"
+          class="h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl shadow-md transition-transform hover:scale-105"
+        >
+          <img :src="entry.photoUrl" :alt="entry.name" class="h-full w-full object-cover">
+        </div>
+        <div
+          v-else
+          class="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-2xl shadow-md transition-transform hover:scale-105"
+          style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.25))"
+        >
+          <span class="font-handwritten text-3xl text-primary">{{ entry.name.charAt(0) }}</span>
+        </div>
 
-          <div class="min-w-0 flex-1">
-            <div class="flex items-start justify-between gap-2">
-              <div>
-                <div class="flex items-center gap-2">
-                  <h3 class="font-handwritten text-xl text-foreground">{{ entry.name }}</h3>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-handwritten text-2xl text-foreground">{{ entry.name }}</h3>
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-md transition-all"
+                  :class="{
+                    'bg-green-500/15 text-green-700 border border-green-500/30 dark:text-green-400': entry.status === 'approved',
+                    'bg-red-500/15 text-red-700 border border-red-500/30 dark:text-red-400': entry.status === 'rejected',
+                    'bg-yellow-500/15 text-yellow-700 border border-yellow-500/30 dark:text-yellow-400': !entry.status || entry.status === 'pending'
+                  }"
+                >
                   <span
-                    class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
-                    :class="getStatusColor(entry.status)"
-                  >
-                    {{ $t(`admin.moderation.status.${entry.status || 'pending'}`) }}
-                  </span>
-                </div>
-                <p class="text-xs text-muted-foreground">{{ formatDate(entry.createdAt) }}</p>
+                    class="inline-block h-1.5 w-1.5 rounded-full animate-pulse"
+                    :class="{
+                      'bg-green-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]': entry.status === 'approved',
+                      'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.6)]': entry.status === 'rejected',
+                      'bg-yellow-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]': !entry.status || entry.status === 'pending'
+                    }"
+                  ></span>
+                  {{ $t(`admin.moderation.status.${entry.status || 'pending'}`) }}
+                </span>
               </div>
-
-              <div class="flex items-center gap-1">
-                <Button
-                  v-if="entry.status !== 'approved'"
-                  variant="ghost"
-                  size="icon"
-                  class="text-green-600 hover:bg-green-100 hover:text-green-700 dark:hover:bg-green-900/30"
-                  @click="handleStatusUpdate(entry.id, 'approved')"
-                >
-                  <Check class="h-4 w-4" />
-                </Button>
-                <Button
-                  v-if="entry.status !== 'rejected'"
-                  variant="ghost"
-                  size="icon"
-                  class="text-red-600 hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-900/30"
-                  @click="handleStatusUpdate(entry.id, 'rejected')"
-                >
-                  <X class="h-4 w-4" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger as-child>
-                    <Button variant="ghost" size="icon" class="text-muted-foreground hover:text-destructive">
-                      <Trash2 class="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>{{ $t('admin.deleteEntry') }}</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {{ $t('admin.deleteConfirm', { name: entry.name }) }}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{{ $t('common.cancel') }}</AlertDialogCancel>
-                      <AlertDialogAction
-                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        @click="handleDelete(entry.id)"
-                      >
-                        {{ $t('common.delete') }}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
+              <p class="mt-0.5 text-xs text-muted-foreground">{{ formatDate(entry.createdAt) }}</p>
             </div>
-            <p class="mt-1 line-clamp-2 text-sm text-foreground">{{ entry.message }}</p>
+
+            <div class="flex items-center gap-1.5">
+              <Button
+                v-if="entry.status !== 'approved'"
+                variant="ghost"
+                size="icon"
+                class="h-10 w-10 rounded-xl backdrop-blur-md text-green-600 hover:bg-green-500/15 hover:shadow-lg transition-all dark:text-green-400"
+                @click="handleStatusUpdate(entry.id, 'approved')"
+              >
+                <Check class="h-5 w-5" />
+              </Button>
+              <Button
+                v-if="entry.status !== 'rejected'"
+                variant="ghost"
+                size="icon"
+                class="h-10 w-10 rounded-xl backdrop-blur-md text-red-600 hover:bg-red-500/15 hover:shadow-lg transition-all dark:text-red-400"
+                @click="handleStatusUpdate(entry.id, 'rejected')"
+              >
+                <X class="h-5 w-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                class="h-10 w-10 rounded-xl backdrop-blur-md text-muted-foreground hover:bg-red-500/15 hover:text-red-600 hover:shadow-lg transition-all dark:hover:text-red-400"
+                @click="handleDelete(entry.id)"
+              >
+                <Trash2 class="h-5 w-5" />
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+          <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-foreground/80">{{ entry.message }}</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
