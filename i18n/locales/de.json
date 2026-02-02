@@ -120,6 +120,20 @@
       "title": "Alles, was du brauchst",
       "subtitle": "Ein modernes Gästebuch-Erlebnis mit starken Funktionen.",
       "cta": "Erlebe es selbst",
+      "groups": {
+        "experience": {
+          "title": "Gäste-Erlebnis",
+          "subtitle": "Mach es deinen Gästen so einfach wie möglich, ihre Spuren zu hinterlassen."
+        },
+        "customization": {
+          "title": "Anpassung",
+          "subtitle": "Mach dein Gästebuch wirklich zu deinem — mit voller Design-Kontrolle."
+        },
+        "management": {
+          "title": "Verwaltung & Sicherheit",
+          "subtitle": "Behalte die Kontrolle mit starken Admin-Tools und Enterprise-Sicherheit."
+        }
+      },
       "nfc": {
         "title": "NFC-fähig",
         "description": "Gäste halten einfach ihr Handy an einen NFC-Tag, um loszuschreiben."
@@ -131,6 +145,42 @@
       "wizard": {
         "title": "Geführter Assistent",
         "description": "Ein freundliches Schritt-für-Schritt-Formular macht das Eintragen einfach."
+      },
+      "customQuestions": {
+        "title": "Eigene Fragen",
+        "description": "Stelle deinen Gästen lustige, persönliche Fragen — vom Lieblingssong bis zur geheimen Superkraft."
+      },
+      "offline": {
+        "title": "Offline-Modus",
+        "description": "Einträge werden lokal gespeichert und automatisch gesendet, sobald wieder online."
+      },
+      "i18n": {
+        "title": "Mehrsprachig",
+        "description": "Vollständige Unterstützung für Deutsch und Englisch — deine Gäste wählen ihre Sprache."
+      },
+      "theme": {
+        "title": "Dark & Light Mode",
+        "description": "Sieht bei jedem Licht gut aus – mit automatischer Theme-Unterstützung."
+      },
+      "headerImage": {
+        "title": "Event-Logo & Header",
+        "description": "Lade ein eigenes Header-Bild oder Logo hoch, um dein Gästebuch zu branden."
+      },
+      "cardStyles": {
+        "title": "Karten-Stilvarianten",
+        "description": "Wähle zwischen Polaroid, Minimal, Abgerundet oder Umrandet."
+      },
+      "viewLayouts": {
+        "title": "Mehrere Ansichtslayouts",
+        "description": "Raster, Liste oder Masonry — zeige Einträge so an, wie du möchtest."
+      },
+      "fonts": {
+        "title": "Schriftauswahl",
+        "description": "Wähle aus kuratierten Google Fonts, passend zur Persönlichkeit deines Events."
+      },
+      "colorScheme": {
+        "title": "Volles Theming",
+        "description": "Bestimme Akzentfarbe und Hintergrund, perfekt abgestimmt auf dein Event."
       },
       "moderation": {
         "title": "Moderation",
@@ -148,9 +198,13 @@
         "title": "QR-Codes",
         "description": "Erstelle QR-Codes für Gäste ohne NFC."
       },
-      "theme": {
-        "title": "Dark & Light Mode",
-        "description": "Sieht bei jedem Licht gut aus – mit automatischer Theme-Unterstützung."
+      "team": {
+        "title": "Team-Zusammenarbeit",
+        "description": "Lade Co-Hosts ein und verwaltet euer Gästebuch gemeinsam mit rollenbasiertem Zugriff."
+      },
+      "api": {
+        "title": "API-Zugang",
+        "description": "Integriere mit eigenen Tools über Scoped-API-Tokens und eine REST-API."
       }
     },
     "howItWorks": {
@@ -186,7 +240,7 @@
         "price": "0",
         "description": "Perfekt zum Ausprobieren.",
         "cta": "Jetzt starten",
-        "features": ["1 Gästebuch", "Bis zu 50 Einträge", "Basis-Anpassung", "Community Support", "Powered by Tap & Tell Branding"]
+        "features": ["1 Gästebuch", "Bis zu 50 Einträge", "Basis-Anpassung", "2 eigene Fragen", "Community Support", "Powered by Tap & Tell Branding"]
       },
       "home": {
         "name": "Home",
@@ -195,7 +249,7 @@
         "description": "Für dein Zuhause oder ein einzelnes Event.",
         "cta": "Kostenlos testen",
         "popular": "Beliebteste Wahl",
-        "features": ["1 Gästebuch", "Unbegrenzte Einträge", "Volle Anpassung", "Eintrags-Moderation", "PDF-Export", "Kein Branding", "E-Mail Support"]
+        "features": ["1 Gästebuch", "Unbegrenzte Einträge", "Volle Anpassung", "Kartenstile & Layouts", "Eigener CTA-Text", "Eintrags-Moderation", "PDF-Export", "Kein Branding", "E-Mail Support"]
       },
       "family": {
         "name": "Family",
@@ -203,14 +257,14 @@
         "priceYearly": "99",
         "description": "Mehrere Events & erweiterte Funktionen.",
         "cta": "Kostenlos testen",
-        "features": ["Bis zu 5 Gästebücher", "Alles aus Home", "Priority Support", "Analytics Dashboard", "Eigene Domain"]
+        "features": ["Bis zu 5 Gästebücher", "Alles aus Home", "Team-Zusammenarbeit", "API-Zugang", "Priority Support", "Analytics Dashboard", "Eigene Domain"]
       },
       "enterprise": {
         "name": "Enterprise",
         "price": "Individuell",
         "description": "Für Veranstaltungsorte & Unternehmen.",
         "cta": "Kontaktiere uns",
-        "features": ["Unbegrenzte Gästebücher", "SSO / SAML", "API-Zugang", "Dedizierter Support", "SLA-Garantie", "White-Label Option"]
+        "features": ["Unbegrenzte Gästebücher", "White-Label Option", "SSO / SAML", "API-Zugang", "Unbegrenzte Anpassung", "Dedizierter Support", "SLA-Garantie"]
       }
     },
     "nfcShop": {
@@ -248,6 +302,57 @@
       "license": "MIT Lizenz",
       "contributors": "Community-getriebene Entwicklung"
     },
+    "customization": {
+      "badge": "Mach es deins",
+      "title": "Dein Event, dein Design",
+      "subtitle": "Jedes Detail ist anpassbar — von Kartenstilen bis Farbpaletten. Sieh es live.",
+      "cardStyleLabel": "Kartenstil",
+      "colorLabel": "Akzentfarbe",
+      "styles": {
+        "polaroid": "Polaroid",
+        "minimal": "Minimal",
+        "rounded": "Abgerundet",
+        "bordered": "Umrandet"
+      },
+      "bullets": {
+        "questions": "Eigene Gäste-Fragen",
+        "socialLinks": "Social-Link-Badges",
+        "colorScheme": "Volles Farb-Theming",
+        "slideshow": "Automatische Diashow",
+        "backgrounds": "Eigene Hintergründe & Header",
+        "ctaText": "Personalisierter CTA-Text"
+      },
+      "mockEntry": {
+        "name": "Emma Larsson",
+        "message": "Was für ein unvergesslicher Abend! Die Musik, das Essen, die Menschen — alles war perfekt. Danke fürs Einladen!"
+      }
+    },
+    "security": {
+      "badge": "Sicherheit & Vertrauen",
+      "title": "Enterprise-Sicherheit, von Anfang an",
+      "subtitle": "Die Daten deiner Gäste sind durch mehrere Sicherheitsebenen geschützt — von Verschlüsselung bis Zugriffskontrolle.",
+      "twoFactor": {
+        "title": "Zwei-Faktor-Auth",
+        "description": "TOTP-Authenticator-Apps und E-Mail-OTP — obligatorisch für Admin-Zugriff."
+      },
+      "encryption": {
+        "title": "Foto-Verschlüsselung",
+        "description": "AES-256-GCM-Verschlüsselung pro Mandant mit HKDF-SHA256-Schlüsselableitung."
+      },
+      "rls": {
+        "title": "Datenisolierung",
+        "description": "PostgreSQL Row-Level Security stellt sicher, dass Mandanten nie die Daten anderer sehen."
+      },
+      "csrf": {
+        "title": "CSRF-Schutz",
+        "description": "Double-Submit-Cookie-Verfahren schützt jede authentifizierte Anfrage."
+      },
+      "trustBadges": {
+        "encrypted": "Verschlüsselt gespeichert",
+        "openSource": "Open Source & überprüfbar",
+        "gdpr": "DSGVO-konform"
+      }
+    },
     "ctaSection": {
       "title": "Bereit, dein Gästebuch zu erstellen?",
       "subtitle": "Fang heute an, Erinnerungen deiner Gäste zu sammeln — kostenlos."
@@ -260,6 +365,7 @@
       "features": "Funktionen",
       "pricing": "Preise",
       "nfcTags": "NFC Tags",
+      "security": "Sicherheit",
       "docs": "Dokumentation",
       "github": "GitHub",
       "docker": "Docker",

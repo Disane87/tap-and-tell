@@ -120,6 +120,20 @@
       "title": "Everything You Need",
       "subtitle": "A modern guestbook experience with powerful features.",
       "cta": "See It In Action",
+      "groups": {
+        "experience": {
+          "title": "Guest Experience",
+          "subtitle": "Make it effortless for your guests to leave their mark."
+        },
+        "customization": {
+          "title": "Customization",
+          "subtitle": "Make your guestbook truly yours with full design control."
+        },
+        "management": {
+          "title": "Management & Security",
+          "subtitle": "Stay in control with powerful admin tools and enterprise-grade security."
+        }
+      },
       "nfc": {
         "title": "NFC Enabled",
         "description": "Guests simply tap their phone on an NFC tag to start writing."
@@ -131,6 +145,42 @@
       "wizard": {
         "title": "Guided Wizard",
         "description": "A friendly step-by-step form makes leaving entries easy."
+      },
+      "customQuestions": {
+        "title": "Custom Questions",
+        "description": "Ask your guests fun, personal questions — from favorite songs to secret superpowers."
+      },
+      "offline": {
+        "title": "Offline Support",
+        "description": "Entries are queued locally and submitted automatically when back online."
+      },
+      "i18n": {
+        "title": "Multilingual",
+        "description": "Full English and German support — your guests choose their language."
+      },
+      "theme": {
+        "title": "Dark & Light Mode",
+        "description": "Looks great in any lighting with automatic theme support."
+      },
+      "headerImage": {
+        "title": "Event Logo & Header",
+        "description": "Upload a custom header image or logo to brand your guestbook."
+      },
+      "cardStyles": {
+        "title": "Card Style Variants",
+        "description": "Choose from Polaroid, Minimal, Rounded, or Bordered card designs."
+      },
+      "viewLayouts": {
+        "title": "Multiple View Layouts",
+        "description": "Grid, list, or masonry — display entries the way you like."
+      },
+      "fonts": {
+        "title": "Font Selection",
+        "description": "Pick from curated Google Fonts to match your event's personality."
+      },
+      "colorScheme": {
+        "title": "Full Theming",
+        "description": "Set your accent color and background to match your event perfectly."
       },
       "moderation": {
         "title": "Moderation",
@@ -148,9 +198,13 @@
         "title": "QR Codes",
         "description": "Generate QR codes for guests without NFC."
       },
-      "theme": {
-        "title": "Dark & Light Mode",
-        "description": "Looks great in any lighting with automatic theme support."
+      "team": {
+        "title": "Team Collaboration",
+        "description": "Invite co-hosts and manage your guestbook together with role-based access."
+      },
+      "api": {
+        "title": "API Access",
+        "description": "Integrate with your own tools using scoped API tokens and a REST API."
       }
     },
     "howItWorks": {
@@ -186,7 +240,7 @@
         "price": "0",
         "description": "Perfect for trying it out.",
         "cta": "Get Started",
-        "features": ["1 guestbook", "Up to 50 entries", "Basic customization", "Community support", "Powered by Tap & Tell branding"]
+        "features": ["1 guestbook", "Up to 50 entries", "Basic customization", "2 custom questions", "Community support", "Powered by Tap & Tell branding"]
       },
       "home": {
         "name": "Home",
@@ -195,7 +249,7 @@
         "description": "For your home or a single event.",
         "cta": "Start Free Trial",
         "popular": "Most Popular",
-        "features": ["1 guestbook", "Unlimited entries", "Full customization", "Entry moderation", "PDF export", "No branding", "Email support"]
+        "features": ["1 guestbook", "Unlimited entries", "Full customization", "Card styles & layouts", "Custom CTA text", "Entry moderation", "PDF export", "No branding", "Email support"]
       },
       "family": {
         "name": "Family",
@@ -203,14 +257,14 @@
         "priceYearly": "99",
         "description": "Multiple events & advanced features.",
         "cta": "Start Free Trial",
-        "features": ["Up to 5 guestbooks", "Everything in Home", "Priority support", "Analytics dashboard", "Custom domain"]
+        "features": ["Up to 5 guestbooks", "Everything in Home", "Team collaboration", "API access", "Priority support", "Analytics dashboard", "Custom domain"]
       },
       "enterprise": {
         "name": "Enterprise",
         "price": "Custom",
         "description": "For venues and businesses.",
         "cta": "Contact Us",
-        "features": ["Unlimited guestbooks", "SSO / SAML", "API access", "Dedicated support", "SLA guarantee", "White-label option"]
+        "features": ["Unlimited guestbooks", "White-label option", "SSO / SAML", "API access", "Unlimited customization", "Dedicated support", "SLA guarantee"]
       }
     },
     "nfcShop": {
@@ -248,6 +302,57 @@
       "license": "MIT License",
       "contributors": "Community-driven development"
     },
+    "customization": {
+      "badge": "Make It Yours",
+      "title": "Your Event, Your Design",
+      "subtitle": "Every detail is customizable — from card styles to color schemes. See it live.",
+      "cardStyleLabel": "Card Style",
+      "colorLabel": "Accent Color",
+      "styles": {
+        "polaroid": "Polaroid",
+        "minimal": "Minimal",
+        "rounded": "Rounded",
+        "bordered": "Bordered"
+      },
+      "bullets": {
+        "questions": "Custom guest questions",
+        "socialLinks": "Social link badges",
+        "colorScheme": "Full color theming",
+        "slideshow": "Auto-advancing slideshow",
+        "backgrounds": "Custom backgrounds & headers",
+        "ctaText": "Personalized CTA text"
+      },
+      "mockEntry": {
+        "name": "Emma Larsson",
+        "message": "What an unforgettable evening! The music, the food, the people — everything was perfect. Thank you for having me!"
+      }
+    },
+    "security": {
+      "badge": "Security & Trust",
+      "title": "Enterprise-Grade Security, Built In",
+      "subtitle": "Your guests' data is protected by multiple layers of security — from encryption to access control.",
+      "twoFactor": {
+        "title": "Two-Factor Auth",
+        "description": "TOTP authenticator apps and email OTP — mandatory for admin access."
+      },
+      "encryption": {
+        "title": "Photo Encryption",
+        "description": "AES-256-GCM per-tenant encryption with HKDF-SHA256 key derivation."
+      },
+      "rls": {
+        "title": "Data Isolation",
+        "description": "PostgreSQL Row-Level Security ensures tenants can never see each other's data."
+      },
+      "csrf": {
+        "title": "CSRF Protection",
+        "description": "Double-submit cookie pattern protects every authenticated request."
+      },
+      "trustBadges": {
+        "encrypted": "Encrypted at Rest",
+        "openSource": "Open Source & Auditable",
+        "gdpr": "GDPR-Friendly"
+      }
+    },
     "ctaSection": {
       "title": "Ready to Create Your Guestbook?",
       "subtitle": "Start collecting memories from your guests today — for free."
@@ -260,6 +365,7 @@
       "features": "Features",
       "pricing": "Pricing",
       "nfcTags": "NFC Tags",
+      "security": "Security",
       "docs": "Documentation",
       "github": "GitHub",
       "docker": "Docker",

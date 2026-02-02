@@ -28,17 +28,62 @@ const billingCycle = ref<'monthly' | 'yearly'>('yearly')
 const heroVideoSrc = '/videos/hero.mp4'
 
 /**
- * Feature cards displayed in the features section.
+ * Feature groups displayed in the features section.
+ * Three groups: Guest Experience, Customization, Management & Security.
  */
-const features = computed(() => [
-  { icon: 'lucide:nfc', key: 'nfc' },
-  { icon: 'lucide:camera', key: 'photo' },
-  { icon: 'lucide:list-checks', key: 'wizard' },
-  { icon: 'lucide:shield-check', key: 'moderation' },
-  { icon: 'lucide:presentation', key: 'slideshow' },
-  { icon: 'lucide:file-text', key: 'pdf' },
-  { icon: 'lucide:qr-code', key: 'qr' },
-  { icon: 'lucide:sun-moon', key: 'theme' }
+const featureGroups = computed(() => [
+  {
+    key: 'experience',
+    features: [
+      { icon: 'lucide:nfc', key: 'nfc' },
+      { icon: 'lucide:camera', key: 'photo' },
+      { icon: 'lucide:list-checks', key: 'wizard' },
+      { icon: 'lucide:message-square-plus', key: 'customQuestions' },
+      { icon: 'lucide:wifi-off', key: 'offline' },
+      { icon: 'lucide:languages', key: 'i18n' }
+    ]
+  },
+  {
+    key: 'customization',
+    features: [
+      { icon: 'lucide:sun-moon', key: 'theme' },
+      { icon: 'lucide:image-plus', key: 'headerImage' },
+      { icon: 'lucide:layout-template', key: 'cardStyles' },
+      { icon: 'lucide:layout-grid', key: 'viewLayouts' },
+      { icon: 'lucide:type', key: 'fonts' },
+      { icon: 'lucide:palette', key: 'colorScheme' }
+    ]
+  },
+  {
+    key: 'management',
+    features: [
+      { icon: 'lucide:shield-check', key: 'moderation' },
+      { icon: 'lucide:presentation', key: 'slideshow' },
+      { icon: 'lucide:file-text', key: 'pdf' },
+      { icon: 'lucide:qr-code', key: 'qr' },
+      { icon: 'lucide:users', key: 'team' },
+      { icon: 'lucide:code-2', key: 'api' }
+    ]
+  }
+])
+
+/**
+ * Customization showcase state.
+ */
+const selectedCardStyle = ref<'polaroid' | 'minimal' | 'rounded' | 'bordered'>('polaroid')
+const selectedPreviewColor = ref('#10b981')
+const previewColors = ['#10b981', '#6366f1', '#f59e0b', '#ec4899', '#06b6d4']
+
+const cardStyleOptions = ['polaroid', 'minimal', 'rounded', 'bordered'] as const
+
+/**
+ * Security feature cards.
+ */
+const securityFeatures = computed(() => [
+  { icon: 'lucide:lock-keyhole', key: 'twoFactor' },
+  { icon: 'lucide:shield', key: 'encryption' },
+  { icon: 'lucide:database', key: 'rls' },
+  { icon: 'lucide:key-round', key: 'csrf' }
 ])
 
 /**
@@ -204,6 +249,13 @@ onUnmounted(() => {
             @click="scrollToSection('features')"
           >
             {{ t('landing.features.badge') }}
+          </button>
+          <button
+            class="hidden h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors sm:flex"
+            :class="headerSolid ? 'text-muted-foreground hover:text-foreground' : 'text-white/70 hover:text-white'"
+            @click="scrollToSection('security')"
+          >
+            {{ t('landing.security.badge') }}
           </button>
           <button
             class="hidden h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors sm:flex"
@@ -416,22 +468,38 @@ onUnmounted(() => {
           </p>
         </div>
 
-        <div class="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div
-            v-for="(feature, index) in features"
-            :key="feature.key"
-            class="reveal-on-scroll feature-card group rounded-2xl border border-border/50 bg-card p-7 transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
-            :style="{ transitionDelay: `${index * 60}ms` }"
-          >
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/15">
-              <Icon :icon="feature.icon" class="h-6 w-6 text-primary" />
-            </div>
-            <h3 class="mt-5 text-lg font-semibold tracking-tight">
-              {{ t(`landing.features.${feature.key}.title`) }}
-            </h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {{ t(`landing.features.${feature.key}.description`) }}
+        <!-- Feature Groups -->
+        <div
+          v-for="(group, gIdx) in featureGroups"
+          :key="group.key"
+          class="mt-20 first:mt-16"
+        >
+          <div class="reveal-on-scroll mb-8 text-center" :style="{ transitionDelay: `${gIdx * 80}ms` }">
+            <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary/70">
+              {{ t(`landing.features.groups.${group.key}.title`) }}
             </p>
+            <p class="mx-auto mt-1 max-w-lg text-sm text-muted-foreground">
+              {{ t(`landing.features.groups.${group.key}.subtitle`) }}
+            </p>
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div
+              v-for="(feature, fIdx) in group.features"
+              :key="feature.key"
+              class="reveal-on-scroll feature-card group rounded-2xl border border-border/50 bg-card p-7 transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+              :style="{ transitionDelay: `${gIdx * 80 + fIdx * 60}ms` }"
+            >
+              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/15">
+                <Icon :icon="feature.icon" class="h-6 w-6 text-primary" />
+              </div>
+              <h3 class="mt-5 text-lg font-semibold tracking-tight">
+                {{ t(`landing.features.${feature.key}.title`) }}
+              </h3>
+              <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {{ t(`landing.features.${feature.key}.description`) }}
+              </p>
+            </div>
           </div>
         </div>
 
@@ -606,9 +674,157 @@ onUnmounted(() => {
     </section>
 
     <!-- ============================================
+         Customization Showcase
+         ============================================ -->
+    <section id="customization" class="relative overflow-hidden border-t border-border/50 bg-muted/30 px-6 py-28">
+      <!-- Floating orbs -->
+      <div class="orb orb-drift-1 absolute -right-32 top-20 h-80 w-80 rounded-full bg-primary/6 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.03}px)` }" />
+      <div class="orb orb-drift-3 absolute -left-24 bottom-10 h-72 w-72 rounded-full bg-emerald-400/5 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
+
+      <div class="mx-auto max-w-6xl">
+        <div class="reveal-on-scroll text-center">
+          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+            {{ t('landing.customization.badge') }}
+          </p>
+          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+            {{ t('landing.customization.title') }}
+          </h2>
+          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+            {{ t('landing.customization.subtitle') }}
+          </p>
+        </div>
+
+        <div class="mt-16 grid items-center gap-12 lg:grid-cols-2">
+          <!-- Left: Controls -->
+          <div class="reveal-on-scroll space-y-8" style="transition-delay: 100ms">
+            <!-- Card Style Selector -->
+            <div>
+              <p class="mb-3 text-sm font-medium">{{ t('landing.customization.cardStyleLabel') }}</p>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="style in cardStyleOptions"
+                  :key="style"
+                  class="rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200"
+                  :class="selectedCardStyle === style
+                    ? 'border-primary bg-primary text-primary-foreground shadow-md'
+                    : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground'"
+                  @click="selectedCardStyle = style"
+                >
+                  {{ t(`landing.customization.styles.${style}`) }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Color Selector -->
+            <div>
+              <p class="mb-3 text-sm font-medium">{{ t('landing.customization.colorLabel') }}</p>
+              <div class="flex gap-3">
+                <button
+                  v-for="color in previewColors"
+                  :key="color"
+                  class="relative h-10 w-10 rounded-full border-2 transition-all duration-200"
+                  :class="selectedPreviewColor === color
+                    ? 'border-foreground scale-110 shadow-lg'
+                    : 'border-border hover:scale-105'"
+                  :style="{ backgroundColor: color }"
+                  @click="selectedPreviewColor = color"
+                >
+                  <Icon
+                    v-if="selectedPreviewColor === color"
+                    icon="lucide:check"
+                    class="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-white"
+                  />
+                </button>
+              </div>
+            </div>
+
+            <!-- Feature Bullets -->
+            <ul class="grid gap-3 sm:grid-cols-2">
+              <li v-for="bullet in ['questions', 'socialLinks', 'colorScheme', 'slideshow', 'backgrounds', 'ctaText']" :key="bullet" class="flex items-center gap-2.5 text-sm">
+                <Icon icon="lucide:check" class="h-4 w-4 shrink-0 text-primary" />
+                <span class="text-muted-foreground">{{ t(`landing.customization.bullets.${bullet}`) }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Right: Mock Card Preview -->
+          <div class="reveal-on-scroll flex justify-center" style="transition-delay: 200ms">
+            <ClientOnly>
+              <div
+                class="w-full max-w-sm transition-all duration-500"
+                :class="{
+                  'preview-polaroid': selectedCardStyle === 'polaroid',
+                  'preview-minimal': selectedCardStyle === 'minimal',
+                  'preview-rounded': selectedCardStyle === 'rounded',
+                  'preview-bordered': selectedCardStyle === 'bordered'
+                }"
+                :style="selectedCardStyle === 'bordered' ? { borderLeftColor: selectedPreviewColor } : {}"
+              >
+                <div
+                  class="overflow-hidden bg-card p-6"
+                  :class="{
+                    'rounded-xl shadow-xl': selectedCardStyle === 'polaroid',
+                    'rounded-lg border border-border': selectedCardStyle === 'minimal',
+                    'rounded-3xl': selectedCardStyle === 'rounded',
+                    'rounded-xl': selectedCardStyle === 'bordered'
+                  }"
+                  :style="selectedCardStyle === 'rounded' ? { backgroundColor: selectedPreviewColor + '10' } : {}"
+                >
+                  <!-- Mock entry header -->
+                  <div class="flex items-center gap-3">
+                    <img
+                      :src="avatarUrl('EmmaLarsson')"
+                      :alt="t('landing.customization.mockEntry.name')"
+                      class="h-12 w-12 shrink-0 rounded-full bg-muted"
+                      loading="lazy"
+                      width="48"
+                      height="48"
+                    >
+                    <div>
+                      <p class="font-medium">{{ t('landing.customization.mockEntry.name') }}</p>
+                      <div class="mt-0.5 flex gap-1.5">
+                        <span
+                          class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                          :style="{ backgroundColor: selectedPreviewColor + '15', color: selectedPreviewColor }"
+                        >
+                          <Icon icon="lucide:music" class="h-2.5 w-2.5" />
+                          Jazz
+                        </span>
+                        <span
+                          class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                          :style="{ backgroundColor: selectedPreviewColor + '15', color: selectedPreviewColor }"
+                        >
+                          <Icon icon="lucide:heart" class="h-2.5 w-2.5" />
+                          Travel
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Mock message -->
+                  <p class="mt-4 text-sm leading-relaxed text-muted-foreground">
+                    {{ t('landing.customization.mockEntry.message') }}
+                  </p>
+
+                  <!-- Mock photo placeholder -->
+                  <div
+                    class="mt-4 flex h-40 items-center justify-center rounded-lg"
+                    :style="{ backgroundColor: selectedPreviewColor + '10' }"
+                  >
+                    <Icon icon="lucide:image" class="h-8 w-8" :style="{ color: selectedPreviewColor + '40' }" />
+                  </div>
+                </div>
+              </div>
+            </ClientOnly>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
          Why Memories Matter
          ============================================ -->
-    <section class="relative overflow-hidden border-t border-border/50 bg-muted/30 px-6 py-28">
+    <section class="relative overflow-hidden px-6 py-28">
       <!-- Floating orbs -->
       <div class="orb orb-drift-2 absolute -left-32 top-10 h-80 w-80 rounded-full bg-primary/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.02}px)` }" />
       <div class="orb orb-drift-3 absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-emerald-500/4 blur-[90px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
@@ -638,6 +854,64 @@ onUnmounted(() => {
           </p>
         </div>
 
+      </div>
+    </section>
+
+    <!-- ============================================
+         Security & Trust
+         ============================================ -->
+    <section id="security" class="relative overflow-hidden border-t border-border/50 bg-muted/30 px-6 py-28">
+      <!-- Floating orbs -->
+      <div class="orb orb-drift-2 absolute -right-32 top-10 h-80 w-80 rounded-full bg-primary/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.025}px)` }" />
+      <div class="orb orb-drift-1 absolute -left-24 bottom-20 h-72 w-72 rounded-full bg-emerald-400/4 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
+
+      <div class="mx-auto max-w-5xl">
+        <div class="reveal-on-scroll text-center">
+          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+            {{ t('landing.security.badge') }}
+          </p>
+          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+            {{ t('landing.security.title') }}
+          </h2>
+          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+            {{ t('landing.security.subtitle') }}
+          </p>
+        </div>
+
+        <!-- Security Cards -->
+        <div class="mt-16 grid gap-6 sm:grid-cols-2">
+          <div
+            v-for="(feature, index) in securityFeatures"
+            :key="feature.key"
+            class="reveal-on-scroll group rounded-2xl border border-border/50 bg-card p-7 transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+            :style="{ transitionDelay: `${index * 80}ms` }"
+          >
+            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/15">
+              <Icon :icon="feature.icon" class="h-6 w-6 text-primary" />
+            </div>
+            <h3 class="mt-5 text-lg font-semibold tracking-tight">
+              {{ t(`landing.security.${feature.key}.title`) }}
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {{ t(`landing.security.${feature.key}.description`) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="reveal-on-scroll mt-12 flex flex-wrap items-center justify-center gap-4" style="transition-delay: 300ms">
+          <div
+            v-for="badge in ['encrypted', 'openSource', 'gdpr']"
+            :key="badge"
+            class="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/70 px-5 py-2.5 text-sm font-medium backdrop-blur-xl"
+          >
+            <Icon
+              :icon="badge === 'encrypted' ? 'lucide:lock' : badge === 'openSource' ? 'lucide:github' : 'lucide:shield-check'"
+              class="h-4 w-4 text-primary"
+            />
+            {{ t(`landing.security.trustBadges.${badge}`) }}
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1010,6 +1284,11 @@ onUnmounted(() => {
                   {{ t('landing.footer.nfcTags') }}
                 </button>
               </li>
+              <li>
+                <button class="text-sm text-muted-foreground transition-colors hover:text-foreground" @click="scrollToSection('security')">
+                  {{ t('landing.footer.security') }}
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -1100,6 +1379,24 @@ onUnmounted(() => {
               transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
               border-color 0.3s ease,
               box-shadow 0.3s ease;
+}
+
+/* Customization showcase card style variants */
+.preview-polaroid {
+  box-shadow: 0 8px 30px -5px rgba(0, 0, 0, 0.15);
+  transform: rotate(-1deg);
+}
+
+.preview-minimal {
+  box-shadow: none;
+}
+
+.preview-rounded {
+  border-radius: 1.5rem;
+}
+
+.preview-bordered {
+  border-left: 4px solid;
 }
 
 /* NFC Tag pulse animation */
