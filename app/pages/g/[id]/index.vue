@@ -211,7 +211,7 @@ onUnmounted(() => {
     <NuxtLink
       v-if="canAdmin"
       :to="`/g/${guestbookId}/admin`"
-      class="fixed left-0 right-0 top-0 z-50 flex items-center justify-center gap-2 border-b border-border/20 bg-card/70 px-4 py-2 text-sm text-foreground backdrop-blur-xl transition-colors hover:bg-card/90"
+      class="fixed left-0 shadow-xs shadow-black right-0 top-0 z-50 flex items-center justify-center gap-2 border-b border-border/20 bg-card/70 px-4 py-2 text-sm text-foreground backdrop-blur-xl transition-colors hover:bg-card/90"
     >
       <Settings class="h-4 w-4" />
       {{ t('landing.adminBar') }}
@@ -226,7 +226,7 @@ onUnmounted(() => {
         :class="{ 'landing-gradient': !hasCustomBackground }"
       >
         <div
-          class="mx-auto max-w-sm rounded-2xl border border-border/20 p-8 text-center shadow-xl shadow-black"
+          class="mx-auto max-w-sm rounded-2xl border border-border/20 p-8 text-center shadow-md shadow-black"
           :class="{ 'bg-card/70': !hasCustomCardColor }"
           :style="cardStyles"
         >
