@@ -286,6 +286,31 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 
 ## Process Rules
 
+### Database Changes (Critical)
+
+When modifying the database schema, **always update both files**:
+
+1. **`server/database/schema.ts`** — Drizzle schema definition (used by ORM at runtime)
+2. **`server/database/migrate.ts`** — Raw SQL migrations (executed on server startup)
+
+**Checklist for schema changes:**
+- [ ] Add new columns/tables to `schema.ts`
+- [ ] Add corresponding `CREATE TABLE IF NOT EXISTS` or `ALTER TABLE ADD COLUMN IF NOT EXISTS` to `migrate.ts`
+- [ ] If table needs tenant isolation: add RLS policy in `migrate.ts`
+- [ ] Add indexes for frequently queried columns
+- [ ] Test locally with fresh database (`DROP DATABASE` + restart dev server)
+
+**RLS Policy Template:**
+```sql
+ALTER TABLE new_table ENABLE ROW LEVEL SECURITY;
+ALTER TABLE new_table FORCE ROW LEVEL SECURITY;
+-- Then create policy via createPolicy() helper in migrate.ts
+```
+
+> **Warning:** Forgetting to update `migrate.ts` causes runtime errors in production because tables/columns won't exist!
+
+### Environment Variables
+
 - **New environment variables** — when introducing new ENV variables, always add them to both `.env.example` (with description and placeholder) and `.env` (with actual dev value)
 - Read `PROJECT_MEMORY.md` before implementing changes — it contains known issues and hard constraints
 - Verify the project builds (`pnpm build`) before marking any step complete

@@ -49,6 +49,16 @@ and avoid repeating documented issues.
 - **Current**: This legacy system has been completely removed. All admin access now uses the JWT-based owner authentication with role-based permissions and 2FA enforcement.
 - **Rule**: Use the standard login flow with owner accounts for admin access.
 
+### Database Schema vs Migration Sync
+- **Problem**: Added beta access columns to `server/database/schema.ts` (Drizzle ORM) but forgot to add corresponding `ALTER TABLE` statements to `server/database/migrate.ts`. Production deployment failed because columns didn't exist in the actual database.
+- **Root Cause**: The project uses two separate files for database structure: (1) `schema.ts` for Drizzle ORM type definitions, (2) `migrate.ts` for actual SQL DDL executed on startup.
+- **Fix**: Always update BOTH files when changing database schema.
+- **Rule**: Every schema change requires updates to:
+  1. `server/database/schema.ts` — Drizzle schema (types + ORM)
+  2. `server/database/migrate.ts` — Raw SQL migrations (DDL)
+  3. RLS policies in `migrate.ts` if table needs tenant isolation
+- **Verification**: Test with a fresh database locally before deploying.
+
 ### Nuxt Component Auto-Import Naming in Subdirectories
 - **Problem**: Components in subdirectories like `components/form/StepBasics.vue` are auto-imported with the directory as prefix: `FormStepBasics`, not `StepBasics`. Using the wrong name causes "Failed to resolve component" errors.
 - **Fix**: Always use the full prefixed name when referencing components from subdirectories. E.g., `<FormStepBasics />` not `<StepBasics />`.

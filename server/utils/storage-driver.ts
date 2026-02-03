@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync, readdirSync } from 'fs'
 import { dirname } from 'path'
 import { put, del, list } from '@vercel/blob'
 
@@ -14,6 +14,8 @@ export interface StorageDriver {
   delete(filePath: string): Promise<boolean>
   /** Checks if a file exists at the given path. */
   exists(filePath: string): Promise<boolean>
+  /** Lists all files matching the given prefix. */
+  list(prefix: string): Promise<string[]>
 }
 
 /**
@@ -42,6 +44,19 @@ class LocalStorageDriver implements StorageDriver {
 
   async exists(filePath: string): Promise<boolean> {
     return existsSync(filePath)
+  }
+
+  async list(prefix: string): Promise<string[]> {
+    const { dirname, basename, join } = await import('path')
+    const dir = dirname(prefix)
+    const filePrefix = basename(prefix)
+
+    if (!existsSync(dir)) return []
+
+    const files = readdirSync(dir)
+    return files
+      .filter(f => f.startsWith(filePrefix))
+      .map(f => join(dir, f))
   }
 }
 
@@ -126,19 +141,36 @@ class VercelBlobStorageDriver implements StorageDriver {
   }
 
   /**
+   * Lists all files matching the given prefix in Vercel Blob storage.
+   *
+   * @param prefix - Path prefix to match
+   * @returns Array of matching file paths
+   */
+  async list(prefix: string): Promise<string[]> {
+    const blobPrefix = this.normalizePath(prefix)
+
+    const { blobs } = await list({ prefix: blobPrefix })
+    return blobs.map(b => b.pathname)
+  }
+
+  /**
    * Normalizes a file path for use with Vercel Blob.
    * Removes leading DATA_DIR prefix and ensures consistent format.
+   * Handles both forward slashes (Unix) and backslashes (Windows).
    *
    * @param filePath - The original file path
-   * @returns Normalized path suitable for Vercel Blob
+   * @returns Normalized path suitable for Vercel Blob (always uses forward slashes)
    */
   private normalizePath(filePath: string): string {
     const dataDir = process.env.DATA_DIR || '.data'
-    let normalized = filePath
 
-    // Remove DATA_DIR prefix if present
-    if (normalized.startsWith(dataDir + '/')) {
-      normalized = normalized.slice(dataDir.length + 1)
+    // Normalize all path separators to forward slashes for consistent handling
+    let normalized = filePath.replace(/\\/g, '/')
+    const normalizedDataDir = dataDir.replace(/\\/g, '/')
+
+    // Remove DATA_DIR prefix if present (with or without trailing slash)
+    if (normalized.startsWith(normalizedDataDir + '/')) {
+      normalized = normalized.slice(normalizedDataDir.length + 1)
     } else if (normalized.startsWith('.data/')) {
       normalized = normalized.slice(6)
     }
@@ -172,6 +204,10 @@ class S3StorageDriver implements StorageDriver {
   async exists(): Promise<boolean> {
     throw new Error('S3 storage driver is not yet configured.')
   }
+
+  async list(): Promise<string[]> {
+    throw new Error('S3 storage driver is not yet configured.')
+  }
 }
 
 /** Singleton storage driver instance. */
@@ -193,13 +229,19 @@ export function getStorageDriver(): StorageDriver {
 
   switch (driverType) {
     case 'vercel-blob':
+      if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        console.warn('[storage-driver] STORAGE_DRIVER=vercel-blob but BLOB_READ_WRITE_TOKEN is missing!')
+      }
+      console.log('[storage-driver] Initializing Vercel Blob Storage driver')
       _driver = new VercelBlobStorageDriver()
       break
     case 's3':
+      console.log('[storage-driver] Initializing S3 Storage driver')
       _driver = new S3StorageDriver()
       break
     case 'local':
     default:
+      console.log(`[storage-driver] Initializing Local Storage driver (STORAGE_DRIVER=${driverType})`)
       _driver = new LocalStorageDriver()
       break
   }

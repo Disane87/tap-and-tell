@@ -48,6 +48,19 @@ export default defineNitroPlugin(() => {
   const dataDir = process.env.DATA_DIR || '.data'
   log.kv('Data Directory', dataDir)
 
+  // Storage Driver
+  const storageDriver = process.env.STORAGE_DRIVER || 'local'
+  const storageLabels: Record<string, string> = {
+    local: 'Local Filesystem',
+    'vercel-blob': 'Vercel Blob Storage',
+    s3: 'S3-compatible Storage'
+  }
+  log.kv('Storage Driver', `${storageDriver} - ${storageLabels[storageDriver] || 'Unknown'}`)
+  if (storageDriver === 'vercel-blob') {
+    const hasToken = !!process.env.BLOB_READ_WRITE_TOKEN
+    log.kv('Blob Token', hasToken ? 'Configured' : 'MISSING!')
+  }
+
   // Email Configuration
   const hasResendKey = !!process.env.RESEND_API_KEY
   log.kv('Email Provider', hasResendKey ? 'Resend (configured)' : 'Console (development)')
