@@ -1,4 +1,7 @@
 import { Pool } from 'pg'
+import { createLogger } from '~~/server/utils/logger'
+
+const log = createLogger('migrate')
 
 /**
  * Runs database migrations by creating tables and enabling Row-Level Security.
@@ -13,7 +16,10 @@ import { Pool } from 'pg'
  */
 export async function runMigrations(connectionString: string): Promise<void> {
   const pool = new Pool({ connectionString })
+
+  log.debug('Connecting to PostgreSQL...')
   const client = await pool.connect()
+  log.debug('Connection established')
 
   try {
     // ── Create tables ──────────────────────────────────────────────
@@ -180,7 +186,10 @@ export async function runMigrations(connectionString: string): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_api_tokens_hash ON api_tokens(token_hash);
     `)
 
+    log.debug('Core tables created/verified')
+
     // ── Enable Row-Level Security ──────────────────────────────────
+    log.debug('Configuring Row-Level Security policies...')
 
     // Helper: create an RLS policy if it doesn't exist (idempotent)
     const createPolicy = async (
@@ -288,7 +297,7 @@ export async function runMigrations(connectionString: string): Promise<void> {
       `tenant_id = current_setting('app.current_tenant_id', true) OR tenant_id IS NULL`
     )
 
-    console.log('[migrate] PostgreSQL migration complete with RLS policies')
+    log.success('RLS policies configured for tenant isolation')
   } finally {
     client.release()
     await pool.end()

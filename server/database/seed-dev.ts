@@ -2,6 +2,9 @@ import { nanoid } from 'nanoid'
 import { Pool } from 'pg'
 import { hashPassword } from '~~/server/utils/password'
 import { generateEncryptionSalt } from '~~/server/utils/crypto'
+import { createLogger } from '~~/server/utils/logger'
+
+const log = createLogger('seed-dev')
 
 /** Well-known dev tenant ID for easy access during development. */
 export const DEV_TENANT_ID = 'dev000tenant'
@@ -169,12 +172,13 @@ export async function seedDevTenant(connectionString: string): Promise<void> {
 
     await client.query('COMMIT')
 
-    console.log(`[seed-dev] Dev tenant created: ${DEV_TENANT_ID}`)
-    console.log(`[seed-dev] Guestbook 1 (permanent): ${DEV_GUESTBOOK_1}`)
-    console.log(`[seed-dev] Guestbook 2 (event): ${DEV_GUESTBOOK_2}`)
-    console.log(`[seed-dev] Login: ${DEV_EMAIL} / ${DEV_PASSWORD}`)
-    console.log(`[seed-dev] Guest URL: /t/${DEV_TENANT_ID}/g/${DEV_GUESTBOOK_1}`)
-    console.log(`[seed-dev] Admin URL: /t/${DEV_TENANT_ID}/admin`)
+    log.success('Development tenant created')
+    log.kv('Tenant ID', DEV_TENANT_ID)
+    log.kv('Guestbook 1', `${DEV_GUESTBOOK_1} (permanent)`)
+    log.kv('Guestbook 2', `${DEV_GUESTBOOK_2} (event)`)
+    log.kv('Login', `${DEV_EMAIL} / ${DEV_PASSWORD}`)
+    log.kv('Guest URL', `/g/${DEV_GUESTBOOK_1}`)
+    log.kv('Dashboard', '/dashboard')
   } catch (error) {
     await client.query('ROLLBACK')
     throw error
