@@ -10,12 +10,25 @@
  */
 import { useTimeAgo } from '@vueuse/core'
 import type { GuestEntry } from '~/types/guest'
+import type { CustomQuestion } from '~/types/guestbook'
 
 const { t, locale } = useI18n()
 
 const props = defineProps<{
   entry: GuestEntry
+  cardStyle?: 'polaroid' | 'minimal' | 'rounded' | 'bordered'
+  customQuestions?: CustomQuestion[]
 }>()
+
+/** CSS class for the card style. */
+const cardClass = computed(() => {
+  switch (props.cardStyle) {
+    case 'minimal': return 'card-minimal'
+    case 'rounded': return 'card-rounded'
+    case 'bordered': return 'card-bordered'
+    default: return 'card-polaroid'
+  }
+})
 
 defineEmits<{
   click: []
@@ -78,13 +91,24 @@ const answerBadges = computed(() => {
   if (a.nightOwlOrEarlyBird) badges.push({ text: a.nightOwlOrEarlyBird === 'night_owl' ? `🦉 ${t('entry.badges.nightOwl')}` : `🐦 ${t('entry.badges.earlyBird')}`, class: 'badge-blue' })
   if (a.beachOrMountains) badges.push({ text: a.beachOrMountains === 'beach' ? `🏖️ ${t('entry.badges.beach')}` : `⛰️ ${t('entry.badges.mountains')}`, class: 'badge-orange' })
 
+  // Add custom answer badges
+  if (a.customAnswers && props.customQuestions) {
+    for (const q of props.customQuestions) {
+      const answer = a.customAnswers[q.id]
+      if (answer) {
+        badges.push({ text: `💬 ${answer}`, class: 'badge-purple' })
+      }
+    }
+  }
+
   return badges.slice(0, 3)
 })
 </script>
 
 <template>
   <button
-    class="card-polaroid w-full cursor-pointer text-left"
+    class="w-full cursor-pointer text-left"
+    :class="cardClass"
     @click="$emit('click')"
   >
     <div v-if="entry.photoUrl" class="photo-frame mb-3 aspect-square w-full bg-muted">

@@ -158,12 +158,14 @@ The MVP beta target: A stable, secure, hosted SaaS version that early adopters c
 
 ## P2 — Nice to Have
 
-### 37.13 Legacy Admin Cleanup
+### 37.13 Legacy Admin Cleanup ✔
 
-- [ ] Remove or hide `/admin/login` and `/admin` legacy routes
-- [ ] Remove `useAdmin` composable if no longer needed
-- [ ] Remove legacy Bearer token auth endpoints (`POST /api/admin/login`, etc.)
-- [ ] Clean up any references to legacy admin in codebase
+- [x] Remove or hide `/admin/login` and `/admin` legacy routes ✔
+- [x] Remove `useAdmin` composable if no longer needed ✔
+- [x] Remove legacy Bearer token auth endpoints (`POST /api/admin/login`, etc.) ✔
+- [x] Clean up any references to legacy admin in codebase ✔
+- [x] Remove `ADMIN_PASSWORD` and `TOKEN_SECRET` environment variables ✔
+- [x] Consolidate tenant routes (`/t/[uuid]/*`) into `/dashboard` ✔
 
 **Why**: Legacy admin coexists with the new JWT-based tenant system. Keeping both is confusing and increases attack surface.
 

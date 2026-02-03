@@ -1,5 +1,5 @@
 import type { GuestAnswers, CreateGuestEntryInput, FavoriteSong, FavoriteVideo } from '~/types/guest'
-import type { GuestbookSettings } from '~/types/guestbook'
+import type { GuestbookSettings, CustomQuestion } from '~/types/guestbook'
 
 /**
  * Form submission status.
@@ -36,6 +36,9 @@ export interface GuestFormState {
   message: string
   howWeMet: string
   bestMemory: string
+
+  // Step 5: Custom Questions (dynamic)
+  customAnswers: Record<string, string>
 }
 
 /**
@@ -46,6 +49,7 @@ export interface FormErrors {
   photo?: string
   message?: string
   general?: string
+  customAnswers?: Record<string, string>
 }
 
 /**
@@ -71,12 +75,13 @@ function getDefaultState(): GuestFormState {
     beachOrMountains: null,
     message: '',
     howWeMet: '',
-    bestMemory: ''
+    bestMemory: '',
+    customAnswers: {}
   }
 }
 
-/** All possible step numbers. */
-const ALL_STEPS = [1, 2, 3, 4] as const
+/** All possible step numbers (5 = custom questions). */
+const ALL_STEPS = [1, 2, 3, 4, 5] as const
 
 /**
  * Module-level shared state for the form wizard.
@@ -89,9 +94,14 @@ const currentStep = ref(1)
 
 /**
  * Enabled step numbers. Steps 1 (Basics) and 4 (Message) are always enabled.
- * Steps 2 (Favorites) and 3 (Fun Facts) can be toggled via formConfig.
+ * Steps 2 (Favorites), 3 (Fun Facts), and 5 (Custom Questions) can be toggled via formConfig.
  */
-const enabledSteps = ref<number[]>([...ALL_STEPS])
+const enabledSteps = ref<number[]>([1, 2, 3, 4])
+
+/**
+ * Active custom questions from guestbook settings.
+ */
+const customQuestions = ref<CustomQuestion[]>([])
 
 /**
  * Composable for the 4-step guest form wizard.
@@ -119,6 +129,7 @@ export function useGuestForm() {
   /**
    * Applies guestbook settings to configure which steps are enabled.
    * Steps 1 (Basics) and 4 (Message) are always enabled.
+   * Step 5 (Custom Questions) is enabled when custom questions are defined.
    */
   function applyFormConfig(settings?: GuestbookSettings): void {
     const steps: number[] = [1] // Basics always enabled
@@ -126,6 +137,12 @@ export function useGuestForm() {
     if (!config || config.favorites !== false) steps.push(2)
     if (!config || config.funFacts !== false) steps.push(3)
     steps.push(4) // Message always enabled
+
+    // Add step 5 if custom questions exist
+    const questions = settings?.customQuestions ?? []
+    customQuestions.value = questions
+    if (questions.length > 0) steps.push(5)
+
     enabledSteps.value = steps
 
     // If current step is disabled, go to step 1
@@ -147,6 +164,7 @@ export function useGuestForm() {
     errors.photo = undefined
     errors.message = undefined
     errors.general = undefined
+    errors.customAnswers = undefined
 
     if (currentStep.value === 1) {
       if (!formState.name.trim()) {
@@ -171,6 +189,20 @@ export function useGuestForm() {
       }
       if (formState.message.length > 1000) {
         errors.message = 'Message must be 1000 characters or less'
+        return false
+      }
+    }
+
+    if (currentStep.value === 5) {
+      // Validate required custom questions
+      const customErrors: Record<string, string> = {}
+      for (const q of customQuestions.value) {
+        if (q.required && !formState.customAnswers[q.id]?.trim()) {
+          customErrors[q.id] = 'This field is required'
+        }
+      }
+      if (Object.keys(customErrors).length > 0) {
+        errors.customAnswers = customErrors
         return false
       }
     }
@@ -291,6 +323,17 @@ export function useGuestForm() {
     if (formState.howWeMet.trim()) answers.howWeMet = formState.howWeMet.trim()
     if (formState.bestMemory.trim()) answers.bestMemory = formState.bestMemory.trim()
 
+    // Custom Answers
+    const trimmedCustomAnswers: Record<string, string> = {}
+    for (const [key, value] of Object.entries(formState.customAnswers)) {
+      if (value?.trim()) {
+        trimmedCustomAnswers[key] = value.trim()
+      }
+    }
+    if (Object.keys(trimmedCustomAnswers).length > 0) {
+      answers.customAnswers = trimmedCustomAnswers
+    }
+
     return Object.keys(answers).length > 0 ? answers : undefined
   }
 
@@ -330,6 +373,7 @@ export function useGuestForm() {
     errors.photo = undefined
     errors.message = undefined
     errors.general = undefined
+    errors.customAnswers = undefined
     status.value = 'idle'
     currentStep.value = 1
   }
@@ -349,6 +393,7 @@ export function useGuestForm() {
     status: readonly(status),
     currentStep: readonly(currentStep),
     enabledSteps: readonly(enabledSteps),
+    customQuestions: readonly(customQuestions),
     totalSteps,
     currentStepIndex,
     validateCurrentStep,

@@ -11,13 +11,30 @@
  */
 import { ExternalLink } from 'lucide-vue-next'
 import type { GuestEntry } from '~/types/guest'
+import type { CustomQuestion } from '~/types/guestbook'
 
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
-defineProps<{
+const props = defineProps<{
   entry: GuestEntry | null
   open: boolean
+  customQuestions?: CustomQuestion[]
 }>()
+
+/**
+ * Gets custom answers with their labels for display.
+ */
+const customAnswersWithLabels = computed(() => {
+  if (!props.entry?.answers?.customAnswers || !props.customQuestions) return []
+  const results: { label: string; value: string }[] = []
+  for (const q of props.customQuestions) {
+    const answer = props.entry.answers.customAnswers[q.id]
+    if (answer) {
+      results.push({ label: q.label, value: answer })
+    }
+  }
+  return results
+})
 
 defineEmits<{
   'update:open': [value: boolean]
@@ -168,6 +185,19 @@ function formatFullDate(iso: string): string {
             <div v-if="entry.answers.bestMemory" class="text-sm">
               <span class="text-muted-foreground">{{ $t('entry.labels.bestMemory') }}</span>
               <p class="mt-0.5 whitespace-pre-wrap">{{ entry.answers.bestMemory }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Questions Section -->
+        <div v-if="customAnswersWithLabels.length > 0">
+          <h4 class="section-title">
+            {{ t('entry.sections.customQuestions') }}
+          </h4>
+          <div class="space-y-2">
+            <div v-for="answer in customAnswersWithLabels" :key="answer.label" class="text-sm">
+              <span class="text-muted-foreground">{{ answer.label }}</span>
+              <p class="mt-0.5 whitespace-pre-wrap">{{ answer.value }}</p>
             </div>
           </div>
         </div>

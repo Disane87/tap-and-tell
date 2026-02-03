@@ -44,9 +44,10 @@ and avoid repeating documented issues.
 - **Issue**: `DELETE /api/entries/[id]` has no authentication. Any client can delete entries.
 - **Status**: Known limitation. Admin panel uses authenticated `/api/admin/entries/[id]` for deletion. The public endpoint should be removed or auth-gated in a future pass.
 
-### Default Admin Password
-- **Issue**: `ADMIN_PASSWORD` defaults to `'admin123'` and `TOKEN_SECRET` defaults to `'tap-and-tell-secret'` when environment variables are not set.
-- **Rule**: Always set `ADMIN_PASSWORD` and `TOKEN_SECRET` environment variables in production.
+### Legacy Admin System Removed
+- **History**: The project previously had a separate admin authentication system using `ADMIN_PASSWORD` and `TOKEN_SECRET` environment variables.
+- **Current**: This legacy system has been completely removed. All admin access now uses the JWT-based owner authentication with role-based permissions and 2FA enforcement.
+- **Rule**: Use the standard login flow with owner accounts for admin access.
 
 ### Nuxt Component Auto-Import Naming in Subdirectories
 - **Problem**: Components in subdirectories like `components/form/StepBasics.vue` are auto-imported with the directory as prefix: `FormStepBasics`, not `StepBasics`. Using the wrong name causes "Failed to resolve component" errors.
@@ -91,9 +92,10 @@ For full architecture details, see:
 
 ### Key Decisions (not documented elsewhere)
 - **nanoid instead of UUID**: All `randomUUID()` calls replaced with `nanoid(12)` via `server/utils/id.ts`. 12-character URL-safe strings. Backward-compatible — existing UUIDs in DB remain valid. Migration file uses `nanoid` directly (no Nitro auto-imports).
-- **Legacy compatibility**: `/` is now a marketing page (no longer guest form). Root-level `/guestbook` and `/slideshow` routes removed. `createEntry()` requires `guestbookId` as first parameter. `getDefaultTenantId()` returns first tenant for legacy routes. Legacy admin auth (Bearer tokens) still works for `/admin` pages.
+- **Legacy compatibility**: `/` is now a marketing page (no longer guest form). Root-level `/guestbook` and `/slideshow` routes removed. `createEntry()` requires `guestbookId` as first parameter. `getDefaultTenantId()` returns first tenant for legacy routes.
 - **`verifyTenantOwnership()`**: Deprecated, replaced by `canPerformAction()`.
-- **Flat route architecture (`/g/[id]`)**: Public guest pages use flat URLs (`/g/[id]`, `/g/[id]/view`, `/g/[id]/slideshow`) instead of tenant-nested URLs. The `guestbook-resolver.ts` utility resolves guestbook ID → tenant ID for RLS context. Both route structures coexist — flat for guest sharing, nested for admin. NFC/QR should always use flat URLs.
+- **Flat route architecture (`/g/[id]`)**: Public guest pages use flat URLs (`/g/[id]`, `/g/[id]/view`, `/g/[id]/slideshow`, `/g/[id]/admin`) instead of tenant-nested URLs. The `guestbook-resolver.ts` utility resolves guestbook ID → tenant ID for RLS context. NFC/QR should always use flat URLs.
+- **Route consolidation**: All tenant-level page routes (`/t/[uuid]/*`) have been removed. Tenant management is now consolidated into `/dashboard`. The API routes (`/api/t/[uuid]/*`) remain for backwards compatibility with existing integrations.
 - **Glassmorphism design system**: All UI follows the design system documented in `DESIGN_SYSTEM.md`. CSS utilities defined in `app/assets/css/main.css` (`.glass-card`, `.status-badge`, `.card-polaroid`, `.action-btn`, etc.). Uses Tailwind v4 `@theme` syntax.
 - **CSP server plugin**: `server/plugins/csp.ts` sets Content Security Policy headers allowing Google Fonts, Iconify API, and blob: workers. Required for external font loading and icon resolution.
 
@@ -121,7 +123,7 @@ For full architecture details, see:
 
 ### CSRF Protection
 - Double-submit cookie pattern via `server/utils/csrf.ts` and `server/middleware/csrf.ts`.
-- Token endpoint: `GET /api/auth/csrf`. Excluded: auth routes, public entry submission, legacy admin.
+- Token endpoint: `GET /api/auth/csrf`. Excluded: auth routes, public entry submission.
 - **Rule**: Frontend must fetch CSRF token and include it as `x-csrf-token` header on all mutating authenticated requests.
 
 ### Audit Logging
@@ -173,7 +175,7 @@ For full architecture details, see:
 - **Endpoints**: App CRUD under `/api/tenants/[uuid]/apps/`, token management under `.../apps/[appId]/tokens/`, scope list at `/api/scopes`.
 
 ### Important: All default secrets MUST be overridden in production
-- `JWT_SECRET`, `ADMIN_PASSWORD`, `TOKEN_SECRET`, `ENCRYPTION_MASTER_KEY`, `CSRF_SECRET`
+- `JWT_SECRET`, `ENCRYPTION_MASTER_KEY`, `CSRF_SECRET`
 
 ---
 

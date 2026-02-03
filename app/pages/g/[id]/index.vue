@@ -17,6 +17,7 @@ const guestbookId = computed(() => route.params.id as string)
 
 // Use simplified composable (we'll create this next)
 const { entries, fetchEntries, createEntry } = useGuestbook(guestbookId)
+const { apply: applyColorScheme } = useForcedColorScheme()
 const { formState, status, reset, setStatus, setError, getSubmitData, validate, applyFormConfig } = useGuestForm()
 
 // Admin bar: check if current user can manage this guestbook
@@ -30,6 +31,15 @@ watchEffect(() => {
   const color = (guestbookInfo.value?.settings?.themeColor as string) || undefined
   if (color) {
     document.documentElement.style.setProperty('--color-primary', color)
+  }
+})
+
+/** Apply custom text color from guestbook settings. */
+watchEffect(() => {
+  const textColor = (guestbookInfo.value?.settings?.textColor as string) || undefined
+  if (textColor) {
+    document.documentElement.style.setProperty('--color-foreground', textColor)
+    document.documentElement.style.setProperty('--color-card-foreground', textColor)
   }
 })
 
@@ -101,6 +111,29 @@ const bodyFontClass = computed(() => {
     default: return 'font-sans'
   }
 })
+
+/** Header image URL from settings. */
+const headerImageUrl = computed(() =>
+  guestbookInfo.value?.settings?.headerImageUrl as string | undefined
+)
+
+/** Header image position from settings. */
+const headerImagePosition = computed(() =>
+  (guestbookInfo.value?.settings?.headerImagePosition as string | undefined) || 'above-title'
+)
+
+/** Footer text from settings. */
+const footerText = computed(() =>
+  guestbookInfo.value?.settings?.footerText as string | undefined
+)
+
+/** Social links from settings. */
+const socialLinks = computed(() =>
+  (guestbookInfo.value?.settings?.socialLinks as Array<{ platform: string; url: string }>) || []
+)
+
+/** Whether footer should be displayed. */
+const hasFooter = computed(() => !!(footerText.value || socialLinks.value.length))
 const sheetOpen = ref(false)
 const currentSlide = ref(0)
 const slideDirection = ref<'forward' | 'backward'>('forward')
@@ -176,6 +209,7 @@ onMounted(async () => {
     if (response.success && response.data) {
       guestbookInfo.value = response.data
       applyFormConfig(response.data.settings as import('~/types/guestbook').GuestbookSettings)
+      applyColorScheme(response.data.settings?.colorScheme as 'system' | 'light' | 'dark' | undefined)
 
       // Check if logged-in user can admin this guestbook
       await fetchMe()
@@ -198,6 +232,8 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown)
   document.documentElement.style.removeProperty('--color-primary')
+  document.documentElement.style.removeProperty('--color-foreground')
+  document.documentElement.style.removeProperty('--color-card-foreground')
 })
 </script>
 
@@ -226,32 +262,78 @@ onUnmounted(() => {
         :class="{ 'landing-gradient': !hasCustomBackground }"
       >
         <div
-          class="mx-auto max-w-sm rounded-2xl border border-border/20 p-8 text-center shadow-md shadow-black"
+          class="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-border/20 p-8 text-center shadow-md shadow-black"
           :class="{ 'bg-card/70': !hasCustomCardColor }"
           :style="cardStyles"
         >
-          <h1
-            class="text-5xl text-foreground"
-            :class="titleFontClass"
+          <!-- Header image behind title -->
+          <img
+            v-if="headerImageUrl && headerImagePosition === 'behind-title'"
+            :src="headerImageUrl"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover opacity-20"
           >
-            {{ guestbookInfo?.name || t('landing.title') }}
-          </h1>
-          <p
-            class="mt-3 text-sm text-muted-foreground"
-            :class="bodyFontClass"
-          >
-            {{ welcomeMessage }}
-          </p>
-          <Button class="mt-6 w-full" size="lg" @click="sheetOpen = true">
-            {{ t('landing.cta') }}
-          </Button>
-          <NuxtLink
-            v-if="hasEntries"
-            :to="`/g/${guestbookId}/view`"
-            class="mt-3 block text-sm text-muted-foreground underline hover:text-foreground"
-          >
-            {{ t('landing.viewAll') }}
-          </NuxtLink>
+          <div class="relative">
+            <!-- Header image above title -->
+            <img
+              v-if="headerImageUrl && headerImagePosition === 'above-title'"
+              :src="headerImageUrl"
+              alt=""
+              class="mx-auto mb-4 h-20 max-w-[180px] object-contain"
+            >
+            <h1
+              class="text-5xl text-foreground"
+              :class="titleFontClass"
+            >
+              {{ guestbookInfo?.name || t('landing.title') }}
+            </h1>
+            <!-- Header image below title -->
+            <img
+              v-if="headerImageUrl && headerImagePosition === 'below-title'"
+              :src="headerImageUrl"
+              alt=""
+              class="mx-auto mt-4 h-20 max-w-[180px] object-contain"
+            >
+            <p
+              class="mt-3 text-sm text-muted-foreground"
+              :class="bodyFontClass"
+            >
+              {{ welcomeMessage }}
+            </p>
+            <Button class="mt-6 w-full" size="lg" @click="sheetOpen = true">
+              {{ (guestbookInfo?.settings?.ctaButtonText as string) || t('landing.cta') }}
+            </Button>
+            <NuxtLink
+              v-if="hasEntries"
+              :to="`/g/${guestbookId}/view`"
+              class="mt-3 block text-sm text-muted-foreground underline hover:text-foreground"
+            >
+              {{ t('landing.viewAll') }}
+            </NuxtLink>
+
+            <!-- Footer -->
+            <div v-if="hasFooter" class="mt-6 pt-4 border-t border-border/30">
+              <p v-if="footerText" class="text-xs text-muted-foreground text-center">
+                {{ footerText }}
+              </p>
+              <div v-if="socialLinks.length" class="mt-3 flex justify-center gap-3">
+                <a
+                  v-for="link in socialLinks"
+                  :key="link.url"
+                  :href="link.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-muted-foreground hover:text-foreground transition-colors"
+                  :aria-label="link.platform"
+                >
+                  <Icon
+                    :name="link.platform === 'instagram' ? 'lucide:instagram' : link.platform === 'twitter' ? 'lucide:twitter' : link.platform === 'youtube' ? 'lucide:youtube' : link.platform === 'tiktok' ? 'simple-icons:tiktok' : 'lucide:globe'"
+                    class="h-5 w-5"
+                  />
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

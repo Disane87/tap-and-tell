@@ -37,6 +37,9 @@ export interface GuestAnswers {
   // Our Story (Step 4)
   howWeMet?: string
   bestMemory?: string
+
+  // Custom Questions (Step 5)
+  customAnswers?: Record<string, string>
 }
 
 /**

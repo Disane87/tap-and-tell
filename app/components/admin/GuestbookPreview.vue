@@ -62,6 +62,19 @@ const welcomeMessage = computed(() =>
   props.settings.welcomeMessage || t('landing.subtitle')
 )
 
+/** Resolved CTA button text from settings or default. */
+const ctaButtonText = computed(() =>
+  props.settings.ctaButtonText || t('landing.cta')
+)
+
+/** Header image URL from settings. */
+const headerImageUrl = computed(() => props.settings.headerImageUrl)
+
+/** Header image position from settings. */
+const headerImagePosition = computed(() =>
+  props.settings.headerImagePosition || 'above-title'
+)
+
 /** Font class for the title. */
 const titleFontClass = computed(() => {
   switch (props.settings.titleFont) {
@@ -79,6 +92,11 @@ const bodyFontClass = computed(() => {
     default: return 'font-sans'
   }
 })
+
+/** Custom text color from settings. */
+const textColorStyle = computed(() =>
+  props.settings.textColor ? { color: props.settings.textColor } : {}
+)
 </script>
 
 <template>
@@ -91,28 +109,53 @@ const bodyFontClass = computed(() => {
         :class="{ 'landing-gradient': !hasCustomBackground }"
       >
         <div
-          class="mx-4 max-w-[200px] rounded-2xl border border-border/20 p-5 text-center shadow-xl"
+          class="relative mx-4 max-w-[200px] overflow-hidden rounded-2xl border border-border/20 p-5 text-center shadow-xl"
           :class="{ 'bg-card/70': !hasCustomCardColor }"
           :style="cardStyles"
         >
-          <h2
-            class="text-2xl text-foreground"
-            :class="titleFontClass"
+          <!-- Header image behind title -->
+          <img
+            v-if="headerImageUrl && headerImagePosition === 'behind-title'"
+            :src="headerImageUrl"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover opacity-20"
           >
-            {{ guestbookName || t('landing.title') }}
-          </h2>
-          <p
-            class="mt-1.5 text-[10px] leading-tight text-muted-foreground"
-            :class="bodyFontClass"
-          >
-            {{ welcomeMessage }}
-          </p>
-          <div
-            class="mt-3 rounded-md px-3 py-1.5 text-[10px] font-medium text-primary-foreground"
-            :class="bodyFontClass"
-            :style="{ backgroundColor: settings.themeColor || 'hsl(var(--primary))' }"
-          >
-            {{ t('landing.cta') }}
+          <div class="relative">
+            <!-- Header image above title -->
+            <img
+              v-if="headerImageUrl && headerImagePosition === 'above-title'"
+              :src="headerImageUrl"
+              alt=""
+              class="mx-auto mb-2 h-10 max-w-[100px] object-contain"
+            >
+            <h2
+              class="text-2xl"
+              :class="[titleFontClass, textColorStyle.color ? '' : 'text-foreground']"
+              :style="textColorStyle"
+            >
+              {{ guestbookName || t('landing.title') }}
+            </h2>
+            <!-- Header image below title -->
+            <img
+              v-if="headerImageUrl && headerImagePosition === 'below-title'"
+              :src="headerImageUrl"
+              alt=""
+              class="mx-auto mt-2 h-10 max-w-[100px] object-contain"
+            >
+            <p
+              class="mt-1.5 text-[10px] leading-tight"
+              :class="[bodyFontClass, textColorStyle.color ? 'opacity-80' : 'text-muted-foreground']"
+              :style="textColorStyle"
+            >
+              {{ welcomeMessage }}
+            </p>
+            <div
+              class="mt-3 rounded-md px-3 py-1.5 text-[10px] font-medium text-primary-foreground"
+              :class="bodyFontClass"
+              :style="{ backgroundColor: settings.themeColor || 'hsl(var(--primary))' }"
+            >
+              {{ ctaButtonText }}
+            </div>
           </div>
         </div>
       </div>

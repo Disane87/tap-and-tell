@@ -96,8 +96,8 @@ export entries as PDF, and manage everything from a personal dashboard.
 - `/g/[id]/slideshow` — Full-screen slideshow
 - `/g/[id]/admin` — Guestbook admin (moderation, settings with live preview, QR code)
 
-### Tenant-level URLs (dashboard & management)
-- `/t/[uuid]/admin` — Tenant admin (guestbook list, members, API apps)
+### Dashboard
+- `/dashboard` — Tenant admin (guestbook list, members, API apps)
 
 See `CLAUDE.md` → Pages for the full route table.
 
