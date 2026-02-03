@@ -1,7 +1,35 @@
 import tailwindcss from '@tailwindcss/vite'
-import basicSsl from '@vitejs/plugin-basic-ssl'
+import type { Plugin } from 'vite'
 import fs from 'fs'
 import path from 'path'
+
+const isDev = process.env.NODE_ENV !== 'production'
+
+// Load basicSsl plugin only in development
+function getBasicSslPlugin(): Plugin | null {
+  if (!isDev) return null
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const basicSsl = require('@vitejs/plugin-basic-ssl').default
+    return basicSsl()
+  } catch {
+    return null
+  }
+}
+
+// Load SSL certs only in development if they exist
+function getDevServerHttps() {
+  if (!isDev) return undefined
+  const keyPath = path.resolve(__dirname, 'certs/localhost-key.pem')
+  const certPath = path.resolve(__dirname, 'certs/localhost-cert.pem')
+  if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    return {
+      key: fs.readFileSync(keyPath, 'utf-8'),
+      cert: fs.readFileSync(certPath, 'utf-8')
+    }
+  }
+  return undefined
+}
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -11,10 +39,7 @@ export default defineNuxtConfig({
 
   devServer: {
     host: 'localhost',
-    https: {
-      key: fs.readFileSync(path.resolve(__dirname, 'certs/localhost-key.pem'), 'utf-8'),
-      cert: fs.readFileSync(path.resolve(__dirname, 'certs/localhost-cert.pem'), 'utf-8')
-    }
+    https: getDevServerHttps()
   },
 
   modules: [
@@ -110,10 +135,7 @@ export default defineNuxtConfig({
   },
 
   vite: {
-    plugins: [
-      tailwindcss(),
-      basicSsl()
-    ]
+    plugins: [tailwindcss(), getBasicSslPlugin()].filter(Boolean) as Plugin[]
   },
 
   runtimeConfig: {
