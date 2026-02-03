@@ -1,8 +1,8 @@
 import { eq } from 'drizzle-orm'
-import { existsSync, readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
 import { tenants, entries, guestbooks } from '~~/server/database/schema'
 import { canPerformAction } from '~~/server/utils/tenant'
+import { getStorageDriver } from '~~/server/utils/storage-driver'
 
 /**
  * POST /api/tenants/:uuid/rotate-key
@@ -57,6 +57,7 @@ export default defineEventHandler(async (event) => {
 
   const DATA_DIR = process.env.DATA_DIR || '.data'
   const PHOTOS_DIR = join(DATA_DIR, 'photos')
+  const driver = getStorageDriver()
   let rotatedCount = 0
 
   // Re-encrypt each photo with the new key
@@ -72,13 +73,16 @@ export default defineEventHandler(async (event) => {
       filePath = join(PHOTOS_DIR, parts[0])
     }
 
-    if (!existsSync(filePath)) continue
+    const exists = await driver.exists(filePath)
+    if (!exists) continue
 
     try {
-      const encryptedData = readFileSync(filePath)
+      const encryptedData = await driver.read(filePath)
+      if (!encryptedData) continue
+
       const plainData = decryptData(encryptedData, oldKey)
       const reEncrypted = encryptData(plainData, newKey)
-      writeFileSync(filePath, reEncrypted)
+      await driver.write(filePath, reEncrypted)
       rotatedCount++
     } catch (error) {
       console.error(`[key-rotation] Failed to re-encrypt photo for entry ${entry.id}:`, error)

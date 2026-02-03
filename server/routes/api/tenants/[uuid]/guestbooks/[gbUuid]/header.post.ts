@@ -4,10 +4,10 @@
  * Accepts multipart/form-data with an image file (max 5MB).
  * Encrypts and stores the image, updates guestbook settings.
  */
-import { existsSync, mkdirSync, writeFileSync, unlinkSync, readdirSync } from 'fs'
 import { join } from 'path'
 import { encryptData, deriveTenantKey } from '~~/server/utils/crypto'
 import { validatePhotoMimeType } from '~~/server/utils/sanitize'
+import { getStorageDriver } from '~~/server/utils/storage-driver'
 
 const DATA_DIR = process.env.DATA_DIR || '.data'
 const PHOTOS_DIR = join(DATA_DIR, 'photos')
@@ -66,26 +66,19 @@ export default defineEventHandler(async (event) => {
   const ext = extMap[validation.mimeType!] || 'jpg'
   const filename = `header.${ext}.enc`
 
-  // Ensure directory exists
+  const driver = getStorageDriver()
   const photosDir = join(PHOTOS_DIR, gbUuid)
-  if (!existsSync(photosDir)) {
-    mkdirSync(photosDir, { recursive: true })
-  }
 
   // Delete any existing header files
-  if (existsSync(photosDir)) {
-    const files = readdirSync(photosDir)
-    for (const file of files) {
-      if (file.startsWith('header.')) {
-        unlinkSync(join(photosDir, file))
-      }
-    }
+  const existingFiles = await driver.list(join(photosDir, 'header.'))
+  for (const file of existingFiles) {
+    await driver.delete(file)
   }
 
-  // Encrypt and save
+  // Encrypt and save using storage driver
   const tenantKey = await getTenantEncryptionKey(uuid)
   const encryptedData = encryptData(Buffer.from(filePart.data), tenantKey)
-  writeFileSync(join(photosDir, filename), encryptedData)
+  await driver.write(join(photosDir, filename), encryptedData)
 
   // Update guestbook settings
   const headerImageUrl = `/api/photos/${gbUuid}/${filename}`
