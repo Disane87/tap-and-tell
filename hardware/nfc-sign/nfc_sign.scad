@@ -84,6 +84,22 @@ stand_rot_x = 0;           // Rotation around X axis
 stand_rot_y = 0;           // Rotation around Y axis
 stand_rot_z = 0;           // Rotation around Z axis
 
+// =====================
+// FRAME PARAMETERS
+// =====================
+
+show_frame = true;         // Show frame part
+frame_border = 6;          // Width of frame border [mm]
+frame_thickness = 4;       // Thickness of frame [mm]
+frame_lip = 1.5;           // Lip to hold sign in place [mm]
+frame_corner_radius = 5;   // Corner rounding [mm]
+frame_tolerance = 0.3;     // Gap for sign to fit [mm]
+
+// Frame rotation for preview/printing
+frame_rot_x = 0;
+frame_rot_y = 0;
+frame_rot_z = 0;
+
 $fn = 64;
 
 // Colors
@@ -219,6 +235,34 @@ module stand_part() {
 }
 
 // =====================
+// FRAME - Surrounds the sign
+// =====================
+
+module frame_part() {
+    outer_width = sign_width + frame_border * 2;
+    outer_height = sign_height + frame_border * 2;
+    inner_width = sign_width + frame_tolerance * 2;
+    inner_height = sign_height + frame_tolerance * 2;
+
+    color(base_color)
+    difference() {
+        // Outer frame
+        linear_extrude(frame_thickness)
+            rounded_rect_2d(outer_width, outer_height, frame_corner_radius);
+
+        // Inner cutout (sign opening) - goes through most of the frame
+        translate([0, 0, frame_lip])
+            linear_extrude(frame_thickness)
+                rounded_rect_2d(inner_width, inner_height, corner_radius);
+
+        // Back opening (larger, for inserting sign)
+        translate([0, 0, -0.1])
+            linear_extrude(frame_lip + 0.2)
+                rounded_rect_2d(inner_width + frame_lip*2, inner_height + frame_lip*2, corner_radius + 1);
+    }
+}
+
+// =====================
 // ASSEMBLY
 // =====================
 
@@ -238,13 +282,18 @@ module assembled() {
 // RENDER
 // =====================
 
-// Both parts for printing (sign on back, stand in standing position)
-translate([-sign_width/2 - 10, 0, 0])
+// All parts for printing
+translate([-sign_width/2 - 20, 0, 0])
     sign_part();
 
-translate([stand_width/2 + 10, 0, 0])
+translate([stand_width/2 + 20, 0, 0])
     rotate([stand_rot_x, stand_rot_y, stand_rot_z])
         stand_part();
+
+if (show_frame)
+    translate([0, sign_height + 20, 0])
+        rotate([frame_rot_x, frame_rot_y, frame_rot_z])
+            frame_part();
 
 // For assembled preview:
 // assembled();
@@ -252,3 +301,4 @@ translate([stand_width/2 + 10, 0, 0])
 // Single parts:
 // sign_part();
 // stand_part();
+// frame_part();
