@@ -1,3 +1,7 @@
+import { createLogger } from '~~/server/utils/logger'
+
+const log = createLogger('env-check')
+
 /**
  * Nitro plugin that validates environment variables on startup.
  *
@@ -23,7 +27,7 @@ export default defineNitroPlugin(() => {
       if (isProduction) {
         errors.push(`${key} is using an insecure default value. Set a secure value in production.`)
       } else {
-        warnings.push(`${key} is using an insecure default value. Override before deploying to production.`)
+        warnings.push(`${key} is using an insecure default value`)
       }
     }
   }
@@ -34,26 +38,30 @@ export default defineNitroPlugin(() => {
     if (isProduction) {
       errors.push('ENCRYPTION_MASTER_KEY is missing or too short (must be 64 hex chars). Required in production.')
     } else {
-      warnings.push('ENCRYPTION_MASTER_KEY is not set. Using insecure dev fallback.')
+      warnings.push('ENCRYPTION_MASTER_KEY not set - using dev fallback')
     }
   }
 
   // Optional: check RESEND_API_KEY
   if (!process.env.RESEND_API_KEY) {
-    warnings.push('RESEND_API_KEY is not set. Emails will be logged to console instead of sent.')
+    warnings.push('RESEND_API_KEY not set - emails logged to console')
   }
 
-  // Log warnings
-  for (const warning of warnings) {
-    console.warn(`[env-check] WARNING: ${warning}`)
+  // Log warnings (grouped)
+  if (warnings.length > 0) {
+    log.warn(`${warnings.length} configuration warning(s):`)
+    for (const warning of warnings) {
+      log.kv('  •', warning)
+    }
   }
 
   // In production, abort on errors
   if (isProduction && errors.length > 0) {
+    log.error('Fatal configuration errors detected:')
     for (const error of errors) {
-      console.error(`[env-check] FATAL: ${error}`)
+      log.kv('  •', error)
     }
-    console.error('[env-check] Aborting startup due to insecure configuration.')
+    log.error('Aborting startup due to insecure configuration')
     process.exit(1)
   }
 })

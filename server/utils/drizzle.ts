@@ -1,6 +1,9 @@
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres'
 import { Pool, type PoolClient } from 'pg'
 import * as schema from '~~/server/database/schema'
+import { createLogger } from '~~/server/utils/logger'
+
+const log = createLogger('pool')
 
 export type DrizzleDb = NodePgDatabase<typeof schema>
 
@@ -13,6 +16,9 @@ let _pool: Pool | null = null
  * Singleton Drizzle instance (without RLS context).
  */
 let _db: DrizzleDb | null = null
+
+/** Track if pool events have been logged */
+let _poolEventsLogged = false
 
 /**
  * Returns the PostgreSQL connection pool, creating it if necessary.
@@ -30,13 +36,34 @@ function getPool(): Pool {
     )
   }
 
-  _pool = new Pool({
+  const poolConfig = {
     connectionString,
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
-  })
+  }
+
+  _pool = new Pool(poolConfig)
+
+  // Log pool events (only once)
+  if (!_poolEventsLogged) {
+    _poolEventsLogged = true
+
+    _pool.on('connect', () => {
+      log.debug('New client connected to pool')
+    })
+
+    _pool.on('error', (err) => {
+      log.error('Unexpected pool error', { error: err.message })
+    })
+
+    log.info('Connection pool initialized', {
+      maxConnections: poolConfig.max,
+      idleTimeout: `${poolConfig.idleTimeoutMillis}ms`,
+      connectionTimeout: `${poolConfig.connectionTimeoutMillis}ms`
+    })
+  }
 
   return _pool
 }
