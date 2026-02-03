@@ -40,20 +40,20 @@ subtitle_font = "Liberation Sans:style=Regular";
 show_custom_text = true;
 custom_text = "Tippe hier!";
 custom_text_x = 0;
-custom_text_y = -10;
+custom_text_y = -25;
 custom_text_size = 7;
 
 // NFC area
 show_nfc = true;
 nfc_x = 0;
-nfc_y = 10;
+nfc_y = 0;
 nfc_diameter = 30;
 nfc_ring_visible = true;
 
 // NFC waves icon
 nfc_waves_visible = true;
-nfc_waves_x = 0;               // X position (independent of nfc_x)
-nfc_waves_y = 32;              // Y position (independent of nfc_y)
+nfc_waves_x = -2;               // X position (independent of nfc_x)
+nfc_waves_y = -2;              // Y position (independent of nfc_y)
 nfc_waves_size = 12;           // Size of the waves icon
 
 // QR code
