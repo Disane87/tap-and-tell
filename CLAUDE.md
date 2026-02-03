@@ -277,6 +277,19 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 ### Icons
 - **Use Iconify** — prefer `@iconify/vue` for all icons. Access any icon set via Iconify (e.g., `lucide`, `heroicons`, `mdi`)
 
+### DRY Principles
+- Avoid code duplication by creating reusable components, composables, and utilities
+- Follow the DRY principle in both frontend and backend code. If you find yourself copying and pasting code, consider refactoring it into a shared function or component.
+- For example, if you need to perform the same API call in multiple places, create a composable that encapsulates that logic instead of repeating it.
+- In the backend, if you have similar database queries or operations, abstract them into helper functions or services.
+- Abstracting common logic not only reduces code duplication but also makes maintenance easier. If a change is needed, you only have to update it in one place.
+- Always look for opportunities to reuse existing code before writing new code. This leads to a cleaner, more maintainable codebase.
+- When creating reusable components, ensure they are flexible and configurable via props to accommodate different use cases without modification.
+- When writing utilities or helper functions, consider their potential reuse across different parts of the application and design them to be generic and adaptable.
+- Regularly review the codebase for duplication and refactor as needed to maintain a clean architecture.
+- Encourage a culture of code reuse and modular design within the development process to promote efficiency and maintainability.
+- When in doubt, ask if a similar function or component already exists before creating new code.
+
 ### Workflow
 - **Present a plan before major changes** — for non-trivial features or refactors, outline the approach before implementing
 - **Write tests proactively** — add unit/integration/e2e tests for new composables, utilities, and critical logic without being asked. Run tests and ensure they pass
