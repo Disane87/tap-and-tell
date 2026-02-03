@@ -4,14 +4,7 @@
  * Accepts multipart/form-data with an image file (max 5MB).
  * Encrypts and stores the image, updates guestbook settings.
  */
-import { join } from 'path'
-import { encryptData, deriveTenantKey } from '~~/server/utils/crypto'
-import { validatePhotoMimeType } from '~~/server/utils/sanitize'
-import { getStorageDriver } from '~~/server/utils/storage-driver'
-
-const DATA_DIR = process.env.DATA_DIR || '.data'
-const PHOTOS_DIR = join(DATA_DIR, 'photos')
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+import { processUpload } from '~~/server/utils/upload'
 
 export default defineEventHandler(async (event) => {
   const user = event.context.user
@@ -45,73 +38,34 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'No image file provided' })
   }
 
-  if (filePart.data.length > MAX_FILE_SIZE) {
-    throw createError({ statusCode: 400, message: 'File too large (max 5MB)' })
-  }
+  try {
+    const result = await processUpload(Buffer.from(filePart.data), {
+      directory: `photos/${gbUuid}`,
+      filePrefix: 'bg',
+      urlPrefix: `/api/photos/${gbUuid}`,
+      encrypt: true,
+      tenantId: uuid,
+      deleteExisting: true
+    })
 
-  // Validate image magic bytes
-  const base64 = Buffer.from(filePart.data).toString('base64')
-  const validation = validatePhotoMimeType(base64)
-  if (!validation.valid) {
-    throw createError({ statusCode: 400, message: 'Invalid image format. Supported: JPEG, PNG, WebP, HEIC' })
-  }
+    // Update guestbook settings
+    const settings = { ...(existing.settings || {}), backgroundImageUrl: result.url }
+    const updated = await updateGuestbook(gbUuid, { settings })
 
-  // Determine file extension from detected MIME type
-  const extMap: Record<string, string> = {
-    'image/jpeg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-    'image/heic': 'heic'
-  }
-  const ext = extMap[validation.mimeType!] || 'jpg'
-  const filename = `bg.${ext}.enc`
+    await recordAuditLog(event, 'guestbook.background.upload', {
+      tenantId: uuid,
+      resourceType: 'guestbook',
+      resourceId: gbUuid
+    })
 
-  const driver = getStorageDriver()
-  const photosDir = join(PHOTOS_DIR, gbUuid)
-
-  // Delete any existing background files
-  const existingFiles = await driver.list(join(photosDir, 'bg.'))
-  for (const file of existingFiles) {
-    await driver.delete(file)
-  }
-
-  // Encrypt and save using storage driver
-  const tenantKey = await getTenantEncryptionKey(uuid)
-  const encryptedData = encryptData(Buffer.from(filePart.data), tenantKey)
-  await driver.write(join(photosDir, filename), encryptedData)
-
-  // Update guestbook settings
-  const backgroundImageUrl = `/api/photos/${gbUuid}/${filename}`
-  const settings = { ...(existing.settings || {}), backgroundImageUrl }
-  const updated = await updateGuestbook(gbUuid, { settings })
-
-  await recordAuditLog(event, 'guestbook.background.upload', {
-    tenantId: uuid,
-    resourceType: 'guestbook',
-    resourceId: gbUuid
-  })
-
-  return {
-    success: true,
-    data: updated
+    return {
+      success: true,
+      data: updated
+    }
+  } catch (error) {
+    throw createError({
+      statusCode: 400,
+      message: error instanceof Error ? error.message : 'Upload failed'
+    })
   }
 })
-
-/**
- * Retrieves the tenant's encryption key by looking up their salt from the DB.
- */
-async function getTenantEncryptionKey(tenantId: string): Promise<Buffer> {
-  const db = useDrizzle()
-  const { tenants } = await import('~~/server/database/schema')
-  const { eq } = await import('drizzle-orm')
-  const rows = await db.select({ encryptionSalt: tenants.encryptionSalt })
-    .from(tenants)
-    .where(eq(tenants.id, tenantId))
-  const tenant = rows[0]
-
-  if (!tenant?.encryptionSalt) {
-    throw new Error(`Tenant ${tenantId} has no encryption salt configured`)
-  }
-
-  return deriveTenantKey(tenant.encryptionSalt)
-}

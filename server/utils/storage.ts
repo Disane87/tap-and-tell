@@ -2,8 +2,9 @@ import { existsSync } from 'fs'
 import { join } from 'path'
 import { eq, desc, and, inArray } from 'drizzle-orm'
 import { entries, tenants } from '~~/server/database/schema'
-import { encryptData, decryptData, deriveTenantKey } from '~~/server/utils/crypto'
+import { decryptData, deriveTenantKey } from '~~/server/utils/crypto'
 import { getStorageDriver } from '~~/server/utils/storage-driver'
+import { processBase64Upload } from '~~/server/utils/upload'
 import type { EntryStatus, GuestEntry } from '~~/server/types/guest'
 
 /**
@@ -112,21 +113,15 @@ export async function createEntry(
 
   // Save and encrypt photo if provided
   if (photo) {
-    const match = photo.match(/^data:image\/(\w+);base64,(.+)$/)
-    if (match) {
-      const ext = match[1] === 'jpeg' ? 'jpg' : match[1]
-      const base64Data = match[2]
-      const filename = `${id}.${ext}.enc`
-      const photosDir = getPhotosDir(guestbookId)
-      const filePath = join(photosDir, filename)
-
-      const plainData = Buffer.from(base64Data, 'base64')
-      const tenantKey = await getTenantEncryptionKey(tenantId)
-      const encryptedData = encryptData(plainData, tenantKey)
-
-      const driver = getStorageDriver()
-      await driver.write(filePath, encryptedData)
-      photoUrl = `/api/photos/${guestbookId}/${filename}`
+    const result = await processBase64Upload(photo, {
+      directory: `photos/${guestbookId}`,
+      filePrefix: id,
+      urlPrefix: `/api/photos/${guestbookId}`,
+      encrypt: true,
+      tenantId
+    })
+    if (result) {
+      photoUrl = result.url
     }
   }
 
