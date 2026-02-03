@@ -1,10 +1,16 @@
-import { readFileSync } from 'fs'
+import { join } from 'path'
+import { getPhotoMimeType } from '~~/server/utils/storage'
+import { getStorageDriver } from '~~/server/utils/storage-driver'
+
+const DATA_DIR = process.env.DATA_DIR || '.data'
+const PHOTOS_DIR = join(DATA_DIR, 'photos')
 
 /**
  * GET /api/photos/:filename
- * Serves photo files with appropriate MIME type and cache headers.
+ * Serves legacy photo files (without guestbook namespace) with appropriate MIME type and cache headers.
+ * Supports both local filesystem and cloud storage (Vercel Blob).
  */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const filename = getRouterParam(event, 'filename')
 
   if (!filename) {
@@ -22,9 +28,11 @@ export default defineEventHandler((event) => {
     })
   }
 
-  const filePath = getPhotoPath(filename)
+  const filePath = join(PHOTOS_DIR, filename)
+  const driver = getStorageDriver()
+  const fileContent = await driver.read(filePath)
 
-  if (!filePath) {
+  if (!fileContent) {
     throw createError({
       statusCode: 404,
       message: 'Photo not found'
@@ -32,7 +40,6 @@ export default defineEventHandler((event) => {
   }
 
   const mimeType = getPhotoMimeType(filename)
-  const fileContent = readFileSync(filePath)
 
   // Set cache headers (1 year for immutable content)
   setHeaders(event, {

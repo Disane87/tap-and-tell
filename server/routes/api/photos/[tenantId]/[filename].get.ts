@@ -1,12 +1,17 @@
-import { readFileSync } from 'fs'
-import { readEncryptedPhoto, getPhotoPath, getPhotoMimeType } from '~~/server/utils/storage'
+import { join } from 'path'
+import { readEncryptedPhoto, getPhotoMimeType } from '~~/server/utils/storage'
 import { getGuestbookById } from '~~/server/utils/guestbook'
+import { getStorageDriver } from '~~/server/utils/storage-driver'
+
+const DATA_DIR = process.env.DATA_DIR || '.data'
+const PHOTOS_DIR = join(DATA_DIR, 'photos')
 
 /**
  * GET /api/photos/:tenantId/:filename
  * Serves guestbook-namespaced photo files with appropriate MIME type and cache headers.
  * The tenantId param is actually the guestbookId (see storage.ts photoUrl format).
  * For encrypted files (.enc), decrypts using the tenant's encryption key.
+ * Supports both local filesystem and cloud storage (Vercel Blob).
  */
 export default defineEventHandler(async (event) => {
   const guestbookId = getRouterParam(event, 'tenantId')
@@ -25,6 +30,7 @@ export default defineEventHandler(async (event) => {
 
   const mimeType = getPhotoMimeType(filename)
 
+  // Encrypted files require tenant context for decryption
   if (filename.endsWith('.enc')) {
     const guestbook = await getGuestbookById(guestbookId)
     if (!guestbook) {
@@ -41,11 +47,15 @@ export default defineEventHandler(async (event) => {
     return decrypted
   }
 
-  const filePath = getPhotoPath(guestbookId, filename)
-  if (!filePath) {
+  // Legacy unencrypted files - use storage driver for cloud compatibility
+  const filePath = join(PHOTOS_DIR, guestbookId, filename)
+  const driver = getStorageDriver()
+  const fileContent = await driver.read(filePath)
+
+  if (!fileContent) {
     throw createError({ statusCode: 404, message: 'Photo not found' })
   }
-  const fileContent = readFileSync(filePath)
+
   setHeaders(event, {
     'Content-Type': mimeType,
     'Cache-Control': 'public, max-age=31536000, immutable'

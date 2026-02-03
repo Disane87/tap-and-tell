@@ -274,6 +274,9 @@ export async function readEncryptedPhoto(
  * Gets the file path for a photo by filename.
  * Supports both legacy paths and guestbook-namespaced paths.
  *
+ * @deprecated This function only works with local filesystem storage.
+ * Use the storage driver directly for cloud storage compatibility.
+ *
  * @param args - Filename or guestbook ID + filename.
  * @returns The file path or undefined if not found.
  */
