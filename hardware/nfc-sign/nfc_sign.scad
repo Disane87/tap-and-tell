@@ -298,7 +298,19 @@ if (show_frame)
 // For assembled preview:
 // assembled();
 
-// Single parts:
-// sign_part();
+// =====================
+// MULTI-COLOR EXPORT
+// =====================
+// Export each separately, then combine in slicer:
+//
+// Color 1 - Sign base (white):
+// sign_plate();
+//
+// Color 2 - Sign text/graphics (black):
+// sign_elements();
+//
+// Color 3 - Stand (black):
 // stand_part();
+//
+// Color 4 - Frame (black):
 // frame_part();
