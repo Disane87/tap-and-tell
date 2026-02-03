@@ -26,7 +26,8 @@
       "Bash(Select-String -Pattern \"locale\" -SimpleMatch)",
       "Bash(pnpm drizzle-kit:*)",
       "Bash(PGPASSWORD=tapandtell_dev psql:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(node:*)"
     ]
   }
 }
