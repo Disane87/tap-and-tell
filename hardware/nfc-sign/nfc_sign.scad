@@ -1,242 +1,222 @@
 /*
- * Tap & Tell NFC Sign
- * ====================
- * Minimalist two-part design:
- * - Sign plate (lays against stand)
- * - Stand with angled back rest and front lip
+ * Tap & Tell NFC Sign - Parametric
+ * =================================
+ * All elements freely positionable
  *
  * Author: Tap & Tell Project
  * License: MIT
  */
 
 // =====================
-// USER PARAMETERS
+// SIGN PARAMETERS
 // =====================
 
-// Sign dimensions
-sign_width = 120;           // Width [mm]
-sign_height = 90;           // Height [mm]
-sign_thickness = 3;         // Thickness [mm]
+sign_width = 120;
+sign_height = 90;
+sign_thickness = 3;
 corner_radius = 3;
 
-// Text settings
-title_text = "Tap & Tell";
-subtitle_text = "Gästebuch";
-custom_text = "Tippe hier!";
-title_size = 14;
-subtitle_size = 9;
-custom_text_size = 6;
-text_depth = 0.6;
-text_embossed = true;
+// =====================
+// ELEMENT POSITIONS (relative to sign center)
+// =====================
 
-// Fonts
+// Title
+show_title = true;
+title_text = "Tap & Tell";
+title_x = 0;
+title_y = 30;
+title_size = 16;
 title_font = "Liberation Sans:style=Bold";
+
+// Subtitle
+show_subtitle = true;
+subtitle_text = "Gästebuch";
+subtitle_x = 0;
+subtitle_y = -35;
+subtitle_size = 10;
 subtitle_font = "Liberation Sans:style=Regular";
 
-// NFC settings
+// Custom text
+show_custom_text = true;
+custom_text = "Tippe hier!";
+custom_text_x = 0;
+custom_text_y = -10;
+custom_text_size = 7;
+
+// NFC area
+show_nfc = true;
+nfc_x = 0;
+nfc_y = 10;
 nfc_diameter = 30;
-nfc_thickness = 0.5;
-nfc_pocket_extra = 0.5;
-nfc_offset_x = -25;
-nfc_offset_y = 5;
+nfc_ring_visible = true;
+nfc_waves_visible = true;
+nfc_waves_offset_y = 22;
 
-// QR settings
-show_qr = true;
+// QR code
+show_qr = false;
+qr_x = 35;
+qr_y = 10;
 qr_size = 25;
-qr_offset_x = 30;
-qr_offset_y = 10;
-qr_depth = 0.4;
 
-// Stand settings
-stand_width = 110;          // Width of stand [mm]
-stand_base_depth = 35;      // Base depth [mm]
-stand_height = 15;          // Height at front [mm]
-lean_angle = 75;            // Angle of back rest from horizontal [degrees]
-lip_height = 5;             // Front lip to hold sign [mm]
-wall_thickness = 4;         // Thickness of back rest wall [mm]
+// Pockets/depths
+nfc_pocket_depth = 0.6;
+nfc_pocket_extra = 0.5;
+text_depth = 0.6;
+
+// =====================
+// STAND PARAMETERS
+// =====================
+
+stand_width = 100;
+stand_depth = 22;
+stand_height = 14;
+lean_angle = 75;           // 90=vertical, 75=slight lean back
 
 $fn = 64;
 
 // Colors
-base_color = [0.12, 0.12, 0.12];
-sign_color = [0.96, 0.96, 0.94];
-text_color = [0.15, 0.15, 0.15];
+base_color = [0.1, 0.1, 0.1];
+sign_color = [0.97, 0.97, 0.95];
+text_color = [0.12, 0.12, 0.12];
 
 // =====================
-// HELPER MODULES
+// MODULES
 // =====================
 
-module rounded_rect_2d(width, height, radius) {
-    hull() {
-        for (x = [-1, 1], y = [-1, 1])
-            translate([x * (width/2 - radius), y * (height/2 - radius)])
-                circle(r = radius);
-    }
+module rounded_rect_2d(w, h, r) {
+    hull() for (x=[-1,1], y=[-1,1])
+        translate([x*(w/2-r), y*(h/2-r)]) circle(r=r);
 }
 
-module nfc_waves_2d(size = 15) {
+module nfc_waves_2d(size) {
     for (i = [0:2]) {
         difference() {
-            circle(d = size * 0.4 + i * size * 0.28);
-            circle(d = size * 0.4 + i * size * 0.28 - size * 0.07);
+            circle(d = size*0.4 + i*size*0.3);
+            circle(d = size*0.4 + i*size*0.3 - size*0.08);
             translate([-size, -size]) square([size, size*2]);
-            translate([0, -size]) square([size, size*0.85]);
+            translate([0, -size]) square([size, size*0.9]);
         }
     }
-    circle(d = size * 0.12);
+    circle(d = size*0.12);
 }
 
 module qr_pattern_2d(size) {
-    unit = size / 21;
-    for (pos = [[-1, -1], [-1, 1], [1, -1]]) {
-        translate([pos[0] * (size/2 - unit*3.5), pos[1] * (size/2 - unit*3.5)]) {
-            difference() {
-                square(unit * 7, center = true);
-                square(unit * 5, center = true);
-            }
-            square(unit * 3, center = true);
+    u = size/21;
+    for (p = [[-1,-1],[-1,1],[1,-1]])
+        translate([p[0]*(size/2-u*3.5), p[1]*(size/2-u*3.5)]) {
+            difference() { square(u*7,true); square(u*5,true); }
+            square(u*3, true);
         }
-    }
-    for (i = [0:25]) {
-        x = (i * 7) % 13 - 6;
-        y = (i * 11) % 13 - 6;
-        if (abs(x) > 4 || abs(y) > 4)
-            translate([x * unit, y * unit])
-                square(unit * 0.85, center = true);
+    for (i=[0:20]) {
+        x=(i*7)%11-5; y=(i*11)%11-5;
+        if (abs(x)>3||abs(y)>3) translate([x*u,y*u]) square(u*0.9,true);
     }
 }
 
 // =====================
-// SIGN PLATE
+// SIGN
 // =====================
 
 module sign_plate() {
     difference() {
-        linear_extrude(height = sign_thickness)
+        linear_extrude(sign_thickness)
             rounded_rect_2d(sign_width, sign_height, corner_radius);
 
-        // NFC pocket
-        translate([nfc_offset_x, nfc_offset_y, -0.1])
-            cylinder(d = nfc_diameter + nfc_pocket_extra * 2, h = nfc_thickness + 0.2);
+        if (show_nfc)
+            translate([nfc_x, nfc_y, -0.1])
+                cylinder(d=nfc_diameter+nfc_pocket_extra*2, h=nfc_pocket_depth+0.2);
 
-        // QR recess
         if (show_qr)
-            translate([qr_offset_x, qr_offset_y, sign_thickness - qr_depth])
-                linear_extrude(height = qr_depth + 0.1)
-                    square(qr_size + 4, center = true);
+            translate([qr_x, qr_y, sign_thickness-0.4])
+                linear_extrude(0.5) square(qr_size+4, true);
     }
 }
 
-module sign_graphics() {
-    // Title
-    translate([qr_offset_x, qr_offset_y + qr_size/2 + 8, sign_thickness])
-        linear_extrude(height = text_depth)
-            text(title_text, size = title_size, font = title_font, halign = "center", valign = "center");
+module sign_elements() {
+    if (show_title)
+        translate([title_x, title_y, sign_thickness])
+            linear_extrude(text_depth)
+                text(title_text, size=title_size, font=title_font, halign="center", valign="center");
 
-    // NFC ring
-    translate([nfc_offset_x, nfc_offset_y, sign_thickness])
-        linear_extrude(height = text_depth)
-            difference() {
-                circle(d = nfc_diameter + 4);
-                circle(d = nfc_diameter);
-            }
+    if (show_subtitle)
+        translate([subtitle_x, subtitle_y, sign_thickness])
+            linear_extrude(text_depth)
+                text(subtitle_text, size=subtitle_size, font=subtitle_font, halign="center", valign="center");
 
-    // NFC waves
-    translate([nfc_offset_x, nfc_offset_y + nfc_diameter/2 + 8, sign_thickness])
-        linear_extrude(height = text_depth)
-            nfc_waves_2d(10);
+    if (show_custom_text)
+        translate([custom_text_x, custom_text_y, sign_thickness])
+            linear_extrude(text_depth)
+                text(custom_text, size=custom_text_size, font=subtitle_font, halign="center", valign="center");
 
-    // Tap text
-    translate([nfc_offset_x, nfc_offset_y - nfc_diameter/2 - 8, sign_thickness])
-        linear_extrude(height = text_depth)
-            text(custom_text, size = custom_text_size, font = subtitle_font, halign = "center", valign = "center");
+    if (show_nfc && nfc_ring_visible)
+        translate([nfc_x, nfc_y, sign_thickness])
+            linear_extrude(text_depth)
+                difference() { circle(d=nfc_diameter+3); circle(d=nfc_diameter-1); }
 
-    // QR area
+    if (show_nfc && nfc_waves_visible)
+        translate([nfc_x, nfc_y + nfc_waves_offset_y, sign_thickness])
+            linear_extrude(text_depth) nfc_waves_2d(12);
+
     if (show_qr) {
-        translate([qr_offset_x, qr_offset_y, sign_thickness - qr_depth])
-            linear_extrude(height = qr_depth)
-                square(qr_size + 4, center = true);
-
+        translate([qr_x, qr_y, sign_thickness-0.3])
+            linear_extrude(0.3) square(qr_size+4, true);
         color(text_color)
-        translate([qr_offset_x, qr_offset_y, sign_thickness])
-            linear_extrude(height = 0.3)
-                qr_pattern_2d(qr_size);
+        translate([qr_x, qr_y, sign_thickness])
+            linear_extrude(0.3) qr_pattern_2d(qr_size);
     }
-
-    // Subtitle
-    translate([0, -sign_height/2 + 10, sign_thickness])
-        linear_extrude(height = text_depth)
-            text(subtitle_text, size = subtitle_size, font = subtitle_font, halign = "center", valign = "center");
 }
 
 module sign_part() {
     color(sign_color) sign_plate();
-    if (text_embossed) color(text_color) sign_graphics();
+    color(text_color) sign_elements();
 }
 
 // =====================
-// STAND (with angled back rest)
+// STAND - Compact block with slot
 // =====================
 
 module stand_part() {
-    // Calculate back rest dimensions
-    back_height = stand_base_depth * tan(lean_angle);
+    slot_width = sign_thickness + 0.5;
+    front_lip = 4;
 
+    color(base_color)
     difference() {
-        union() {
-            // Base plate
-            hull() {
-                // Front - rounded
-                translate([0, -stand_base_depth/2 + stand_height/2, stand_height/2])
-                    rotate([0, 90, 0])
-                        cylinder(d = stand_height, h = stand_width, center = true);
+        // Solid rounded block
+        hull() {
+            // Front - full height, rounded top
+            translate([0, front_lip/2, stand_height/2])
+                cube([stand_width, front_lip, stand_height], center=true);
 
-                // Back corners - small
-                translate([0, stand_base_depth/2 - 2, 1])
-                    rotate([0, 90, 0])
-                        cylinder(d = 2, h = stand_width, center = true);
+            translate([0, front_lip/2, stand_height - 2])
+                rotate([0, 90, 0])
+                    cylinder(d=4, h=stand_width, center=true);
 
-                // Bottom fill
-                translate([0, 0, 0.5])
-                    cube([stand_width, stand_base_depth, 1], center = true);
-            }
-
-            // Angled back rest (sign rests against this)
-            translate([0, stand_base_depth/2, 0])
-                rotate([lean_angle, 0, 0])
-                    translate([0, wall_thickness/2, back_height/2])
-                        cube([stand_width, wall_thickness, back_height], center = true);
-
-            // Front lip (holds bottom of sign)
-            translate([0, -stand_base_depth/2 + stand_height/2 + wall_thickness, stand_height/2 + lip_height/2])
-                cube([stand_width, wall_thickness, lip_height + stand_height], center = true);
+            // Back - lower, rounded
+            translate([0, stand_depth - 2, 2])
+                rotate([0, 90, 0])
+                    cylinder(d=4, h=stand_width, center=true);
         }
 
-        // Cut bottom flat
-        translate([0, 0, -50])
-            cube([stand_width + 10, stand_base_depth + 50, 100], center = true);
+        // Angled slot for sign
+        translate([0, front_lip + 2, 0])
+            rotate([lean_angle, 0, 0])
+                translate([0, 0, -5])
+                    cube([sign_width + 2, slot_width, 50], center=true);
     }
 }
 
 // =====================
-// ASSEMBLED VIEW
+// ASSEMBLY
 // =====================
 
-module assembled_view() {
-    // Stand
-    color(base_color)
-        stand_part();
+module assembled() {
+    stand_part();
 
-    // Sign leaning against back rest
-    // Back rest starts at y = stand_base_depth/2, angled at lean_angle
-    // Sign's back face should touch the front of the back rest
-
-    back_rest_y = stand_base_depth/2;
-    sign_bottom_z = stand_height + 1;  // Sits on top of front lip area
-
-    translate([0, back_rest_y - sign_thickness * cos(lean_angle), sign_bottom_z])
+    // Sign in slot
+    front_lip = 4;
+    translate([0, front_lip + 2, 0])
         rotate([lean_angle, 0, 0])
-            translate([0, sign_height/2, 0])
+            translate([0, sign_height/2, sign_thickness/2])
                 sign_part();
 }
 
@@ -244,19 +224,8 @@ module assembled_view() {
 // RENDER
 // =====================
 
-// Assembled preview
-assembled_view();
+assembled();
 
-// For printing - uncomment one:
-// sign_part();     // Print flat
-// stand_part();    // Print as-is
-
-/*
- * PRINTING:
- * - Sign: Print flat, text side up or down
- * - Stand: Print as-is, no supports needed
- *
- * ASSEMBLY:
- * - Place sign in stand, leaning against back rest
- * - Front lip prevents sign from sliding forward
- */
+// For printing:
+// sign_part();
+// stand_part();
