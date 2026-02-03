@@ -228,8 +228,16 @@ module assembled() {
 // RENDER
 // =====================
 
-assembled();
+// Both parts for printing (sign on back, stand beside it)
+translate([-sign_width/2 - 10, 0, 0])
+    sign_part();
 
-// For printing:
+translate([stand_width/2 + 10, 0, 0])
+    stand_part();
+
+// For assembled preview:
+// assembled();
+
+// Single parts:
 // sign_part();
 // stand_part();
