@@ -58,6 +58,16 @@ export async function runMigrations(connectionString: string): Promise<void> {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
       ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plan TEXT NOT NULL DEFAULT 'free';
 
+      -- Beta access: user tracking
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_invite_id VARCHAR(24);
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_founder BOOLEAN NOT NULL DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_participant BOOLEAN NOT NULL DEFAULT false;
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT false;
+
+      -- Beta access: tenant plan management
+      ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMPTZ;
+      ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plan_granted_reason TEXT;
+
       CREATE TABLE IF NOT EXISTS guestbooks (
         id VARCHAR(24) PRIMARY KEY,
         tenant_id VARCHAR(24) NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -184,6 +194,46 @@ export async function runMigrations(connectionString: string): Promise<void> {
 
       CREATE INDEX IF NOT EXISTS idx_api_tokens_app ON api_tokens(app_id);
       CREATE INDEX IF NOT EXISTS idx_api_tokens_hash ON api_tokens(token_hash);
+
+      -- Beta invites for controlled registration
+      CREATE TABLE IF NOT EXISTS beta_invites (
+        id VARCHAR(24) PRIMARY KEY,
+        email TEXT NOT NULL,
+        token TEXT NOT NULL UNIQUE,
+        source TEXT NOT NULL DEFAULT 'manual',
+        granted_plan TEXT NOT NULL DEFAULT 'pro',
+        is_founder BOOLEAN NOT NULL DEFAULT false,
+        note TEXT,
+        expires_at TIMESTAMPTZ NOT NULL,
+        accepted_at TIMESTAMPTZ,
+        accepted_by_user_id VARCHAR(24) REFERENCES users(id),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_beta_invites_token ON beta_invites(token);
+      CREATE INDEX IF NOT EXISTS idx_beta_invites_email ON beta_invites(email);
+
+      -- Waitlist for public beta signup
+      CREATE TABLE IF NOT EXISTS waitlist (
+        id VARCHAR(24) PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        name TEXT,
+        use_case TEXT,
+        source TEXT,
+        referred_by_user_id VARCHAR(24) REFERENCES users(id),
+        referral_code TEXT UNIQUE,
+        position SERIAL NOT NULL,
+        priority INTEGER NOT NULL DEFAULT 0,
+        status TEXT NOT NULL DEFAULT 'waiting',
+        invited_at TIMESTAMPTZ,
+        registered_at TIMESTAMPTZ,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist(email);
+      CREATE INDEX IF NOT EXISTS idx_waitlist_referral_code ON waitlist(referral_code);
+      CREATE INDEX IF NOT EXISTS idx_waitlist_status ON waitlist(status);
+      CREATE INDEX IF NOT EXISTS idx_waitlist_priority ON waitlist(priority);
     `)
 
     log.debug('Core tables created/verified')
