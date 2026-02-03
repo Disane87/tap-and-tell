@@ -62,9 +62,12 @@ qr_x = 35;
 qr_y = 10;
 qr_size = 25;
 
-// Pockets/depths
-nfc_pocket_depth = 0.6;
-nfc_pocket_extra = 0.5;
+// NFC pocket on back of sign
+nfc_pocket_diameter = 25;  // Diameter of NFC sticker [mm]
+nfc_pocket_depth = 0.5;    // Depth of pocket [mm]
+nfc_pocket_extra = 0.5;    // Extra clearance around sticker [mm]
+
+// Text/element depth
 text_depth = 0.6;
 
 // =====================
@@ -133,7 +136,7 @@ module sign_plate() {
 
         if (show_nfc)
             translate([nfc_x, nfc_y, -0.1])
-                cylinder(d=nfc_diameter+nfc_pocket_extra*2, h=nfc_pocket_depth+0.2);
+                cylinder(d=nfc_pocket_diameter+nfc_pocket_extra*2, h=nfc_pocket_depth+0.2);
 
         if (show_qr)
             translate([qr_x, qr_y, sign_thickness-0.4])
