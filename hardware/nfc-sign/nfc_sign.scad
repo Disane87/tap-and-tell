@@ -49,8 +49,12 @@ nfc_x = 0;
 nfc_y = 10;
 nfc_diameter = 30;
 nfc_ring_visible = true;
+
+// NFC waves icon
 nfc_waves_visible = true;
-nfc_waves_offset_y = 22;
+nfc_waves_x = 0;               // X position (independent of nfc_x)
+nfc_waves_y = 32;              // Y position (independent of nfc_y)
+nfc_waves_size = 12;           // Size of the waves icon
 
 // QR code
 show_qr = false;
@@ -154,8 +158,8 @@ module sign_elements() {
                 difference() { circle(d=nfc_diameter+3); circle(d=nfc_diameter-1); }
 
     if (show_nfc && nfc_waves_visible)
-        translate([nfc_x, nfc_y + nfc_waves_offset_y, sign_thickness])
-            linear_extrude(text_depth) nfc_waves_2d(12);
+        translate([nfc_waves_x, nfc_waves_y, sign_thickness])
+            linear_extrude(text_depth) nfc_waves_2d(nfc_waves_size);
 
     if (show_qr) {
         translate([qr_x, qr_y, sign_thickness-0.3])
