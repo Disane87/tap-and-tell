@@ -1,6 +1,7 @@
 import { runMigrations } from '~~/server/database/migrate'
 import { seedFromLegacy } from '~~/server/database/seed'
 import { seedDevTenant } from '~~/server/database/seed-dev'
+import { seedProductionAdmin } from '~~/server/database/seed-admin'
 import { createLogger } from '~~/server/utils/logger'
 
 const log = createLogger('database')
@@ -37,6 +38,11 @@ export default defineNitroPlugin(async () => {
     if (process.env.NODE_ENV !== 'production') {
       log.info('Setting up development tenant...')
       await seedDevTenant(connectionString)
+    }
+
+    // Seed production admin if configured
+    if (process.env.NODE_ENV === 'production') {
+      await seedProductionAdmin(connectionString)
     }
 
     log.success('Database initialization complete')
