@@ -23,6 +23,22 @@ export interface RegisterData {
   email: string
   password: string
   name: string
+  /** Beta invite token for invite-only registration. */
+  betaToken?: string
+}
+
+/**
+ * Beta invite validation result.
+ */
+export interface BetaInviteValidation {
+  betaMode: 'private' | 'waitlist' | 'open'
+  betaModeEnabled: boolean
+  valid: boolean
+  email?: string
+  grantedPlan?: string
+  isFounder?: boolean
+  expiresAt?: string
+  error?: string
 }
 
 /**

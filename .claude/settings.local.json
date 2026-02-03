@@ -19,7 +19,14 @@
       "Bash(tee:*)",
       "Bash(pnpm exec nuxi:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(dir /s /b \"C:\\\\Workspace\\\\tap-and-tell\\\\*.json\")",
+      "Bash(findstr:*)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Workspace\\\\tap-and-tell\" -Recurse -Filter \"*.json\" -Name)",
+      "Bash(Select-String -Pattern \"locale\" -SimpleMatch)",
+      "Bash(pnpm drizzle-kit:*)",
+      "Bash(PGPASSWORD=tapandtell_dev psql:*)",
+      "Bash(npx tsx:*)"
     ]
   }
 }

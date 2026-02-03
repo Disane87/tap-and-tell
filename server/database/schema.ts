@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uniqueIndex, index, jsonb, varchar } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, uniqueIndex, index, jsonb, varchar, boolean, serial, integer } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 import type { GuestbookSettings, GuestbookType } from '~~/server/types/guestbook'
 
@@ -14,6 +14,14 @@ export const users = pgTable('users', {
   name: text('name').notNull(),
   /** Optional avatar image URL. */
   avatarUrl: text('avatar_url'),
+  /** Reference to the beta invite used for registration. */
+  betaInviteId: varchar('beta_invite_id', { length: 24 }),
+  /** Whether this user has lifetime benefits (founder status). */
+  isFounder: boolean('is_founder').notNull().default(false),
+  /** Whether this user participated in the beta program. */
+  betaParticipant: boolean('beta_participant').notNull().default(false),
+  /** Whether this user has admin privileges. */
+  isAdmin: boolean('is_admin').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 })
@@ -41,6 +49,10 @@ export const tenants = pgTable('tenants', {
   ownerId: varchar('owner_id', { length: 24 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
   /** Current plan: free, pro, or business. */
   plan: text('plan').notNull().default('free'),
+  /** When the current plan expires. Null means never expires. */
+  planExpiresAt: timestamp('plan_expires_at', { withTimezone: true }),
+  /** Reason for the current plan: beta_invite, founder, purchase, trial. */
+  planGrantedReason: text('plan_granted_reason'),
   /** Per-tenant encryption salt for photo encryption key derivation (hex-encoded). */
   encryptionSalt: varchar('encryption_salt', { length: 64 }),
   /** Current encryption key version for key rotation support. */
@@ -251,3 +263,84 @@ export type ApiScope =
   | 'members:read'
   | 'members:write'
   | 'photos:read'
+
+/**
+ * Beta invites table for controlling access during beta phases.
+ * Stores invite tokens that allow registration when BETA_MODE is not 'open'.
+ */
+export const betaInvites = pgTable('beta_invites', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  /** Email address the invite was sent to. */
+  email: text('email').notNull(),
+  /** Unique token for invite validation. */
+  token: text('token').notNull().unique(),
+  /** Source of the invite: manual (admin created) or waitlist. */
+  source: text('source').notNull().default('manual'),
+  /** Plan to grant on registration: free, pro, or business. */
+  grantedPlan: text('granted_plan').notNull().default('pro'),
+  /** Whether this invite grants founder status (lifetime benefits). */
+  isFounder: boolean('is_founder').notNull().default(false),
+  /** Internal note about the invite (e.g., "Friend of X", "Speaker at Y"). */
+  note: text('note'),
+  /** When the invite expires. */
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  /** When the invite was accepted (used for registration). */
+  acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+  /** User ID of who accepted this invite. */
+  acceptedByUserId: varchar('accepted_by_user_id', { length: 24 }).references(() => users.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index('idx_beta_invites_token').on(table.token),
+  index('idx_beta_invites_email').on(table.email)
+])
+
+/**
+ * Waitlist table for public beta signup.
+ * Users can join the waitlist and get invited based on priority.
+ */
+export const waitlist = pgTable('waitlist', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  /** Email address of the waitlist entry. */
+  email: text('email').notNull().unique(),
+  /** Optional name provided by the user. */
+  name: text('name'),
+  /** Use case description (e.g., "Wedding", "Corporate event"). */
+  useCase: text('use_case'),
+  /** Traffic source (e.g., "organic", "referral", "social"). */
+  source: text('source'),
+  /** User ID of who referred this entry (if referral). */
+  referredByUserId: varchar('referred_by_user_id', { length: 24 }).references(() => users.id),
+  /** User's own referral code for sharing. */
+  referralCode: text('referral_code').unique(),
+  /** Auto-incrementing position in the waitlist. */
+  position: serial('position'),
+  /** Priority score for invite ordering. Higher = earlier invite. */
+  priority: integer('priority').notNull().default(0),
+  /** Current status: waiting, invited, registered, unsubscribed. */
+  status: text('status').notNull().default('waiting'),
+  /** When this entry was invited (beta invite created). */
+  invitedAt: timestamp('invited_at', { withTimezone: true }),
+  /** When this entry completed registration. */
+  registeredAt: timestamp('registered_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index('idx_waitlist_email').on(table.email),
+  index('idx_waitlist_referral_code').on(table.referralCode),
+  index('idx_waitlist_status').on(table.status),
+  index('idx_waitlist_priority').on(table.priority)
+])
+
+/**
+ * Beta mode values for controlling registration access.
+ */
+export type BetaMode = 'private' | 'waitlist' | 'open'
+
+/**
+ * Waitlist status values.
+ */
+export type WaitlistStatus = 'waiting' | 'invited' | 'registered' | 'unsubscribed'
+
+/**
+ * Plan granted reason values.
+ */
+export type PlanGrantedReason = 'beta_invite' | 'founder' | 'purchase' | 'trial'

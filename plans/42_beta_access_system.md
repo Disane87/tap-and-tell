@@ -34,7 +34,7 @@ The system controls who can register, tracks beta participants, and enables gran
 
 ### 42.1 Database Schema: Beta Invites
 
-- [ ] Create `beta_invites` table in `server/database/schema.ts`:
+- [x] Create `beta_invites` table in `server/database/schema.ts`:
 
 ```typescript
 export const betaInvites = pgTable('beta_invites', {
@@ -51,13 +51,13 @@ export const betaInvites = pgTable('beta_invites', {
 })
 ```
 
-- [ ] Add index on `token` for fast lookup
-- [ ] Add index on `email` for duplicate checking
-- [ ] Run migration
+- [x] Add index on `token` for fast lookup
+- [x] Add index on `email` for duplicate checking
+- [x] Run migration
 
 ### 42.2 Database Schema: User Beta Tracking
 
-- [ ] Extend `users` table with beta tracking fields:
+- [x] Extend `users` table with beta tracking fields:
 
 ```typescript
 // Add to users table
@@ -66,7 +66,7 @@ isFounder: boolean('is_founder').notNull().default(false), // lifetime benefits
 betaParticipant: boolean('beta_participant').notNull().default(false), // participated in beta
 ```
 
-- [ ] Extend `tenants` table with plan expiry:
+- [x] Extend `tenants` table with plan expiry:
 
 ```typescript
 // Add to tenants table
@@ -74,34 +74,34 @@ planExpiresAt: timestamp('plan_expires_at', { withTimezone: true }), // null = n
 planGrantedReason: text('plan_granted_reason'), // 'beta_invite' | 'founder' | 'purchase' | 'trial'
 ```
 
-- [ ] Run migration
+- [x] Run migration
 
 ### 42.3 Environment Configuration
 
-- [ ] Add `BETA_MODE` environment variable:
+- [x] Add `BETA_MODE` environment variable:
   - `'private'` — Only beta invite tokens accepted
   - `'waitlist'` — Waitlist open, registration still requires invite
   - `'open'` — Public registration enabled (post-launch)
-- [ ] Add to `.env.example` with documentation
-- [ ] Add to `server/utils/config.ts` or similar
-- [ ] Default to `'private'` in production if not set
+- [x] Add to `.env.example` with documentation
+- [x] Add to `server/utils/beta-config.ts`
+- [x] Default to `'private'` in production if not set
 
 ### 42.4 Registration Gate
 
-- [ ] Modify `server/routes/api/auth/register.post.ts`:
-  - [ ] Check `BETA_MODE` environment variable
-  - [ ] If `'private'` or `'waitlist'`: require `betaToken` in request body
-  - [ ] Validate token exists, not expired, not already used
-  - [ ] On valid token: proceed with registration
-  - [ ] Mark invite as accepted (`acceptedAt`, `acceptedByUserId`)
-  - [ ] Copy `grantedPlan` to new tenant
-  - [ ] Set `betaParticipant: true` on user
-  - [ ] Set `isFounder: true` if invite has founder flag
-  - [ ] If `'open'`: allow registration without token (current behavior)
+- [x] Modify `server/routes/api/auth/register.post.ts`:
+  - [x] Check `BETA_MODE` environment variable
+  - [x] If `'private'` or `'waitlist'`: require `betaToken` in request body
+  - [x] Validate token exists, not expired, not already used
+  - [x] On valid token: proceed with registration
+  - [x] Mark invite as accepted (`acceptedAt`, `acceptedByUserId`)
+  - [x] Copy `grantedPlan` to new tenant
+  - [x] Set `betaParticipant: true` on user
+  - [x] Set `isFounder: true` if invite has founder flag
+  - [x] If `'open'`: allow registration without token (current behavior)
 
 ### 42.5 Beta Invite Validation Utility
 
-- [ ] Create `server/utils/beta.ts`:
+- [x] Create `server/utils/beta.ts`:
 
 ```typescript
 export async function validateBetaInvite(token: string): Promise<BetaInvite | null>
@@ -113,44 +113,44 @@ export function getBetaMode(): 'private' | 'waitlist' | 'open'
 
 ### 42.6 Admin API: Beta Invite Management
 
-- [ ] Create `server/routes/api/admin/beta-invites/index.get.ts`:
+- [x] Create `server/routes/api/admin/beta-invites/index.get.ts`:
   - List all beta invites (with pagination, filters)
   - Filter by: status (pending/accepted/expired), source, email search
   - Requires admin authentication
 
-- [ ] Create `server/routes/api/admin/beta-invites/index.post.ts`:
+- [x] Create `server/routes/api/admin/beta-invites/index.post.ts`:
   - Create new beta invite
   - Body: `{ email, grantedPlan?, note?, expiresInDays?, isFounder? }`
   - Generate secure token (nanoid, 32 chars)
   - Default expiry: 30 days
   - Returns invite with token
 
-- [ ] Create `server/routes/api/admin/beta-invites/[id].delete.ts`:
+- [x] Create `server/routes/api/admin/beta-invites/[id].delete.ts`:
   - Revoke/delete an unused invite
 
-- [ ] Create `server/routes/api/admin/beta-invites/bulk.post.ts`:
+- [x] Create `server/routes/api/admin/beta-invites/bulk.post.ts`:
   - Bulk create invites from email list
   - Body: `{ emails: string[], grantedPlan?, expiresInDays? }`
 
 ### 42.7 Admin Authentication
 
-- [ ] Create simple admin authentication mechanism:
+- [x] Create simple admin authentication mechanism:
   - Option A: Special admin user flag in database
   - Option B: `ADMIN_EMAILS` environment variable (comma-separated)
   - Option C: First registered user is admin
-- [ ] Create `server/utils/admin-auth.ts` middleware
-- [ ] Protect all `/api/admin/*` routes
+- [x] Create `server/middleware/admin-auth.ts` middleware
+- [x] Protect all `/api/admin/*` routes
 
 ### 42.8 Registration UI Updates
 
-- [ ] Modify `app/pages/register.vue`:
-  - [ ] Check for `?token=xxx` query parameter
-  - [ ] If beta mode and no token: show "Invite Only" message with waitlist link
-  - [ ] If token present: validate via API, show email (pre-filled, read-only)
-  - [ ] If token invalid/expired: show error with waitlist link
-  - [ ] Add i18n keys for all beta-related messages
+- [x] Modify `app/pages/register.vue`:
+  - [x] Check for `?token=xxx` query parameter
+  - [x] If beta mode and no token: show "Invite Only" message with waitlist link
+  - [x] If token present: validate via API, show email (pre-filled, read-only)
+  - [x] If token invalid/expired: show error with waitlist link
+  - [x] Add i18n keys for all beta-related messages
 
-- [ ] Create invite validation endpoint `server/routes/api/beta/validate.get.ts`:
+- [x] Create invite validation endpoint `server/routes/api/beta/validate.get.ts`:
   - Query param: `token`
   - Returns: `{ valid: boolean, email?: string, error?: string }`
 
@@ -166,7 +166,7 @@ export function getBetaMode(): 'private' | 'waitlist' | 'open'
 
 ### 42.10 Database Schema: Waitlist
 
-- [ ] Create `waitlist` table:
+- [x] Create `waitlist` table:
 
 ```typescript
 export const waitlist = pgTable('waitlist', {
@@ -187,11 +187,11 @@ export const waitlist = pgTable('waitlist', {
 })
 ```
 
-- [ ] Add indexes on `email`, `referralCode`, `status`, `priority`
+- [x] Add indexes on `email`, `referralCode`, `status`, `priority`
 
 ### 42.11 Public Waitlist API
 
-- [ ] Create `server/routes/api/waitlist/join.post.ts`:
+- [x] Create `server/routes/api/waitlist/join.post.ts`:
   - Public endpoint (no auth)
   - Body: `{ email, name?, useCase?, referralCode? }`
   - Rate limited by IP
@@ -201,13 +201,13 @@ export const waitlist = pgTable('waitlist', {
   - Generate unique referral code for new entry
   - Return: `{ position, referralCode, alreadyRegistered? }`
 
-- [ ] Create `server/routes/api/waitlist/status.get.ts`:
+- [x] Create `server/routes/api/waitlist/status.get.ts`:
   - Query: `?email=xxx` or `?code=xxx`
   - Return: `{ position, totalAhead, status, referralCode, referralCount }`
 
 ### 42.12 Waitlist Landing Page
 
-- [ ] Create `app/pages/waitlist.vue`:
+- [x] Create `app/pages/waitlist.vue`:
   - Hero section explaining the beta
   - Email signup form
   - Optional: name, use case selection
@@ -215,35 +215,35 @@ export const waitlist = pgTable('waitlist', {
   - Already registered: show status and referral stats
   - i18n support (DE/EN)
 
-- [ ] Add link to waitlist from:
+- [x] Add link to waitlist from:
   - Registration page (when in beta mode)
   - Marketing landing page
   - 404/error pages
 
 ### 42.13 Referral System
 
-- [ ] Generate unique referral codes (e.g., `TAP-XXXX`)
-- [ ] Track referrals: when someone joins via referral code
-- [ ] Priority boost: +10 priority per successful referral
-- [ ] Show referral stats on waitlist status page
+- [x] Generate unique referral codes (e.g., `TAP-XXXX`)
+- [x] Track referrals: when someone joins via referral code
+- [x] Priority boost: +10 priority per successful referral
+- [x] Show referral stats on waitlist status page
 - [ ] Consider: bonus for referrer when referee registers
 
 ### 42.14 Admin Waitlist Management
 
-- [ ] Create `server/routes/api/admin/waitlist/index.get.ts`:
+- [x] Create `server/routes/api/admin/waitlist/index.get.ts`:
   - List waitlist entries with pagination
   - Filter by: status, priority range, date range
   - Sort by: position, priority, createdAt
   - Search by email/name
 
-- [ ] Create `server/routes/api/admin/waitlist/invite.post.ts`:
+- [x] Create `server/routes/api/admin/waitlist/invite.post.ts`:
   - Batch invite from waitlist
   - Body: `{ count: number, minPriority?: number }` or `{ ids: string[] }`
   - Creates beta invites for selected entries
   - Updates waitlist status to 'invited'
   - Sends invite emails
 
-- [ ] Create `server/routes/api/admin/waitlist/[id].patch.ts`:
+- [x] Create `server/routes/api/admin/waitlist/[id].patch.ts`:
   - Update priority manually (VIP boost)
   - Update status
 
