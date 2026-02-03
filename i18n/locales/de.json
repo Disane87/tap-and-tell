@@ -1052,5 +1052,43 @@
       "beach": "Strand",
       "mountains": "Berge"
     }
+  },
+  "beta": {
+    "validatingInvite": "Einladung wird überprüft...",
+    "inviteOnly": "Nur auf Einladung",
+    "inviteOnlyDescription": "Die Registrierung ist derzeit nur auf Einladung möglich. Wenn du eine Einladung hast, nutze den Link aus deiner E-Mail.",
+    "joinWaitlist": "Möchtest du frühen Zugang? Trag dich auf unsere Warteliste ein, um benachrichtigt zu werden.",
+    "joinWaitlistButton": "Zur Warteliste",
+    "founderBadge": "Gründer",
+    "betaAccess": "Beta-Zugang",
+    "founderInvite": "Du wurdest als Gründer eingeladen! Du erhältst lebenslangen Zugang zu allen Pro-Features.",
+    "betaInvite": "Du wurdest zum Beta-Programm eingeladen!",
+    "grantedPlan": "Du erhältst den {plan}-Plan",
+    "expiresAt": "Einladung gültig bis: {date}",
+    "emailLocked": "E-Mail ist mit deiner Einladung verknüpft und kann nicht geändert werden.",
+    "waitlist": {
+      "title": "Auf die Warteliste",
+      "subtitle": "Sei unter den Ersten, die Tap & Tell ausprobieren. Wir versenden Zugänge in Wellen.",
+      "emailPlaceholder": "deine{'@'}email.de",
+      "namePlaceholder": "Dein Name (optional)",
+      "useCase": "Wofür möchtest du Tap & Tell nutzen?",
+      "useCasePlaceholder": "z.B. Hochzeit, Geburtstagsfeier, Firmen-Event",
+      "referralCode": "Empfehlungscode (optional)",
+      "referralCodePlaceholder": "TAP-XXXXXX",
+      "join": "Eintragen",
+      "joining": "Wird eingetragen...",
+      "success": "Du bist auf der Liste!",
+      "alreadyOnList": "Du stehst bereits auf der Warteliste!",
+      "position": "Deine Position: #{position}",
+      "referralTitle": "Rücke in der Liste nach vorne!",
+      "referralDescription": "Teile deinen Empfehlungscode, um schneller an die Reihe zu kommen. Für jeden Freund, der sich anmeldet, steigst du in der Priorität.",
+      "yourReferralCode": "Dein Empfehlungscode",
+      "copied": "Kopiert!",
+      "share": "Teilen",
+      "checkStatus": "Status überprüfen",
+      "statusTitle": "Wartelisten-Status",
+      "peopleAhead": "{count} Personen vor dir",
+      "referrals": "{count} Empfehlungen"
+    }
   }
 }

@@ -1052,5 +1052,43 @@
       "beach": "Beach",
       "mountains": "Mountains"
     }
+  },
+  "beta": {
+    "validatingInvite": "Validating your invite...",
+    "inviteOnly": "Invite Only",
+    "inviteOnlyDescription": "Registration is currently invite-only. If you have an invitation, use the link provided in your email.",
+    "joinWaitlist": "Want early access? Join our waitlist to be notified when spots open up.",
+    "joinWaitlistButton": "Join the Waitlist",
+    "founderBadge": "Founder",
+    "betaAccess": "Beta Access",
+    "founderInvite": "You're invited as a Founder! You'll receive lifetime access to all Pro features.",
+    "betaInvite": "You've been invited to the beta program!",
+    "grantedPlan": "You'll receive the {plan} plan",
+    "expiresAt": "Invite expires: {date}",
+    "emailLocked": "Email is linked to your invite and cannot be changed.",
+    "waitlist": {
+      "title": "Join the Waitlist",
+      "subtitle": "Be among the first to try Tap & Tell. We're rolling out access in batches.",
+      "emailPlaceholder": "your{'@'}email.com",
+      "namePlaceholder": "Your name (optional)",
+      "useCase": "What will you use Tap & Tell for?",
+      "useCasePlaceholder": "e.g. Wedding, Birthday Party, Corporate Event",
+      "referralCode": "Referral code (optional)",
+      "referralCodePlaceholder": "TAP-XXXXXX",
+      "join": "Join Waitlist",
+      "joining": "Joining...",
+      "success": "You're on the list!",
+      "alreadyOnList": "You're already on the waitlist!",
+      "position": "Your position: #{position}",
+      "referralTitle": "Move up the list!",
+      "referralDescription": "Share your referral code to move up the waitlist. Each friend who joins boosts your priority.",
+      "yourReferralCode": "Your referral code",
+      "copied": "Copied!",
+      "share": "Share",
+      "checkStatus": "Check your status",
+      "statusTitle": "Waitlist Status",
+      "peopleAhead": "{count} people ahead of you",
+      "referrals": "{count} referrals"
+    }
   }
 }
