@@ -1,373 +1,316 @@
 /*
- * Tap & Tell NFC Sign
- * ====================
- * A parametric sign for NFC tags with optional QR code display.
- * Can be used as a standing sign or wall-mounted.
+ * Tap & Tell NFC Sign - Parametric
+ * =================================
+ * All elements freely positionable
  *
  * Author: Tap & Tell Project
  * License: MIT
- *
- * Usage:
- * - Adjust parameters below to customize the sign
- * - For QR codes, use the qr_data module or import an SVG/DXF
- * - Print in two colors for best results (base + text/logo)
  */
 
 // =====================
-// USER PARAMETERS
+// SIGN PARAMETERS
 // =====================
 
-// Sign dimensions
-sign_width = 100;           // Width of the sign [mm]
-sign_height = 120;          // Height of the sign [mm]
-sign_thickness = 4;         // Base thickness [mm]
-corner_radius = 8;          // Corner rounding [mm]
+sign_width = 120;
+sign_height = 90;
+sign_thickness = 3;
+corner_radius = 3;
 
-// Text settings
-title_text = "Tap & Tell";  // Main title text
-subtitle_text = "Gästebuch"; // Subtitle text
-custom_text = "Tippe hier!"; // Call-to-action text
-title_size = 12;            // Title font size [mm]
-subtitle_size = 8;          // Subtitle font size [mm]
-custom_text_size = 6;       // Custom text font size [mm]
-text_depth = 0.8;           // Text engraving/emboss depth [mm]
-text_embossed = true;       // true = raised text, false = engraved
+// =====================
+// ELEMENT POSITIONS (relative to sign center)
+// =====================
 
-// Font settings (use fonts installed on your system)
+// Title
+show_title = true;
+title_text = "Tap & Tell";
+title_x = 0;
+title_y = 30;
+title_size = 16;
 title_font = "Liberation Sans:style=Bold";
+
+// Subtitle
+show_subtitle = true;
+subtitle_text = "Gästebuch";
+subtitle_x = 0;
+subtitle_y = -35;
+subtitle_size = 10;
 subtitle_font = "Liberation Sans:style=Regular";
 
-// NFC tag settings
-nfc_diameter = 25;          // NFC tag diameter [mm] (common: 25, 30, 35)
-nfc_thickness = 0.5;        // NFC tag thickness [mm]
-nfc_pocket_extra = 0.5;     // Extra space around NFC tag [mm]
-nfc_position_y = -15;       // Y offset from center [mm]
+// Custom text
+show_custom_text = true;
+custom_text = "Tippe hier!";
+custom_text_x = 0;
+custom_text_y = -25;
+custom_text_size = 7;
 
-// QR code settings
-show_qr_placeholder = true; // Show QR code placeholder area
-qr_size = 25;               // QR code size [mm]
-qr_position_y = 25;         // Y offset from center [mm]
-qr_depth = 0.6;             // QR code depth [mm]
-qr_border = 2;              // Border around QR code [mm]
+// NFC area
+show_nfc = true;
+nfc_x = 0;
+nfc_y = 0;
+nfc_diameter = 30;
+nfc_ring_visible = true;
 
-// Stand settings
-has_stand = true;           // Include integrated stand
-stand_angle = 70;           // Stand angle [degrees]
-stand_width = 40;           // Stand width [mm]
-stand_depth = 50;           // Stand depth [mm]
-stand_thickness = 3;        // Stand material thickness [mm]
+// NFC waves icon
+nfc_waves_visible = true;
+nfc_waves_x = -2;               // X position (independent of nfc_x)
+nfc_waves_y = -2;              // Y position (independent of nfc_y)
+nfc_waves_size = 12;           // Size of the waves icon
 
-// Hanging hole settings
-has_hanging_hole = true;    // Include hanging hole
-hanging_hole_diameter = 5;  // Hole diameter [mm]
-hanging_hole_offset = 8;    // Distance from top edge [mm]
+// QR code
+show_qr = false;
+qr_x = 35;
+qr_y = 10;
+qr_size = 25;
 
-// Visual settings
-$fn = 64;                   // Circle resolution
+// NFC pocket on back of sign
+nfc_pocket_diameter = 25;  // Diameter of NFC sticker [mm]
+nfc_pocket_depth = 0.5;    // Depth of pocket [mm]
+nfc_pocket_extra = 0.5;    // Extra clearance around sticker [mm]
+
+// Text/element depth
+text_depth = 0.6;
 
 // =====================
-// COLORS (for preview)
+// STAND PARAMETERS
 // =====================
-base_color = [0.2, 0.2, 0.25];      // Dark gray base
-text_color = [0.95, 0.95, 0.95];    // White text
-accent_color = [0.39, 0.4, 0.95];   // Indigo accent (#6366f1)
+
+stand_width = 100;
+stand_depth = 22;
+stand_height = 14;
+lean_angle = 75;           // 90=vertical, 75=slight lean back
+
+// Stand rotation for preview/printing
+stand_rot_x = 0;           // Rotation around X axis
+stand_rot_y = 0;           // Rotation around Y axis
+stand_rot_z = 0;           // Rotation around Z axis
+
+// =====================
+// FRAME PARAMETERS
+// =====================
+
+show_frame = true;         // Show frame part
+frame_border = 6;          // Width of frame border [mm]
+frame_thickness = 4;       // Thickness of frame [mm]
+frame_lip = 1.5;           // Lip to hold sign in place [mm]
+frame_corner_radius = 5;   // Corner rounding [mm]
+frame_tolerance = 0.3;     // Gap for sign to fit [mm]
+
+// Frame rotation for preview/printing
+frame_rot_x = 0;
+frame_rot_y = 0;
+frame_rot_z = 0;
+
+$fn = 64;
+
+// Colors
+base_color = [0.1, 0.1, 0.1];
+sign_color = [0.97, 0.97, 0.95];
+text_color = [0.12, 0.12, 0.12];
 
 // =====================
 // MODULES
 // =====================
 
-// Rounded rectangle module
-module rounded_rect(width, height, thickness, radius) {
-    hull() {
-        for (x = [-1, 1], y = [-1, 1]) {
-            translate([x * (width/2 - radius), y * (height/2 - radius), 0])
-                cylinder(r = radius, h = thickness);
-        }
-    }
+module rounded_rect_2d(w, h, r) {
+    hull() for (x=[-1,1], y=[-1,1])
+        translate([x*(w/2-r), y*(h/2-r)]) circle(r=r);
 }
 
-// NFC symbol (tap icon)
-module nfc_symbol(size = 20, depth = 1) {
-    // Hand/finger icon with signal waves
-    linear_extrude(height = depth) {
-        // Finger
-        translate([0, -size*0.15, 0])
-            resize([size*0.25, size*0.5])
-                circle(d = 1);
-
-        // Signal waves
-        for (i = [1:3]) {
-            difference() {
-                circle(d = size * 0.3 + i * size * 0.18);
-                circle(d = size * 0.3 + i * size * 0.18 - size * 0.06);
-                translate([-size, -size*1.5, 0])
-                    square([size*2, size*1.5]);
-                translate([-size, 0, 0])
-                    square([size*0.4, size]);
-            }
-        }
-    }
-}
-
-// WiFi-style NFC indicator
-module nfc_waves(size = 15, depth = 1) {
-    linear_extrude(height = depth) {
-        for (i = [0:2]) {
-            difference() {
-                circle(d = size * 0.4 + i * size * 0.3);
-                circle(d = size * 0.4 + i * size * 0.3 - size * 0.08);
-                translate([-size, -size, 0])
-                    square([size, size*2]);
-                translate([0, -size, 0])
-                    square([size, size*0.9]);
-            }
-        }
-        // Center dot
-        circle(d = size * 0.15);
-    }
-}
-
-// QR code placeholder (checkerboard pattern)
-module qr_placeholder(size, depth, modules = 5) {
-    module_size = size / modules;
-
-    linear_extrude(height = depth) {
-        for (x = [0:modules-1], y = [0:modules-1]) {
-            if ((x + y) % 2 == 0 ||
-                (x < 2 && y < 2) ||
-                (x < 2 && y > modules-3) ||
-                (x > modules-3 && y < 2)) {
-                translate([
-                    -size/2 + x * module_size + module_size/2,
-                    -size/2 + y * module_size + module_size/2,
-                    0
-                ])
-                    square(module_size * 0.9, center = true);
-            }
-        }
-    }
-}
-
-// Position markers for QR code corners
-module qr_position_marker(size, depth) {
-    module_size = size / 7;
-    linear_extrude(height = depth) {
+module nfc_waves_2d(size) {
+    for (i = [0:2]) {
         difference() {
-            square(module_size * 7, center = true);
-            square(module_size * 5, center = true);
+            circle(d = size*0.4 + i*size*0.3);
+            circle(d = size*0.4 + i*size*0.3 - size*0.08);
+            translate([-size, -size]) square([size, size*2]);
+            translate([0, -size]) square([size, size*0.9]);
         }
-        square(module_size * 3, center = true);
+    }
+    circle(d = size*0.12);
+}
+
+module qr_pattern_2d(size) {
+    u = size/21;
+    for (p = [[-1,-1],[-1,1],[1,-1]])
+        translate([p[0]*(size/2-u*3.5), p[1]*(size/2-u*3.5)]) {
+            difference() { square(u*7,true); square(u*5,true); }
+            square(u*3, true);
+        }
+    for (i=[0:20]) {
+        x=(i*7)%11-5; y=(i*11)%11-5;
+        if (abs(x)>3||abs(y)>3) translate([x*u,y*u]) square(u*0.9,true);
     }
 }
 
-// Simple QR-like pattern (placeholder - replace with actual QR import)
-module qr_code_placeholder(size, depth) {
-    unit = size / 21; // Standard QR is 21x21 minimum
+// =====================
+// SIGN
+// =====================
 
-    linear_extrude(height = depth) {
-        // Corner position markers
-        for (pos = [[-1, -1], [-1, 1], [1, -1]]) {
-            translate([pos[0] * (size/2 - unit*3.5), pos[1] * (size/2 - unit*3.5), 0]) {
-                difference() {
-                    square(unit * 7, center = true);
-                    square(unit * 5, center = true);
-                }
-                square(unit * 3, center = true);
-            }
-        }
-
-        // Some random data pattern (for visual effect)
-        for (i = [0:30]) {
-            x = (i * 7) % 15 - 7;
-            y = (i * 11) % 15 - 7;
-            if (abs(x) > 4 || abs(y) > 4) { // Avoid corner markers
-                translate([x * unit, y * unit, 0])
-                    square(unit * 0.9, center = true);
-            }
-        }
-    }
-}
-
-// Stand module
-module stand(width, depth, thickness, angle) {
-    // Back support that connects to sign
-    rotate([90 - angle, 0, 0]) {
-        // Triangular support
-        linear_extrude(height = thickness) {
-            polygon([
-                [0, 0],
-                [width, 0],
-                [width, depth * sin(angle)],
-                [0, depth * sin(angle)]
-            ]);
-        }
-    }
-
-    // Base foot
-    translate([0, -depth * cos(angle) + thickness, 0])
-        cube([width, depth * cos(angle), thickness]);
-
-    // Connecting piece to sign back
-    translate([0, 0, 0])
-        cube([width, thickness, sign_thickness]);
-}
-
-// Main sign body
-module sign_body() {
+module sign_plate() {
     difference() {
-        // Main plate
-        rounded_rect(sign_width, sign_height, sign_thickness, corner_radius);
+        linear_extrude(sign_thickness)
+            rounded_rect_2d(sign_width, sign_height, corner_radius);
 
-        // NFC tag pocket (from back)
-        translate([0, nfc_position_y, -0.1])
-            cylinder(d = nfc_diameter + nfc_pocket_extra * 2,
-                     h = nfc_thickness + 0.2);
+        if (show_nfc)
+            translate([nfc_x, nfc_y, -0.1])
+                cylinder(d=nfc_pocket_diameter+nfc_pocket_extra*2, h=nfc_pocket_depth+0.2);
 
-        // Hanging hole
-        if (has_hanging_hole) {
-            translate([0, sign_height/2 - hanging_hole_offset, -0.1])
-                cylinder(d = hanging_hole_diameter, h = sign_thickness + 0.2);
-        }
-
-        // Engraved text (if not embossed)
-        if (!text_embossed) {
-            translate([0, 0, sign_thickness - text_depth + 0.01])
-                sign_text();
-        }
-
-        // QR code recess
-        if (show_qr_placeholder) {
-            translate([0, qr_position_y, sign_thickness - qr_depth + 0.01])
-                linear_extrude(height = qr_depth + 0.1)
-                    square(qr_size + qr_border * 2, center = true);
-        }
+        if (show_qr)
+            translate([qr_x, qr_y, sign_thickness-0.4])
+                linear_extrude(0.5) square(qr_size+4, true);
     }
 }
 
-// Text elements
-module sign_text() {
-    // Title
-    translate([0, sign_height/2 - 18, 0])
-        linear_extrude(height = text_depth)
-            text(title_text, size = title_size,
-                 font = title_font, halign = "center", valign = "center");
+module sign_elements() {
+    if (show_title)
+        translate([title_x, title_y, sign_thickness])
+            linear_extrude(text_depth)
+                text(title_text, size=title_size, font=title_font, halign="center", valign="center");
 
-    // Subtitle
-    translate([0, sign_height/2 - 32, 0])
-        linear_extrude(height = text_depth)
-            text(subtitle_text, size = subtitle_size,
-                 font = subtitle_font, halign = "center", valign = "center");
+    if (show_subtitle)
+        translate([subtitle_x, subtitle_y, sign_thickness])
+            linear_extrude(text_depth)
+                text(subtitle_text, size=subtitle_size, font=subtitle_font, halign="center", valign="center");
 
-    // NFC symbol near tag area
-    translate([0, nfc_position_y + nfc_diameter/2 + 12, 0])
-        nfc_waves(12, text_depth);
+    if (show_custom_text)
+        translate([custom_text_x, custom_text_y, sign_thickness])
+            linear_extrude(text_depth)
+                text(custom_text, size=custom_text_size, font=subtitle_font, halign="center", valign="center");
 
-    // Custom text below NFC area
-    translate([0, nfc_position_y - nfc_diameter/2 - 8, 0])
-        linear_extrude(height = text_depth)
-            text(custom_text, size = custom_text_size,
-                 font = subtitle_font, halign = "center", valign = "center");
+    if (show_nfc && nfc_ring_visible)
+        translate([nfc_x, nfc_y, sign_thickness])
+            linear_extrude(text_depth)
+                difference() { circle(d=nfc_diameter+3); circle(d=nfc_diameter-1); }
 
-    // NFC ring indicator
-    translate([0, nfc_position_y, 0])
-        linear_extrude(height = text_depth)
-            difference() {
-                circle(d = nfc_diameter + 4);
-                circle(d = nfc_diameter + 1);
-            }
+    if (show_nfc && nfc_waves_visible)
+        translate([nfc_waves_x, nfc_waves_y, sign_thickness])
+            linear_extrude(text_depth) nfc_waves_2d(nfc_waves_size);
+
+    if (show_qr) {
+        translate([qr_x, qr_y, sign_thickness-0.3])
+            linear_extrude(0.3) square(qr_size+4, true);
+        color(text_color)
+        translate([qr_x, qr_y, sign_thickness])
+            linear_extrude(0.3) qr_pattern_2d(qr_size);
+    }
 }
 
-// QR code element (white background + black code)
-module qr_code_element() {
-    // White background
-    color(text_color)
-        translate([0, qr_position_y, sign_thickness - qr_depth])
-            linear_extrude(height = qr_depth)
-                square(qr_size + qr_border * 2, center = true);
+module sign_part() {
+    color(sign_color) sign_plate();
+    color(text_color) sign_elements();
+}
 
-    // QR code pattern (placeholder)
+// =====================
+// STAND - Compact block with slot
+// =====================
+
+module stand_part() {
+    slot_width = sign_thickness + 0.5;
+    front_lip = 5;
+    slot_y = front_lip + 1;  // Position of slot from front
+
     color(base_color)
-        translate([0, qr_position_y, sign_thickness])
-            qr_code_placeholder(qr_size, 0.4);
+    difference() {
+        // Solid rounded block
+        hull() {
+            // Front - full height, rounded top
+            translate([0, front_lip/2, stand_height/2])
+                cube([stand_width, front_lip, stand_height], center=true);
+
+            translate([0, front_lip/2, stand_height - 2])
+                rotate([0, 90, 0])
+                    cylinder(d=4, h=stand_width, center=true);
+
+            // Back - lower, rounded
+            translate([0, stand_depth - 2, 2])
+                rotate([0, 90, 0])
+                    cylinder(d=4, h=stand_width, center=true);
+        }
+
+        // Angled slot for sign - cuts from top down into the block
+        translate([0, slot_y, -1])
+            rotate([90 - lean_angle, 0, 0])
+                translate([0, 0, 0])
+                    cube([sign_width + 2, stand_height + 10, slot_width], center=true);
+    }
+}
+
+// =====================
+// FRAME - Surrounds the sign
+// =====================
+
+module frame_part() {
+    outer_width = sign_width + frame_border * 2;
+    outer_height = sign_height + frame_border * 2;
+    inner_width = sign_width + frame_tolerance * 2;
+    inner_height = sign_height + frame_tolerance * 2;
+
+    color(base_color)
+    difference() {
+        // Outer frame
+        linear_extrude(frame_thickness)
+            rounded_rect_2d(outer_width, outer_height, frame_corner_radius);
+
+        // Inner cutout (sign opening) - goes through most of the frame
+        translate([0, 0, frame_lip])
+            linear_extrude(frame_thickness)
+                rounded_rect_2d(inner_width, inner_height, corner_radius);
+
+        // Back opening (larger, for inserting sign)
+        translate([0, 0, -0.1])
+            linear_extrude(frame_lip + 0.2)
+                rounded_rect_2d(inner_width + frame_lip*2, inner_height + frame_lip*2, corner_radius + 1);
+    }
 }
 
 // =====================
 // ASSEMBLY
 // =====================
 
-module complete_sign() {
-    // Base sign
-    color(base_color)
-        sign_body();
+module assembled() {
+    stand_part();
 
-    // Embossed text
-    if (text_embossed) {
-        color(text_color)
-            translate([0, 0, sign_thickness - 0.01])
-                sign_text();
-    }
-
-    // QR code
-    if (show_qr_placeholder) {
-        qr_code_element();
-    }
-
-    // Stand
-    if (has_stand) {
-        color(base_color)
-            translate([-stand_width/2, -sign_height/2 + corner_radius, 0])
-                rotate([0, 0, 0])
-                    stand(stand_width, stand_depth, stand_thickness, stand_angle);
-    }
+    // Sign in slot
+    front_lip = 5;
+    slot_y = front_lip + 1;
+    translate([0, slot_y, 0])
+        rotate([90 - lean_angle, 0, 0])
+            translate([0, sign_height/2, -sign_thickness/2])
+                sign_part();
 }
 
 // =====================
 // RENDER
 // =====================
 
-// Complete assembled sign
-complete_sign();
+// All parts for printing
+translate([-sign_width/2 - 20, 0, 0])
+    sign_part();
+
+translate([stand_width/2 + 20, 0, 0])
+    rotate([stand_rot_x, stand_rot_y, stand_rot_z])
+        stand_part();
+
+if (show_frame)
+    translate([0, sign_height + 20, 0])
+        rotate([frame_rot_x, frame_rot_y, frame_rot_z])
+            frame_part();
+
+// For assembled preview:
+// assembled();
 
 // =====================
-// PRINT HELPERS
+// MULTI-COLOR EXPORT
 // =====================
-
-// Uncomment these for printing separate parts:
-
-// Sign body only (for main print)
-// sign_body();
-
-// Text plate only (for multi-color or inlay)
-// translate([0, 0, sign_thickness]) sign_text();
-
-// Stand only
-// translate([-stand_width/2, 0, 0]) stand(stand_width, stand_depth, stand_thickness, stand_angle);
-
-// Flat stand (for easier printing)
-// translate([-stand_width/2, sign_height/2 + 10, stand_thickness])
-//     rotate([180, 0, 0])
-//         stand(stand_width, stand_depth, stand_thickness, stand_angle);
-
-/*
- * PRINTING TIPS:
- * ==============
- * 1. Print sign face-down for smooth front surface
- * 2. Use 0.2mm layer height for good detail
- * 3. For multi-color text:
- *    - Print base in dark color
- *    - Pause at text layer height
- *    - Switch to white/light filament
- *    - Or use multi-material printer
- * 4. NFC tag installation:
- *    - Insert NFC sticker into pocket from back
- *    - Secure with tape or thin layer of glue
- * 5. Stand can be printed separately and glued
- *
- * CUSTOMIZATION:
- * ==============
- * - For real QR codes, export your QR as SVG and import:
- *   import("your_qr_code.svg");
- * - Or use the qr_code library for OpenSCAD
- * - Adjust nfc_diameter to match your NFC tags
- * - Common NFC tag sizes: 25mm, 30mm, 35mm diameter
- */
+// Export each separately, then combine in slicer:
+//
+// Color 1 - Sign base (white):
+// sign_plate();
+//
+// Color 2 - Sign text/graphics (black):
+// sign_elements();
+//
+// Color 3 - Stand (black):
+// stand_part();
+//
+// Color 4 - Frame (black):
+// frame_part();
