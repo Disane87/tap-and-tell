@@ -76,6 +76,11 @@ stand_depth = 22;
 stand_height = 14;
 lean_angle = 75;           // 90=vertical, 75=slight lean back
 
+// Stand rotation for preview/printing
+stand_rot_x = 0;           // Rotation around X axis
+stand_rot_y = 0;           // Rotation around Y axis
+stand_rot_z = 0;           // Rotation around Z axis
+
 $fn = 64;
 
 // Colors
@@ -234,8 +239,9 @@ module assembled() {
 translate([-sign_width/2 - 10, 0, 0])
     sign_part();
 
-translate([stand_width/2 + 10, -stand_depth/2, 0])
-    stand_part();
+translate([stand_width/2 + 10, 0, 0])
+    rotate([stand_rot_x, stand_rot_y, stand_rot_z])
+        stand_part();
 
 // For assembled preview:
 // assembled();
