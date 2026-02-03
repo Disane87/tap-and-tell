@@ -1,8 +1,9 @@
 /*
  * Tap & Tell NFC Sign
  * ====================
- * Minimalist two-part design: Sign plate + Simple slot stand
- * Inspired by e-ink display stands
+ * Minimalist two-part design:
+ * - Sign plate (lays against stand)
+ * - Stand with angled back rest and front lip
  *
  * Author: Tap & Tell Project
  * License: MIT
@@ -13,10 +14,10 @@
 // =====================
 
 // Sign dimensions
-sign_width = 120;           // Width of the sign [mm]
-sign_height = 90;           // Height of the sign [mm]
-sign_thickness = 3;         // Sign thickness [mm]
-corner_radius = 3;          // Corner rounding [mm]
+sign_width = 120;           // Width [mm]
+sign_height = 90;           // Height [mm]
+sign_thickness = 3;         // Thickness [mm]
+corner_radius = 3;
 
 // Text settings
 title_text = "Tap & Tell";
@@ -28,18 +29,18 @@ custom_text_size = 6;
 text_depth = 0.6;
 text_embossed = true;
 
-// Font settings
+// Fonts
 title_font = "Liberation Sans:style=Bold";
 subtitle_font = "Liberation Sans:style=Regular";
 
-// NFC tag settings
+// NFC settings
 nfc_diameter = 30;
 nfc_thickness = 0.5;
 nfc_pocket_extra = 0.5;
 nfc_offset_x = -25;
 nfc_offset_y = 5;
 
-// QR code settings
+// QR settings
 show_qr = true;
 qr_size = 25;
 qr_offset_x = 30;
@@ -47,14 +48,13 @@ qr_offset_y = 10;
 qr_depth = 0.4;
 
 // Stand settings
-stand_width = 100;          // Width of stand [mm]
-stand_depth = 30;           // Depth (front to back) [mm]
-stand_height = 12;          // Height of stand [mm]
-slot_angle = 80;            // Angle from horizontal (90=vertical)
-slot_insert_depth = 10;     // How deep sign goes into slot [mm]
-slot_tolerance = 0.3;       // Gap for easy fit [mm]
+stand_width = 110;          // Width of stand [mm]
+stand_base_depth = 35;      // Base depth [mm]
+stand_height = 15;          // Height at front [mm]
+lean_angle = 75;            // Angle of back rest from horizontal [degrees]
+lip_height = 5;             // Front lip to hold sign [mm]
+wall_thickness = 4;         // Thickness of back rest wall [mm]
 
-// Visual settings
 $fn = 64;
 
 // Colors
@@ -63,7 +63,7 @@ sign_color = [0.96, 0.96, 0.94];
 text_color = [0.15, 0.15, 0.15];
 
 // =====================
-// MODULES
+// HELPER MODULES
 // =====================
 
 module rounded_rect_2d(width, height, radius) {
@@ -107,7 +107,7 @@ module qr_pattern_2d(size) {
 }
 
 // =====================
-// SIGN PLATE (prints flat)
+// SIGN PLATE
 // =====================
 
 module sign_plate() {
@@ -115,7 +115,7 @@ module sign_plate() {
         linear_extrude(height = sign_thickness)
             rounded_rect_2d(sign_width, sign_height, corner_radius);
 
-        // NFC pocket from back
+        // NFC pocket
         translate([nfc_offset_x, nfc_offset_y, -0.1])
             cylinder(d = nfc_diameter + nfc_pocket_extra * 2, h = nfc_thickness + 0.2);
 
@@ -151,7 +151,7 @@ module sign_graphics() {
         linear_extrude(height = text_depth)
             text(custom_text, size = custom_text_size, font = subtitle_font, halign = "center", valign = "center");
 
-    // QR background + pattern
+    // QR area
     if (show_qr) {
         translate([qr_offset_x, qr_offset_y, sign_thickness - qr_depth])
             linear_extrude(height = qr_depth)
@@ -175,39 +175,46 @@ module sign_part() {
 }
 
 // =====================
-// STAND (simple block with angled slot)
+// STAND (with angled back rest)
 // =====================
 
 module stand_part() {
-    slot_width = sign_thickness + slot_tolerance;
-
-    // Position of slot center from front
-    slot_front_offset = 8;
+    // Calculate back rest dimensions
+    back_height = stand_base_depth * tan(lean_angle);
 
     difference() {
-        // Main body - rounded block
-        hull() {
-            // Front cylinder (creates rounded front edge)
-            translate([0, -stand_depth/2 + stand_height/2, stand_height/2])
-                rotate([0, 90, 0])
-                    cylinder(d = stand_height, h = stand_width, center = true);
+        union() {
+            // Base plate
+            hull() {
+                // Front - rounded
+                translate([0, -stand_base_depth/2 + stand_height/2, stand_height/2])
+                    rotate([0, 90, 0])
+                        cylinder(d = stand_height, h = stand_width, center = true);
 
-            // Back - flat with small rounding
-            translate([0, stand_depth/2 - 2, 1])
-                rotate([0, 90, 0])
-                    cylinder(d = 2, h = stand_width, center = true);
+                // Back corners - small
+                translate([0, stand_base_depth/2 - 2, 1])
+                    rotate([0, 90, 0])
+                        cylinder(d = 2, h = stand_width, center = true);
 
-            // Bottom
-            translate([0, 0, 0.5])
-                cube([stand_width, stand_depth, 1], center = true);
+                // Bottom fill
+                translate([0, 0, 0.5])
+                    cube([stand_width, stand_base_depth, 1], center = true);
+            }
+
+            // Angled back rest (sign rests against this)
+            translate([0, stand_base_depth/2, 0])
+                rotate([lean_angle, 0, 0])
+                    translate([0, wall_thickness/2, back_height/2])
+                        cube([stand_width, wall_thickness, back_height], center = true);
+
+            // Front lip (holds bottom of sign)
+            translate([0, -stand_base_depth/2 + stand_height/2 + wall_thickness, stand_height/2 + lip_height/2])
+                cube([stand_width, wall_thickness, lip_height + stand_height], center = true);
         }
 
-        // Angled slot - cut from top
-        // The slot is angled so sign leans back slightly
-        translate([0, -stand_depth/2 + slot_front_offset, stand_height])
-            rotate([-(90 - slot_angle), 0, 0])
-                translate([0, 0, -slot_insert_depth])
-                    cube([sign_width + 2, slot_width, slot_insert_depth * 2 + stand_height], center = true);
+        // Cut bottom flat
+        translate([0, 0, -50])
+            cube([stand_width + 10, stand_base_depth + 50, 100], center = true);
     }
 }
 
@@ -216,16 +223,19 @@ module stand_part() {
 // =====================
 
 module assembled_view() {
-    // Stand on ground
+    // Stand
     color(base_color)
         stand_part();
 
-    // Sign in slot
-    // Position: front of stand, rotated to match slot angle
-    slot_front_offset = 8;
+    // Sign leaning against back rest
+    // Back rest starts at y = stand_base_depth/2, angled at lean_angle
+    // Sign's back face should touch the front of the back rest
 
-    translate([0, -stand_depth/2 + slot_front_offset, stand_height - 1])
-        rotate([slot_angle, 0, 0])
+    back_rest_y = stand_base_depth/2;
+    sign_bottom_z = stand_height + 1;  // Sits on top of front lip area
+
+    translate([0, back_rest_y - sign_thickness * cos(lean_angle), sign_bottom_z])
+        rotate([lean_angle, 0, 0])
             translate([0, sign_height/2, 0])
                 sign_part();
 }
@@ -234,16 +244,19 @@ module assembled_view() {
 // RENDER
 // =====================
 
+// Assembled preview
 assembled_view();
 
-// For printing:
-// sign_part();
-// stand_part();
-// translate([-70, 0, 0]) sign_part();  translate([60, 0, 0]) stand_part();
+// For printing - uncomment one:
+// sign_part();     // Print flat
+// stand_part();    // Print as-is
 
 /*
  * PRINTING:
- * - Sign: print flat, face down for smooth surface
- * - Stand: print as-is, no supports needed
- * - Adjust slot_tolerance if fit is too tight/loose
+ * - Sign: Print flat, text side up or down
+ * - Stand: Print as-is, no supports needed
+ *
+ * ASSEMBLY:
+ * - Place sign in stand, leaning against back rest
+ * - Front lip prevents sign from sliding forward
  */
