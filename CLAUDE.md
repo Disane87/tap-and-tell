@@ -67,8 +67,7 @@ On startup in development mode (`NODE_ENV !== 'production'`), a dev tenant is au
 |---|---|
 | Login | `/login` |
 | Profile | `/profile` |
-| Dashboard | `/dashboard` |
-| Tenant Admin | `/t/dev000tenant/admin` |
+| Dashboard (Tenant Admin) | `/dashboard` |
 | Guest Landing (flat) | `/g/dev00000gb01` |
 | Guestbook View (flat) | `/g/dev00000gb01/view` |
 | Slideshow (flat) | `/g/dev00000gb01/slideshow` |
@@ -102,15 +101,9 @@ The app supports two parallel route structures for guest access:
 ```
 Guests access guestbooks directly by ID — no tenant UUID exposed. The server resolves the tenant context internally via `server/utils/guestbook-resolver.ts`.
 
-**Tenant-level routes (dashboard & management):**
-```
-/t/[uuid]         → Tenant root (redirects to first guestbook)
-/t/[uuid]/admin   → Tenant admin (guestbook list, members, API apps)
-```
-
 NFC tags and QR codes should use the flat `/g/[id]` URLs for simplicity.
 
-> **Note:** The legacy tenant-nested guestbook routes (`/t/[uuid]/g/[gbUuid]/*`) have been removed. All guestbook-level pages now use flat `/g/[id]` routes.
+> **Note:** All tenant-level page routes (`/t/[uuid]/*`) have been removed. Tenant management is now consolidated into `/dashboard`. The API routes (`/api/t/[uuid]/*`) remain for backwards compatibility.
 
 ### Data Model
 
@@ -157,11 +150,6 @@ User (email, name, avatarUrl, passwordHash)
 - `DELETE /api/auth/avatar` — Delete avatar
 - `GET /api/auth/avatar/[userId]` — Serve avatar image (public, no auth)
 
-**Legacy Admin (Bearer token):**
-- `POST /api/admin/login` — Authenticate with password
-- `GET /api/admin/entries` — Fetch entries
-- `DELETE /api/admin/entries/[id]` — Delete entry
-
 ### Key Composables (`app/composables/`)
 
 - **`useAuth`** — JWT cookie-based authentication (login, register, logout, fetchMe, token refresh, updateProfile, changePassword, deleteAccount, uploadAvatar, deleteAvatar). Module-level `ref()` state.
@@ -177,7 +165,6 @@ User (email, name, avatarUrl, passwordHash)
 - **`useImageCompression`** — Client-side photo compression before upload.
 - **`usePdfExport`** — PDF generation and export for guestbook entries.
 - **`useSlideshow`** — Slideshow state management (auto-advance, interval, controls).
-- **`useAdmin`** — Token-based legacy admin auth using `sessionStorage`.
 - **`useNfc`** — Detects NFC context from URL query params (`?source=nfc&event=EventName`).
 - **`useOfflineQueue`** — Offline entry queuing with automatic submission on reconnect.
 - **`useTheme`** — Light/dark/system theme with `localStorage` persistence and FOUC prevention via inline head script.
@@ -191,12 +178,8 @@ User (email, name, avatarUrl, passwordHash)
 4. Server resolves tenant via `guestbook-resolver.ts`, saves entry to database + encrypted photo
 5. Guestbook page (`/g/[id]/view`) displays approved entries
 
-**Tenant-nested flow (admin / legacy):**
-1. User visits `/t/[uuid]/g/[gbUuid]`
-2. Multi-step wizard (`app/components/form/FormWizard.vue`) collects name, photo, answers, message
-3. On submit → `useTenantGuests.createEntry()` → `POST /api/t/[uuid]/g/[gbUuid]/entries`
-4. Server saves entry to database + encrypted photo
-5. Guestbook page (`/t/[uuid]/g/[gbUuid]/guestbook`) displays approved entries via `GuestCard` components
+**Legacy API flow (for backwards compatibility):**
+The tenant-scoped API routes (`/api/t/[uuid]/g/[gbUuid]/*`) remain available for existing integrations. New implementations should use the flat routes.
 
 ### Pages
 
@@ -217,13 +200,7 @@ User (email, name, avatarUrl, passwordHash)
 
 **Owner/admin:**
 - `/profile` — User profile management (avatar, personal info, plan, security, account deletion)
-- `/dashboard` — Redirect to user's tenant admin (`/t/[uuid]/admin`), or create-tenant flow
-- `/t/[uuid]` — Tenant root — redirects to first guestbook
-- `/t/[uuid]/admin` — Tenant admin (guestbook list with eye-open buttons, members, API apps)
-
-**Legacy admin:**
-- `/admin/login` — Legacy admin login
-- `/admin` — Legacy admin dashboard
+- `/dashboard` — Tenant admin (guestbook list, members, API apps) or create-tenant flow if no tenant exists
 
 ### Key Header Components
 
@@ -273,12 +250,10 @@ User (email, name, avatarUrl, passwordHash)
 | `JWT_SECRET` | Owner auth JWT signing secret | insecure default |
 | `ENCRYPTION_MASTER_KEY` | 64-char hex key for photo encryption | dev fallback |
 | `CSRF_SECRET` | CSRF token signing secret | insecure default |
-| `ADMIN_PASSWORD` | Legacy admin password | `admin123` |
-| `TOKEN_SECRET` | Legacy token signing secret | `tap-and-tell-secret` |
 | `DATA_DIR` | Photo storage directory | `.data` |
 | `NODE_ENV` | Environment mode | `development` |
 
-> **All secret defaults MUST be overridden in production**: `JWT_SECRET`, `ENCRYPTION_MASTER_KEY`, `CSRF_SECRET`, `ADMIN_PASSWORD`, `TOKEN_SECRET`.
+> **All secret defaults MUST be overridden in production**: `JWT_SECRET`, `ENCRYPTION_MASTER_KEY`, `CSRF_SECRET`.
 
 ## Implementation Plans
 
@@ -311,6 +286,7 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 
 ## Process Rules
 
+- **New environment variables** — when introducing new ENV variables, always add them to both `.env.example` (with description and placeholder) and `.env` (with actual dev value)
 - Read `PROJECT_MEMORY.md` before implementing changes — it contains known issues and hard constraints
 - Verify the project builds (`pnpm build`) before marking any step complete
 - Update relevant markdown plans/docs before implementing architectural changes

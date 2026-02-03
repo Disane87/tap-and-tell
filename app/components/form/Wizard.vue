@@ -34,7 +34,8 @@ const stepLabelMap: Record<number, string> = {
   1: 'form.steps.basics',
   2: 'form.steps.favorites',
   3: 'form.steps.funFacts',
-  4: 'form.steps.message'
+  4: 'form.steps.message',
+  5: 'form.steps.customQuestions'
 }
 
 /**
@@ -111,6 +112,7 @@ const nextButtonText = computed(() => {
       <FormStepFavorites v-else-if="currentStep === 2" key="step-2" />
       <FormStepFun v-else-if="currentStep === 3" key="step-3" />
       <FormStepMessage v-else-if="currentStep === 4" key="step-4" />
+      <FormStepCustomQuestions v-else-if="currentStep === 5" key="step-5" />
     </Transition>
 
     <!-- Navigation buttons -->

@@ -383,6 +383,7 @@
       "basics": "Basics",
       "favorites": "Favorites",
       "funFacts": "Fun Facts",
+      "customQuestions": "Questions",
       "message": "Message"
     },
     "basics": {
@@ -437,6 +438,12 @@
       "howWeMetPlaceholder": "Tell our story...",
       "bestMemory": "Best Memory",
       "bestMemoryPlaceholder": "What's your favorite memory with me?"
+    },
+    "customQuestions": {
+      "title": "A Few More Questions",
+      "subtitle": "Help us learn more about you!",
+      "required": "This field is required",
+      "empty": "No questions configured"
     }
   },
   "guestbook": {
@@ -735,9 +742,25 @@
   "settings": {
     "title": "Settings",
     "description": "Customize your guestbook appearance and behavior.",
+    "tabs": {
+      "landing": "Landing Page",
+      "cards": "Cards & Display",
+      "form": "Form",
+      "advanced": "Advanced"
+    },
+    "cardPreview": {
+      "label": "Card Preview",
+      "mockMessage": "What a wonderful day! So happy to be here with all of you.",
+      "justNow": "Just now",
+      "layout": "Layout"
+    },
     "welcomeMessage": {
       "label": "Welcome Message",
       "placeholder": "Write a welcome message for your guests..."
+    },
+    "textColor": {
+      "label": "Text Color",
+      "description": "Set a custom text color for guest-facing pages. Leave empty for default."
     },
     "themeColor": {
       "label": "Theme Color",
@@ -784,6 +807,25 @@
       "removeSuccess": "Background image removed.",
       "removeFailed": "Failed to remove background image."
     },
+    "headerImage": {
+      "label": "Header Image / Logo",
+      "description": "Upload an event logo or header image to display on the landing page.",
+      "upload": "Click to upload a header image",
+      "replace": "Replace Image",
+      "remove": "Remove",
+      "position": "Image Position",
+      "positions": {
+        "aboveTitle": "Above Title",
+        "belowTitle": "Below Title",
+        "behindTitle": "Behind Title"
+      },
+      "tooLarge": "Image is too large (max 5MB).",
+      "invalidFormat": "Invalid image format.",
+      "uploadSuccess": "Header image uploaded!",
+      "uploadFailed": "Failed to upload header image.",
+      "removeSuccess": "Header image removed.",
+      "removeFailed": "Failed to remove header image."
+    },
     "cardColor": {
       "label": "Card Color",
       "description": "Set a custom background color for the info card on the landing page."
@@ -808,6 +850,80 @@
       "handwritten": "Handwritten (Caveat)",
       "display": "Display (DM Sans)",
       "sans": "Sans-Serif (Inter)"
+    },
+    "ctaButtonText": {
+      "label": "CTA Button Text",
+      "description": "Custom text for the 'Sign the Guestbook' button. Leave empty for default.",
+      "placeholder": "e.g. Leave your wishes"
+    },
+    "cardStyle": {
+      "label": "Entry Card Style",
+      "description": "Choose how entry cards look on the guestbook view page.",
+      "polaroid": "Polaroid",
+      "polaroidDesc": "Classic photo card with shadow",
+      "minimal": "Minimal",
+      "minimalDesc": "Clean, borderless design",
+      "rounded": "Rounded",
+      "roundedDesc": "Large corners with tinted background",
+      "bordered": "Bordered",
+      "borderedDesc": "Left accent border matching theme"
+    },
+    "viewLayout": {
+      "label": "View Layout",
+      "description": "Choose how entries are displayed on the guestbook view page.",
+      "grid": "Grid",
+      "gridDesc": "Classic card grid layout",
+      "masonry": "Masonry",
+      "masonryDesc": "Pinterest-style staggered layout",
+      "list": "List",
+      "listDesc": "Compact list with thumbnails",
+      "timeline": "Timeline",
+      "timelineDesc": "Chronological with date separators"
+    },
+    "slideshow": {
+      "label": "Slideshow Settings",
+      "description": "Configure default slideshow behavior.",
+      "interval": "Auto-advance Interval",
+      "transition": "Transition Effect",
+      "fade": "Fade",
+      "slide": "Slide",
+      "zoom": "Zoom",
+      "showNames": "Show guest names",
+      "showBadges": "Show answer badges"
+    },
+    "colorScheme": {
+      "label": "Color Scheme",
+      "description": "Override guests' system theme preference.",
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "footer": {
+      "label": "Footer",
+      "description": "Add a custom footer with text and social links.",
+      "text": "Footer Text",
+      "textPlaceholder": "e.g. Made with love for Sarah & Tom's wedding",
+      "socialLinks": "Social Links",
+      "addLink": "Add Link",
+      "noLinks": "No social links added",
+      "urlPlaceholder": "https://..."
+    },
+    "customQuestions": {
+      "label": "Custom Questions",
+      "description": "Add your own questions for guests to answer.",
+      "add": "Add Question",
+      "questionLabel": "Question",
+      "questionPlaceholder": "e.g. How do you know the couple?",
+      "type": "Type",
+      "typeText": "Short Text",
+      "typeTextarea": "Long Text",
+      "typeChoice": "Choice",
+      "options": "Options",
+      "optionsPlaceholder": "Option (one per line)",
+      "required": "Required",
+      "remove": "Remove",
+      "empty": "No custom questions yet. Add one to personalize the form.",
+      "maxReached": "Maximum number of questions reached for your plan."
     },
     "preview": "Preview",
     "save": "Save Settings",
@@ -908,6 +1024,7 @@
       "favorites": "Favorites",
       "funFacts": "Fun Facts",
       "ourStory": "Our Story",
+      "customQuestions": "More About Me",
       "date": "Date"
     },
     "labels": {

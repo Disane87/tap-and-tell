@@ -94,18 +94,24 @@ That's it! Open `http://localhost:3000` and you're running! 🎉
 Create a `.env` file in the project root:
 
 ```env
-# Admin login password (CHANGE THIS in production!)
-ADMIN_PASSWORD=your-secure-password-here
+# PostgreSQL connection string
+POSTGRES_URL=postgresql://user:password@localhost:5432/tapandtell
 
-# HMAC signing secret for auth tokens (CHANGE THIS in production!)
-TOKEN_SECRET=your-secret-key-here
+# JWT signing secret (CHANGE THIS in production!)
+JWT_SECRET=your-jwt-secret-here
+
+# CSRF token signing secret (CHANGE THIS in production!)
+CSRF_SECRET=your-csrf-secret-here
+
+# Master encryption key for photo encryption (64 hex chars, REQUIRED in production!)
+ENCRYPTION_MASTER_KEY=
 
 # Storage directory for entries and photos
 DATA_DIR=.data
 ```
 
 > [!CAUTION]
-> ⚠️ **Security First!** The default values (`admin123` and `tap-and-tell-secret`) are for development only. **Always change these in production!**
+> ⚠️ **Security First!** Always set secure values for `JWT_SECRET`, `CSRF_SECRET`, and `ENCRYPTION_MASTER_KEY` in production!
 
 ---
 
@@ -132,8 +138,10 @@ docker build -t tap-and-tell .
 # Run the container
 docker run -d \
   -p 3000:3000 \
-  -e ADMIN_PASSWORD=your-secure-password \
-  -e TOKEN_SECRET=your-secret-key \
+  -e POSTGRES_URL=postgresql://user:password@host:5432/tapandtell \
+  -e JWT_SECRET=your-secure-jwt-secret \
+  -e CSRF_SECRET=your-secure-csrf-secret \
+  -e ENCRYPTION_MASTER_KEY=your-64-char-hex-key \
   -v ./data:/app/.data \
   tap-and-tell
 ```
@@ -149,7 +157,7 @@ Deploy to Vercel with one click:
 
 1. Fork this repository
 2. Import the project in [Vercel](https://vercel.com/)
-3. Set environment variables (`ADMIN_PASSWORD`, `TOKEN_SECRET`)
+3. Set environment variables (`POSTGRES_URL`, `JWT_SECRET`, `CSRF_SECRET`, `ENCRYPTION_MASTER_KEY`)
 4. Deploy! 🚀
 
 > [!NOTE]
@@ -299,31 +307,43 @@ All API endpoints at a glance:
 | `GET` | `/api/photos/[filename]` | Serve a photo file (1-year cache) |
 | `GET` | `/api/health` | Health check endpoint |
 
-## Admin Endpoints (Bearer Token Required)
+## Authentication Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/admin/login` | Authenticate with password, receive JWT-like token |
-| `GET` | `/api/admin/entries` | Fetch all entries (including pending/rejected) |
-| `PATCH` | `/api/admin/entries/[id]` | Update entry status (approve/reject) |
-| `DELETE` | `/api/admin/entries/[id]` | Delete an entry (authenticated) |
-| `POST` | `/api/admin/entries/bulk` | Bulk update entry statuses |
+| `POST` | `/api/auth/login` | Authenticate with email/password, set JWT cookies |
+| `POST` | `/api/auth/register` | Register a new owner account |
+| `POST` | `/api/auth/logout` | Clear auth cookies |
+| `GET` | `/api/auth/me` | Get current user profile |
+| `POST` | `/api/auth/refresh` | Refresh access token |
+
+## Tenant/Guestbook Endpoints (JWT Cookie Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/tenants` | List user's tenants |
+| `POST` | `/api/tenants` | Create a new tenant |
+| `GET` | `/api/tenants/[uuid]/guestbooks` | List guestbooks for tenant |
+| `POST` | `/api/tenants/[uuid]/guestbooks` | Create a new guestbook |
+| `GET` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries` | Fetch all entries (admin) |
+| `PATCH` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries/[id]` | Update entry status |
+| `DELETE` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries/[id]` | Delete an entry |
 
 ### Authentication
 
-Admin endpoints use HMAC-SHA256 tokens with 24-hour expiry:
+Admin endpoints use HTTP-only JWT cookies with CSRF protection:
 
 ```bash
 # Login
-curl -X POST /api/admin/login \
+curl -X POST /api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"password": "your-admin-password"}'
+  -d '{"email": "you@example.com", "password": "your-password"}'
 
-# Response: { "success": true, "token": "base64(expiry).signature" }
+# Response: Sets access_token and refresh_token cookies
 
-# Use token for admin endpoints
-curl /api/admin/entries \
-  -H "Authorization: Bearer <token>"
+# Use cookies for authenticated endpoints
+curl /api/tenants \
+  -b "access_token=...; refresh_token=..."
 ```
 
 ### Creating an Entry
@@ -353,9 +373,11 @@ The brain of Tap & Tell lives in these composables — each one handles a specif
 
 | Composable | What It Does |
 |-----------|-------------|
+| `useAuth()` | 🔐 JWT cookie-based authentication (login, register, logout, profile) |
 | `useGuests()` | 📋 CRUD operations for guestbook entries. Module-level shared state across the app |
 | `useGuestForm()` | 🧙 4-step wizard state management with per-step validation |
-| `useAdmin()` | 🔐 Admin authentication & entry moderation (sessionStorage-based) |
+| `useGuestbook()` | 📖 Public guestbook operations using flat `/api/g/[id]` endpoints |
+| `useTenantAdmin()` | 👔 Admin entry operations (fetch all, delete, update status, bulk) |
 | `useTheme()` | 🌙 Light/dark/system theme with localStorage persistence & FOUC prevention |
 | `useNfc()` | 📱 Detects NFC context from URL query params (`?source=nfc&event=...`) |
 | `useSlideshow()` | 🖥️ Auto-advancing slideshow with play/pause/fullscreen controls |
@@ -604,9 +626,10 @@ Check the `plans/` directory for detailed step-by-step implementation documents.
 
 > [!CAUTION]
 > **Before going to production, make sure to:**
-> - 🔑 Change `ADMIN_PASSWORD` from the default `admin123`
-> - 🔑 Change `TOKEN_SECRET` from the default `tap-and-tell-secret`
-> - 🔒 The public `DELETE /api/entries/[id]` endpoint currently lacks authentication — this is a known issue
+> - 🔑 Set a secure `JWT_SECRET` (not the default)
+> - 🔑 Set a secure `CSRF_SECRET` (not the default)
+> - 🔑 Generate a 64-character hex `ENCRYPTION_MASTER_KEY` for photo encryption
+> - 🔐 All admin features require 2FA (TOTP or Email OTP)
 
 ---
 

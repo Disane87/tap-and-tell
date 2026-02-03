@@ -10,9 +10,7 @@ export default defineNitroPlugin(() => {
   /** Known insecure default values that MUST be overridden in production. */
   const insecureDefaults: Record<string, string[]> = {
     JWT_SECRET: ['jwt-secret-change-in-production', 'insecure-jwt-secret', ''],
-    CSRF_SECRET: ['csrf-secret-change-in-production', 'insecure-csrf-secret', ''],
-    ADMIN_PASSWORD: ['admin123', ''],
-    TOKEN_SECRET: ['tap-and-tell-secret', '']
+    CSRF_SECRET: ['csrf-secret-change-in-production', 'insecure-csrf-secret', '']
   }
 
   const errors: string[] = []

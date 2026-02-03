@@ -383,6 +383,7 @@
       "basics": "Basics",
       "favorites": "Favoriten",
       "funFacts": "Fun Facts",
+      "customQuestions": "Fragen",
       "message": "Nachricht"
     },
     "basics": {
@@ -437,6 +438,12 @@
       "howWeMetPlaceholder": "Erzähl unsere Geschichte...",
       "bestMemory": "Beste Erinnerung",
       "bestMemoryPlaceholder": "Was ist deine liebste Erinnerung mit mir?"
+    },
+    "customQuestions": {
+      "title": "Noch ein paar Fragen",
+      "subtitle": "Hilf uns, dich besser kennenzulernen!",
+      "required": "Dieses Feld ist erforderlich",
+      "empty": "Keine Fragen konfiguriert"
     }
   },
   "guestbook": {
@@ -735,9 +742,25 @@
   "settings": {
     "title": "Einstellungen",
     "description": "Passe das Aussehen und Verhalten deines Gästebuchs an.",
+    "tabs": {
+      "landing": "Landingpage",
+      "cards": "Karten & Anzeige",
+      "form": "Formular",
+      "advanced": "Erweitert"
+    },
+    "cardPreview": {
+      "label": "Karten-Vorschau",
+      "mockMessage": "Was für ein wundervoller Tag! So glücklich, hier bei euch zu sein.",
+      "justNow": "Gerade eben",
+      "layout": "Layout"
+    },
     "welcomeMessage": {
       "label": "Willkommensnachricht",
       "placeholder": "Schreibe eine Willkommensnachricht für deine Gäste..."
+    },
+    "textColor": {
+      "label": "Textfarbe",
+      "description": "Lege eine eigene Textfarbe für die Gästeseiten fest. Leer lassen für Standard."
     },
     "themeColor": {
       "label": "Akzentfarbe",
@@ -784,6 +807,25 @@
       "removeSuccess": "Hintergrundbild entfernt.",
       "removeFailed": "Hintergrundbild konnte nicht entfernt werden."
     },
+    "headerImage": {
+      "label": "Header-Bild / Logo",
+      "description": "Lade ein Event-Logo oder Header-Bild hoch, das auf der Landingpage angezeigt wird.",
+      "upload": "Klicke, um ein Header-Bild hochzuladen",
+      "replace": "Bild ersetzen",
+      "remove": "Entfernen",
+      "position": "Bildposition",
+      "positions": {
+        "aboveTitle": "Über dem Titel",
+        "belowTitle": "Unter dem Titel",
+        "behindTitle": "Hinter dem Titel"
+      },
+      "tooLarge": "Das Bild ist zu groß (max. 5 MB).",
+      "invalidFormat": "Ungültiges Bildformat.",
+      "uploadSuccess": "Header-Bild hochgeladen!",
+      "uploadFailed": "Header-Bild konnte nicht hochgeladen werden.",
+      "removeSuccess": "Header-Bild entfernt.",
+      "removeFailed": "Header-Bild konnte nicht entfernt werden."
+    },
     "cardColor": {
       "label": "Kartenfarbe",
       "description": "Lege eine eigene Hintergrundfarbe für die Info-Karte auf der Landingpage fest."
@@ -808,6 +850,80 @@
       "handwritten": "Handschrift (Caveat)",
       "display": "Display (DM Sans)",
       "sans": "Sans-Serif (Inter)"
+    },
+    "ctaButtonText": {
+      "label": "CTA-Button-Text",
+      "description": "Eigener Text für den 'Reinschreiben'-Button. Leer lassen für Standard.",
+      "placeholder": "z.B. Hinterlasse deine Wünsche"
+    },
+    "cardStyle": {
+      "label": "Eintrags-Kartenstil",
+      "description": "Wähle das Aussehen der Karten auf der Gästebuch-Ansicht.",
+      "polaroid": "Polaroid",
+      "polaroidDesc": "Klassische Fotokarte mit Schatten",
+      "minimal": "Minimal",
+      "minimalDesc": "Klares, randloses Design",
+      "rounded": "Abgerundet",
+      "roundedDesc": "Große Ecken mit getöntem Hintergrund",
+      "bordered": "Umrandet",
+      "borderedDesc": "Linke Akzentlinie in Themenfarbe"
+    },
+    "viewLayout": {
+      "label": "Ansichts-Layout",
+      "description": "Wähle, wie Einträge auf der Gästebuch-Seite angezeigt werden.",
+      "grid": "Raster",
+      "gridDesc": "Klassisches Karten-Raster",
+      "masonry": "Masonry",
+      "masonryDesc": "Pinterest-artiges Layout",
+      "list": "Liste",
+      "listDesc": "Kompakte Liste mit Vorschaubildern",
+      "timeline": "Zeitleiste",
+      "timelineDesc": "Chronologisch mit Datumstrennern"
+    },
+    "slideshow": {
+      "label": "Diashow-Einstellungen",
+      "description": "Konfiguriere das Standardverhalten der Diashow.",
+      "interval": "Auto-Wechsel-Intervall",
+      "transition": "Übergangseffekt",
+      "fade": "Überblenden",
+      "slide": "Schieben",
+      "zoom": "Zoom",
+      "showNames": "Gastnamen anzeigen",
+      "showBadges": "Antwort-Badges anzeigen"
+    },
+    "colorScheme": {
+      "label": "Farbschema",
+      "description": "Überschreibe die Systemeinstellung der Gäste.",
+      "system": "System",
+      "light": "Hell",
+      "dark": "Dunkel"
+    },
+    "footer": {
+      "label": "Fußzeile",
+      "description": "Füge eine Fußzeile mit Text und Social Links hinzu.",
+      "text": "Fußzeilen-Text",
+      "textPlaceholder": "z.B. Mit Liebe für Sarah & Toms Hochzeit",
+      "socialLinks": "Social Links",
+      "addLink": "Link hinzufügen",
+      "noLinks": "Keine Social Links hinzugefügt",
+      "urlPlaceholder": "https://..."
+    },
+    "customQuestions": {
+      "label": "Eigene Fragen",
+      "description": "Füge eigene Fragen für deine Gäste hinzu.",
+      "add": "Frage hinzufügen",
+      "questionLabel": "Frage",
+      "questionPlaceholder": "z.B. Wie kennt ihr das Brautpaar?",
+      "type": "Typ",
+      "typeText": "Kurztext",
+      "typeTextarea": "Langtext",
+      "typeChoice": "Auswahl",
+      "options": "Optionen",
+      "optionsPlaceholder": "Option (eine pro Zeile)",
+      "required": "Pflichtfeld",
+      "remove": "Entfernen",
+      "empty": "Noch keine eigenen Fragen. Füge eine hinzu, um das Formular zu personalisieren.",
+      "maxReached": "Maximale Anzahl an Fragen für dein Abo erreicht."
     },
     "preview": "Vorschau",
     "save": "Einstellungen speichern",
@@ -908,6 +1024,7 @@
       "favorites": "Favoriten",
       "funFacts": "Fun Facts",
       "ourStory": "Unsere Geschichte",
+      "customQuestions": "Mehr über mich",
       "date": "Datum"
     },
     "labels": {

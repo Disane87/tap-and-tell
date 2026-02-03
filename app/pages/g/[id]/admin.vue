@@ -11,6 +11,7 @@ import { toast } from 'vue-sonner'
 import type { EntryStatus, GuestEntry } from '~/types/guest'
 import type { TenantRole } from '~/types/tenant'
 import type { Guestbook } from '~/types/guestbook'
+import type { SettingsTab } from '~/components/admin/GuestbookSettings.vue'
 
 const { t, locale } = useI18n()
 const route = useRoute()
@@ -31,6 +32,11 @@ const activeTab = ref<'all' | EntryStatus>('all')
 const showSettings = ref(false)
 const showQrCode = ref(false)
 const settingsRef = ref<InstanceType<typeof AdminGuestbookSettings> | null>(null)
+const activeSettingsTab = ref<SettingsTab>('landing')
+
+function handleSettingsTabChange(tab: SettingsTab): void {
+  activeSettingsTab.value = tab
+}
 
 // QR Code state
 const eventName = ref('')
@@ -323,7 +329,7 @@ onMounted(async () => {
           <QrCode class="mr-2 h-4 w-4" />
           {{ $t('admin.qr.title') }}
         </Button>
-        <NuxtLink v-if="resolvedTenantId" :to="`/t/${resolvedTenantId}/admin`">
+        <NuxtLink to="/dashboard">
           <Button variant="outline" size="sm" class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50">
             {{ $t('common.back') }}
           </Button>
@@ -333,7 +339,7 @@ onMounted(async () => {
 
     <!-- Settings Modal -->
     <Dialog v-model:open="showSettings">
-      <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
+      <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-6xl">
         <DialogHeader>
           <DialogTitle class="font-display text-lg">{{ $t('settings.title') }}</DialogTitle>
           <DialogDescription>{{ $t('settings.description') }}</DialogDescription>
@@ -346,13 +352,30 @@ onMounted(async () => {
               :guestbook="guestbookInfo"
               :tenant-id="resolvedTenantId"
               @saved="reloadGuestbookInfo"
+              @tab-change="handleSettingsTabChange"
             />
           </div>
           <div class="sticky top-0 hidden md:block">
+            <!-- Landing Page Preview -->
             <AdminGuestbookPreview
-              v-if="guestbookInfo && settingsRef?.localSettings"
+              v-if="guestbookInfo && settingsRef?.localSettings && activeSettingsTab === 'landing'"
               :settings="settingsRef.localSettings"
               :guestbook-name="guestbookInfo.name"
+            />
+            <!-- Card Preview for Cards & Display tab -->
+            <AdminCardPreview
+              v-else-if="guestbookInfo && settingsRef?.localSettings && activeSettingsTab === 'cards'"
+              :settings="settingsRef.localSettings"
+            />
+            <!-- Form Preview for Form tab -->
+            <AdminFormPreview
+              v-else-if="settingsRef?.localSettings && activeSettingsTab === 'form'"
+              :settings="settingsRef.localSettings"
+            />
+            <!-- Slideshow Preview for Advanced tab -->
+            <AdminSlideshowPreview
+              v-else-if="settingsRef?.localSettings && activeSettingsTab === 'advanced'"
+              :settings="settingsRef.localSettings"
             />
           </div>
         </div>

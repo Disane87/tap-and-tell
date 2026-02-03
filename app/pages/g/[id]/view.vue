@@ -5,6 +5,7 @@
  */
 import { Search, X, ArrowUpDown, Play, Download, Loader2 } from 'lucide-vue-next'
 import type { GuestEntry } from '~/types/guest'
+import type { CustomQuestion } from '~/types/guestbook'
 
 const { locale } = useI18n()
 const route = useRoute()
@@ -12,6 +13,7 @@ const guestbookId = computed(() => route.params.id as string)
 
 const { entries, loading, fetchEntries } = useGuestbook(guestbookId)
 const { searchQuery, sortOrder, filterEntries, clearFilters, hasActiveFilters } = useEntryFilters()
+const { apply: applyColorScheme } = useForcedColorScheme()
 const { generatePdf, isGenerating } = usePdfExport()
 
 const selectedEntry = ref<GuestEntry | null>(null)
@@ -38,6 +40,21 @@ const backgroundStyles = computed(() => {
   return styles
 })
 
+/** Card style from guestbook settings. */
+const cardStyle = computed(() =>
+  (guestbookInfo.value?.settings?.cardStyle as 'polaroid' | 'minimal' | 'rounded' | 'bordered' | undefined) || 'polaroid'
+)
+
+/** Custom questions from guestbook settings. */
+const customQuestions = computed(() =>
+  (guestbookInfo.value?.settings?.customQuestions as CustomQuestion[] | undefined) || []
+)
+
+/** View layout from guestbook settings. */
+const viewLayout = computed(() =>
+  (guestbookInfo.value?.settings?.viewLayout as 'grid' | 'masonry' | 'list' | 'timeline' | undefined) || 'grid'
+)
+
 async function exportToPdf(): Promise<void> {
   if (entries.value.length === 0 || isGenerating.value) return
   await generatePdf(entries.value, undefined, locale.value)
@@ -54,6 +71,20 @@ function toggleSortOrder(): void {
   sortOrder.value = sortOrder.value === 'newest' ? 'oldest' : 'newest'
 }
 
+/** Apply custom theme and text color from guestbook settings. */
+watchEffect(() => {
+  const settings = guestbookInfo.value?.settings
+  const themeColor = (settings?.themeColor as string) || undefined
+  const textColor = (settings?.textColor as string) || undefined
+  if (themeColor) {
+    document.documentElement.style.setProperty('--color-primary', themeColor)
+  }
+  if (textColor) {
+    document.documentElement.style.setProperty('--color-foreground', textColor)
+    document.documentElement.style.setProperty('--color-card-foreground', textColor)
+  }
+})
+
 onMounted(async () => {
   try {
     const response = await $fetch<{ success: boolean; data?: typeof guestbookInfo.value }>(
@@ -61,12 +92,19 @@ onMounted(async () => {
     )
     if (response.success && response.data) {
       guestbookInfo.value = response.data
+      applyColorScheme(response.data.settings?.colorScheme as 'system' | 'light' | 'dark' | undefined)
     }
   } catch {
     // Non-critical, page still works without background
   }
 
   await fetchEntries()
+})
+
+onUnmounted(() => {
+  document.documentElement.style.removeProperty('--color-primary')
+  document.documentElement.style.removeProperty('--color-foreground')
+  document.documentElement.style.removeProperty('--color-card-foreground')
 })
 </script>
 
@@ -180,9 +218,33 @@ onMounted(async () => {
       </Button>
     </div>
 
-    <!-- Entry grid -->
-    <div v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <!-- Grid layout (default) -->
+    <div v-else-if="viewLayout === 'grid'" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <GuestCard
+        v-for="entry in filteredEntries"
+        :key="entry.id"
+        :entry="entry"
+        :card-style="cardStyle"
+        :custom-questions="customQuestions"
+        @click="openEntry(entry)"
+      />
+    </div>
+
+    <!-- Masonry layout -->
+    <MasonryGrid v-else-if="viewLayout === 'masonry'">
+      <GuestCard
+        v-for="entry in filteredEntries"
+        :key="entry.id"
+        :entry="entry"
+        :card-style="cardStyle"
+        :custom-questions="customQuestions"
+        @click="openEntry(entry)"
+      />
+    </MasonryGrid>
+
+    <!-- List layout -->
+    <div v-else-if="viewLayout === 'list'" class="space-y-3">
+      <EntryListItem
         v-for="entry in filteredEntries"
         :key="entry.id"
         :entry="entry"
@@ -190,10 +252,18 @@ onMounted(async () => {
       />
     </div>
 
+    <!-- Timeline layout -->
+    <EntryTimeline
+      v-else-if="viewLayout === 'timeline'"
+      :entries="filteredEntries"
+      @entry-click="openEntry"
+    />
+
     <!-- Detail sheet -->
     <EntrySheet
       :entry="selectedEntry"
       :open="sheetOpen"
+      :custom-questions="customQuestions"
       @update:open="sheetOpen = $event"
     />
   </div>

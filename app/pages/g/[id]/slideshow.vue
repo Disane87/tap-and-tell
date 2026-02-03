@@ -17,11 +17,17 @@ const route = useRoute()
 const guestbookId = computed(() => route.params.id as string)
 
 const { entries, fetchEntries } = useGuestbook(guestbookId)
+const { apply: applyColorScheme } = useForcedColorScheme()
+
+/** Slideshow options initialized from guestbook settings. */
+const slideshowOptions = ref<{ interval?: number; transition?: 'fade' | 'slide' | 'zoom'; showBadges?: boolean; showNames?: boolean }>({})
+
 const {
   currentIndex, currentEntry, totalEntries, hasEntries,
-  isPlaying, interval, next, prev, goTo, toggle, play, pause,
+  isPlaying, interval, transition, showBadges, showNames,
+  next, prev, goTo, toggle, play, pause,
   setInterval: setIntervalValue, enterFullscreen, exitFullscreen
-} = useSlideshow(entries)
+} = useSlideshow(entries, slideshowOptions.value)
 
 const slideshowEl = ref<HTMLElement | null>(null)
 const showControls = ref(true)
@@ -93,6 +99,24 @@ onMounted(async () => {
     )
     if (response.success && response.data) {
       guestbookInfo.value = response.data
+      applyColorScheme(response.data.settings?.colorScheme as 'system' | 'light' | 'dark' | undefined)
+
+      // Apply slideshow settings from guestbook
+      const settings = response.data.settings
+      if (settings) {
+        if (settings.slideshowInterval) {
+          setIntervalValue(settings.slideshowInterval as number)
+        }
+        if (settings.slideshowTransition) {
+          transition.value = settings.slideshowTransition as 'fade' | 'slide' | 'zoom'
+        }
+        if (typeof settings.slideshowShowBadges === 'boolean') {
+          showBadges.value = settings.slideshowShowBadges
+        }
+        if (typeof settings.slideshowShowNames === 'boolean') {
+          showNames.value = settings.slideshowShowNames
+        }
+      }
     }
   } catch {
     // Non-critical, page still works without background

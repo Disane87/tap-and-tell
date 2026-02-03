@@ -1,18 +1,36 @@
 import type { GuestEntry } from '~/types/guest'
 
 /**
+ * Options for slideshow initialization.
+ */
+export interface SlideshowOptions {
+  /** Initial interval in seconds (default 8). */
+  interval?: number
+  /** Transition effect (default 'fade'). */
+  transition?: 'fade' | 'slide' | 'zoom'
+  /** Show answer badges overlay (default true). */
+  showBadges?: boolean
+  /** Show guest names overlay (default true). */
+  showNames?: boolean
+}
+
+/**
  * Composable for slideshow functionality.
  *
  * Provides auto-advancing slides with configurable interval,
  * pause/resume controls, and keyboard navigation.
  *
  * @param entries - Reactive array of guest entries
+ * @param options - Optional slideshow settings
  * @returns Slideshow state and controls
  */
-export function useSlideshow(entries: Ref<GuestEntry[]>) {
+export function useSlideshow(entries: Ref<GuestEntry[]>, options?: SlideshowOptions) {
   const currentIndex = ref(0)
   const isPlaying = ref(true)
-  const interval = ref(8) // seconds
+  const interval = ref(options?.interval ?? 8) // seconds
+  const transition = ref<'fade' | 'slide' | 'zoom'>(options?.transition ?? 'fade')
+  const showBadges = ref(options?.showBadges ?? true)
+  const showNames = ref(options?.showNames ?? true)
   const intervalId = ref<ReturnType<typeof setInterval> | null>(null)
 
   /**
@@ -157,6 +175,9 @@ export function useSlideshow(entries: Ref<GuestEntry[]>) {
     hasEntries,
     isPlaying,
     interval,
+    transition,
+    showBadges,
+    showNames,
     isFullscreen,
     next,
     prev,

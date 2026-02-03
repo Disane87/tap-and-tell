@@ -13,8 +13,12 @@ export interface GuestbookSettings {
   welcomeMessage?: string
   /** Custom theme color. */
   themeColor?: string
+  /** Custom text color for guest-facing pages. */
+  textColor?: string
   /** URL for a header image. */
   headerImageUrl?: string
+  /** Position of the header image relative to the title. */
+  headerImagePosition?: 'above-title' | 'below-title' | 'behind-title'
   /** Custom background color for guest-facing pages. */
   backgroundColor?: string
   /** URL for a background image. */
@@ -36,6 +40,54 @@ export interface GuestbookSettings {
   bodyFont?: 'sans' | 'display' | 'handwritten'
   /** Custom labels for form fields. */
   customLabels?: Record<string, string>
+  /** Custom CTA button text for the landing page (e.g., "Sign the guestbook", "Leave your wishes"). */
+  ctaButtonText?: string
+  /** Card style variant for entry cards. */
+  cardStyle?: 'polaroid' | 'minimal' | 'rounded' | 'bordered'
+  /** Custom questions for the form wizard. */
+  customQuestions?: CustomQuestion[]
+  /** View layout for the guestbook entries page. */
+  viewLayout?: 'grid' | 'masonry' | 'list' | 'timeline'
+  /** Default slideshow auto-advance interval in seconds. */
+  slideshowInterval?: 3 | 5 | 8 | 10 | 15 | 30
+  /** Slideshow transition effect. */
+  slideshowTransition?: 'fade' | 'slide' | 'zoom'
+  /** Whether to show answer badges overlay in slideshow. */
+  slideshowShowBadges?: boolean
+  /** Whether to show guest names overlay in slideshow. */
+  slideshowShowNames?: boolean
+  /** Forced color scheme for guest pages (overrides system preference). */
+  colorScheme?: 'system' | 'light' | 'dark'
+  /** Optional footer text displayed below CTA. */
+  footerText?: string
+  /** Social media links displayed in footer. */
+  socialLinks?: SocialLink[]
+}
+
+/**
+ * A social media link for the guestbook footer.
+ */
+export interface SocialLink {
+  /** Platform identifier (instagram, twitter, website, youtube, tiktok). */
+  platform: 'instagram' | 'twitter' | 'website' | 'youtube' | 'tiktok'
+  /** Full URL to the profile or page. */
+  url: string
+}
+
+/**
+ * A custom question defined by the guestbook owner.
+ */
+export interface CustomQuestion {
+  /** Unique identifier (nanoid). */
+  id: string
+  /** Question text displayed to guests. */
+  label: string
+  /** Input type: text (single line), textarea (multiline), or choice (select). */
+  type: 'text' | 'textarea' | 'choice'
+  /** Options for choice type. */
+  options?: string[]
+  /** Whether the question is required. */
+  required?: boolean
 }
 
 /**
