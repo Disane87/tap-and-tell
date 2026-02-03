@@ -230,11 +230,11 @@ module assembled() {
 // RENDER
 // =====================
 
-// Both parts for printing (sign on back, stand beside it)
+// Both parts for printing (sign on back, stand in standing position)
 translate([-sign_width/2 - 10, 0, 0])
     sign_part();
 
-translate([stand_width/2 + 10, 0, 0])
+translate([stand_width/2 + 10, -stand_depth/2, 0])
     stand_part();
 
 // For assembled preview:
