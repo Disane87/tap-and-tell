@@ -181,7 +181,8 @@ module sign_part() {
 
 module stand_part() {
     slot_width = sign_thickness + 0.5;
-    front_lip = 4;
+    front_lip = 5;
+    slot_y = front_lip + 1;  // Position of slot from front
 
     color(base_color)
     difference() {
@@ -201,11 +202,11 @@ module stand_part() {
                     cylinder(d=4, h=stand_width, center=true);
         }
 
-        // Angled slot for sign
-        translate([0, front_lip + 2, 0])
-            rotate([lean_angle, 0, 0])
-                translate([0, 0, -5])
-                    cube([sign_width + 2, slot_width, 50], center=true);
+        // Angled slot for sign - cuts from top down into the block
+        translate([0, slot_y, -1])
+            rotate([90 - lean_angle, 0, 0])
+                translate([0, 0, 0])
+                    cube([sign_width + 2, stand_height + 10, slot_width], center=true);
     }
 }
 
@@ -217,10 +218,11 @@ module assembled() {
     stand_part();
 
     // Sign in slot
-    front_lip = 4;
-    translate([0, front_lip + 2, 0])
-        rotate([lean_angle, 0, 0])
-            translate([0, sign_height/2, sign_thickness/2])
+    front_lip = 5;
+    slot_y = front_lip + 1;
+    translate([0, slot_y, 0])
+        rotate([90 - lean_angle, 0, 0])
+            translate([0, sign_height/2, -sign_thickness/2])
                 sign_part();
 }
 
