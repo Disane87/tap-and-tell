@@ -1,8 +1,9 @@
 import { existsSync, mkdirSync, writeFileSync, readFileSync, unlinkSync } from 'fs'
 import { dirname } from 'path'
+import { put, del, list } from '@vercel/blob'
 
 /**
- * Interface for storage backends (local filesystem, S3, etc.).
+ * Interface for storage backends (local filesystem, Vercel Blob, S3, etc.).
  */
 export interface StorageDriver {
   /** Writes data to the given path. */
@@ -45,6 +46,113 @@ class LocalStorageDriver implements StorageDriver {
 }
 
 /**
+ * Vercel Blob storage driver.
+ * Stores files in Vercel Blob Storage using their SDK.
+ * Requires BLOB_READ_WRITE_TOKEN environment variable.
+ *
+ * @see https://vercel.com/docs/storage/vercel-blob
+ */
+class VercelBlobStorageDriver implements StorageDriver {
+  /**
+   * Writes data to Vercel Blob storage.
+   * Uses deterministic paths (no random suffix) for consistent addressing.
+   *
+   * @param filePath - Logical file path (e.g., "photos/guestbook123/entry456.jpg.enc")
+   * @param data - Buffer containing the file data
+   */
+  async write(filePath: string, data: Buffer): Promise<void> {
+    const blobPath = this.normalizePath(filePath)
+
+    await put(blobPath, data, {
+      access: 'public',
+      addRandomSuffix: false
+    })
+  }
+
+  /**
+   * Reads data from Vercel Blob storage.
+   * Finds the blob by path prefix and fetches its content.
+   *
+   * @param filePath - Logical file path
+   * @returns The file data or undefined if not found
+   */
+  async read(filePath: string): Promise<Buffer | undefined> {
+    const blobPath = this.normalizePath(filePath)
+
+    // Find the blob by path prefix
+    const { blobs } = await list({ prefix: blobPath, limit: 1 })
+    const blob = blobs.find(b => b.pathname === blobPath)
+
+    if (!blob) return undefined
+
+    // Fetch the blob content
+    const response = await fetch(blob.url)
+    if (!response.ok) return undefined
+
+    const arrayBuffer = await response.arrayBuffer()
+    return Buffer.from(arrayBuffer)
+  }
+
+  /**
+   * Deletes a file from Vercel Blob storage.
+   *
+   * @param filePath - Logical file path
+   * @returns True if the file was found and deleted
+   */
+  async delete(filePath: string): Promise<boolean> {
+    const blobPath = this.normalizePath(filePath)
+
+    // Find the blob to get its URL
+    const { blobs } = await list({ prefix: blobPath, limit: 1 })
+    const blob = blobs.find(b => b.pathname === blobPath)
+
+    if (!blob) return false
+
+    await del(blob.url)
+    return true
+  }
+
+  /**
+   * Checks if a file exists in Vercel Blob storage.
+   *
+   * @param filePath - Logical file path
+   * @returns True if the file exists
+   */
+  async exists(filePath: string): Promise<boolean> {
+    const blobPath = this.normalizePath(filePath)
+
+    const { blobs } = await list({ prefix: blobPath, limit: 1 })
+    return blobs.some(b => b.pathname === blobPath)
+  }
+
+  /**
+   * Normalizes a file path for use with Vercel Blob.
+   * Removes leading DATA_DIR prefix and ensures consistent format.
+   *
+   * @param filePath - The original file path
+   * @returns Normalized path suitable for Vercel Blob
+   */
+  private normalizePath(filePath: string): string {
+    const dataDir = process.env.DATA_DIR || '.data'
+    let normalized = filePath
+
+    // Remove DATA_DIR prefix if present
+    if (normalized.startsWith(dataDir + '/')) {
+      normalized = normalized.slice(dataDir.length + 1)
+    } else if (normalized.startsWith('.data/')) {
+      normalized = normalized.slice(6)
+    }
+
+    // Remove leading slash if present
+    if (normalized.startsWith('/')) {
+      normalized = normalized.slice(1)
+    }
+
+    return normalized
+  }
+}
+
+/**
  * S3-compatible storage driver stub.
  * Not yet implemented — throws an error if used.
  */
@@ -73,6 +181,7 @@ let _driver: StorageDriver | null = null
  * Returns the configured storage driver instance.
  *
  * Reads the STORAGE_DRIVER environment variable (default: 'local').
+ * Supported values: 'local', 'vercel-blob', 's3'
  * Creates a singleton instance on first call.
  *
  * @returns The storage driver.
@@ -83,6 +192,9 @@ export function getStorageDriver(): StorageDriver {
   const driverType = process.env.STORAGE_DRIVER || 'local'
 
   switch (driverType) {
+    case 'vercel-blob':
+      _driver = new VercelBlobStorageDriver()
+      break
     case 's3':
       _driver = new S3StorageDriver()
       break
