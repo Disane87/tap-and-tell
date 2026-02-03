@@ -140,6 +140,13 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     postgresUrl: process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
+    public: {
+      // Image compression settings (client-side)
+      imageMaxDimension: parseInt(process.env.IMAGE_MAX_DIMENSION || '1920', 10),
+      imageJpegQuality: parseFloat(process.env.IMAGE_JPEG_QUALITY || '0.8'),
+      imageTargetSize: parseInt(process.env.IMAGE_TARGET_SIZE || String(500 * 1024), 10),
+      imageMaxUploadSize: parseInt(process.env.IMAGE_MAX_UPLOAD_SIZE || String(10 * 1024 * 1024), 10),
+    },
   },
 
   nitro: {

@@ -2,9 +2,7 @@ import { eq } from 'drizzle-orm'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { users } from '~~/server/database/schema'
-
-/** Maximum avatar file size: 5 MB. */
-const MAX_AVATAR_SIZE = 5 * 1024 * 1024
+import { MAX_AVATAR_SIZE, formatSize } from '~~/server/utils/image-config'
 
 /** Allowed MIME types and their file extensions. */
 const ALLOWED_TYPES: Record<string, string> = {
@@ -37,7 +35,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (file.data.length > MAX_AVATAR_SIZE) {
-    throw createError({ statusCode: 400, message: 'File too large (max 5 MB)' })
+    throw createError({ statusCode: 400, message: `File too large (max ${formatSize(MAX_AVATAR_SIZE)})` })
   }
 
   const ext = ALLOWED_TYPES[file.type]

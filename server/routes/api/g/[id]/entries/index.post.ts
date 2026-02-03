@@ -1,9 +1,12 @@
 import type { CreateGuestEntryInput } from '~~/server/types/guest'
+import { MAX_PHOTO_SIZE, formatSize, estimateDecodedSize } from '~~/server/utils/image-config'
 
 /**
  * POST /api/g/:id/entries
  * Creates a new entry for a guestbook.
  * No authentication required (guest submission).
+ *
+ * Photo size limit configurable via IMAGE_MAX_PHOTO_SIZE env variable.
  */
 export default defineEventHandler(async (event) => {
   const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
@@ -41,8 +44,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Message must be 1000 characters or less' })
   }
 
-  if (body.photo && body.photo.length > 7_000_000) {
-    throw createError({ statusCode: 400, message: 'Photo must be 5MB or less' })
+  if (body.photo && body.photo.length > MAX_PHOTO_SIZE) {
+    const maxDecoded = formatSize(estimateDecodedSize(MAX_PHOTO_SIZE))
+    throw createError({ statusCode: 400, message: `Photo must be ${maxDecoded} or less` })
   }
 
   if (body.photo && !validatePhotoMimeType(body.photo)) {

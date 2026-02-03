@@ -1,17 +1,19 @@
 /**
  * POST /api/tenants/:uuid/guestbooks/:gbUuid/header
  * Uploads a header image for a guestbook.
- * Accepts multipart/form-data with an image file (max 5MB).
+ * Accepts multipart/form-data with an image file.
  * Encrypts and stores the image, updates guestbook settings.
+ *
+ * Size limit configurable via IMAGE_MAX_BACKGROUND_SIZE env variable.
  */
 import { existsSync, mkdirSync, writeFileSync, unlinkSync, readdirSync } from 'fs'
 import { join } from 'path'
 import { encryptData, deriveTenantKey } from '~~/server/utils/crypto'
 import { validatePhotoMimeType } from '~~/server/utils/sanitize'
+import { MAX_BACKGROUND_SIZE, formatSize } from '~~/server/utils/image-config'
 
 const DATA_DIR = process.env.DATA_DIR || '.data'
 const PHOTOS_DIR = join(DATA_DIR, 'photos')
-const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
 export default defineEventHandler(async (event) => {
   const user = event.context.user
@@ -45,8 +47,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'No image file provided' })
   }
 
-  if (filePart.data.length > MAX_FILE_SIZE) {
-    throw createError({ statusCode: 400, message: 'File too large (max 5MB)' })
+  if (filePart.data.length > MAX_BACKGROUND_SIZE) {
+    throw createError({ statusCode: 400, message: `File too large (max ${formatSize(MAX_BACKGROUND_SIZE)})` })
   }
 
   // Validate image magic bytes

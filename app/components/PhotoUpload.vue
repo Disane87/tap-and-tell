@@ -2,14 +2,17 @@
 /**
  * Photo upload component with preview, drag-and-drop, and compression.
  *
- * Accepts images up to 10MB, compresses them client-side to max 500KB,
+ * Accepts images up to configured max size, compresses them client-side,
  * and emits the compressed base64 string to parent via v-model.
+ *
+ * Configuration via IMAGE_MAX_UPLOAD_SIZE env variable (default: 10MB).
  *
  * @model modelValue - Base64-encoded image string or null.
  */
 import { Camera, X, Upload, Loader2 } from 'lucide-vue-next'
 
 const { t } = useI18n()
+const config = useRuntimeConfig()
 const { compressImage, isCompressing, compressionProgress } = useImageCompression()
 
 const props = defineProps<{
@@ -25,9 +28,11 @@ const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 /**
- * Maximum file size in bytes (10MB - will be compressed).
+ * Maximum file size in bytes before compression.
+ * Configurable via IMAGE_MAX_UPLOAD_SIZE env variable.
+ * Default: 10MB (10485760 bytes).
  */
-const MAX_SIZE = 10 * 1024 * 1024
+const MAX_SIZE = config.public.imageMaxUploadSize || 10 * 1024 * 1024
 
 /**
  * Handles file selection from input or drop.

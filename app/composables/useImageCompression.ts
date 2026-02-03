@@ -3,25 +3,35 @@
  *
  * Resizes large images, compresses JPEG quality, and converts
  * other formats to JPEG for smaller file sizes.
+ *
+ * Configuration via environment variables:
+ * - IMAGE_MAX_DIMENSION: Maximum pixel dimension (default: 1920)
+ * - IMAGE_JPEG_QUALITY: JPEG quality 0-1 (default: 0.8)
+ * - IMAGE_TARGET_SIZE: Target file size in bytes (default: 512000 = 500KB)
  */
 export function useImageCompression() {
+  const config = useRuntimeConfig()
   const isCompressing = ref(false)
   const compressionProgress = ref(0)
 
   /**
    * Maximum dimension for resized images (width or height).
+   * Configurable via IMAGE_MAX_DIMENSION env variable.
    */
-  const MAX_DIMENSION = 1920
+  const MAX_DIMENSION = config.public.imageMaxDimension || 1920
 
   /**
    * JPEG compression quality (0-1).
+   * Configurable via IMAGE_JPEG_QUALITY env variable.
    */
-  const JPEG_QUALITY = 0.8
+  const JPEG_QUALITY = config.public.imageJpegQuality || 0.8
 
   /**
-   * Target maximum file size in bytes (500KB).
+   * Target maximum file size in bytes.
+   * Configurable via IMAGE_TARGET_SIZE env variable.
+   * Default: 500KB (512000 bytes).
    */
-  const TARGET_SIZE = 500 * 1024
+  const TARGET_SIZE = config.public.imageTargetSize || 500 * 1024
 
   /**
    * Compresses an image file to a smaller base64 string.

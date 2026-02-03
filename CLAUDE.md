@@ -252,6 +252,13 @@ The tenant-scoped API routes (`/api/t/[uuid]/g/[gbUuid]/*`) remain available for
 | `CSRF_SECRET` | CSRF token signing secret | insecure default |
 | `DATA_DIR` | Photo storage directory | `.data` |
 | `NODE_ENV` | Environment mode | `development` |
+| `IMAGE_MAX_PHOTO_SIZE` | Max guestbook photo size (server) | `7MB` |
+| `IMAGE_MAX_AVATAR_SIZE` | Max user avatar size (server) | `5MB` |
+| `IMAGE_MAX_BACKGROUND_SIZE` | Max background/header image size (server) | `5MB` |
+| `IMAGE_MAX_DIMENSION` | Max pixel dimension after compression (client) | `1920` |
+| `IMAGE_JPEG_QUALITY` | JPEG compression quality 0-1 (client) | `0.8` |
+| `IMAGE_TARGET_SIZE` | Target size after compression in bytes (client) | `512000` |
+| `IMAGE_MAX_UPLOAD_SIZE` | Max upload size before compression (client) | `10485760` |
 
 > **All secret defaults MUST be overridden in production**: `JWT_SECRET`, `ENCRYPTION_MASTER_KEY`, `CSRF_SECRET`.
 
