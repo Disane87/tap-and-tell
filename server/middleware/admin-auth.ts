@@ -1,6 +1,8 @@
+import { defineEventHandler, getRequestURL, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { users } from '~~/server/database/schema'
 import { isAdminEmail } from '~~/server/utils/beta-config'
+import { useDrizzle } from '#imports'
 
 /**
  * Server middleware that enforces admin authentication for /api/admin/* routes.
