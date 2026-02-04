@@ -258,27 +258,29 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div
-    ref="swiperEl"
-    class="relative min-h-screen overflow-hidden"
-    :style="{ touchAction: 'pan-y', ...backgroundStyles }"
-  >
+  <div class="flex min-h-screen flex-col">
     <!-- Admin bar for authenticated owners -->
     <NuxtLink
       v-if="canAdmin"
       :to="`/g/${guestbookId}/admin`"
-      class="fixed left-0 shadow-xs shadow-black right-0 top-0 z-50 flex items-center justify-center gap-2 border-b border-border/20 bg-card/70 px-4 py-2 text-sm text-foreground backdrop-blur-xl transition-colors hover:bg-card/90"
+      class="flex shrink-0 items-center justify-center gap-2 border-b border-border/20 bg-card/70 px-4 py-2 text-sm text-foreground backdrop-blur-xl transition-colors hover:bg-card/90"
     >
       <Settings class="h-4 w-4" />
       {{ t('landing.adminBar') }}
     </NuxtLink>
+
+    <div
+      ref="swiperEl"
+      class="relative flex flex-1 flex-col overflow-hidden"
+      :style="{ touchAction: 'pan-y', ...backgroundStyles }"
+    >
 
     <Transition :name="transitionName" mode="out-in">
       <!-- Slide 0: Intro -->
       <div
         v-if="currentSlide === 0"
         :key="'intro'"
-        class="flex min-h-screen flex-col items-center justify-center px-6"
+        class="flex flex-1 flex-col items-center justify-center px-6"
         :class="{ 'landing-gradient': !hasCustomBackground }"
       >
         <div
@@ -361,7 +363,7 @@ onUnmounted(() => {
       <div
         v-else-if="currentEntry"
         :key="currentSlide"
-        class="min-h-screen"
+        class="flex-1"
       >
         <GuestEntryFullView :entry="currentEntry" />
       </div>
@@ -428,5 +430,6 @@ onUnmounted(() => {
         </div>
       </SheetContent>
     </Sheet>
+    </div>
   </div>
 </template>

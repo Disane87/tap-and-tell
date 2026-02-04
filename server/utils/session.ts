@@ -53,7 +53,8 @@ export async function validateAccessToken(token: string) {
     id: users.id,
     email: users.email,
     name: users.name,
-    avatarUrl: users.avatarUrl
+    avatarUrl: users.avatarUrl,
+    isAdmin: users.isAdmin
   })
     .from(users)
     .where(eq(users.id, payload.sub))
@@ -97,7 +98,8 @@ export async function validateSession(token: string) {
     id: users.id,
     email: users.email,
     name: users.name,
-    avatarUrl: users.avatarUrl
+    avatarUrl: users.avatarUrl,
+    isAdmin: users.isAdmin
   })
     .from(users)
     .where(eq(users.id, session.userId))
