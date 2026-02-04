@@ -12,6 +12,10 @@ import { Home, Settings } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const route = useRoute()
+const { public: { betaMode } } = useRuntimeConfig()
+
+/** Whether we're in beta mode (not open) - shows beta badge */
+const isBeta = computed(() => betaMode !== 'open')
 
 /**
  * Navigation links.
@@ -34,9 +38,17 @@ function isActive(path: string): boolean {
     <header class="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm safe-top">
       <div class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
         <!-- Logo -->
-        <NuxtLink to="/" class="font-handwritten text-xl text-foreground">
-          Tap & Tell
-        </NuxtLink>
+        <div class="flex items-center gap-2">
+          <NuxtLink to="/" class="font-handwritten text-xl text-foreground">
+            Tap & Tell
+          </NuxtLink>
+          <span
+            v-if="isBeta"
+            class="rounded-full border border-primary/50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary"
+          >
+            Beta
+          </span>
+        </div>
 
         <!-- Navigation -->
         <nav class="flex items-center gap-1">

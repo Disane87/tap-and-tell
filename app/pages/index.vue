@@ -14,6 +14,10 @@ definePageMeta({
 
 const { t, tm, rt, te } = useI18n()
 const { isAuthenticated } = useAuth()
+const { public: { betaMode } } = useRuntimeConfig()
+
+/** Whether we're in beta mode (not open) - hides pricing, shows beta badge */
+const isBeta = computed(() => betaMode !== 'open')
 
 const heroVideo = ref<HTMLVideoElement | null>(null)
 const videoLoaded = ref(false)
@@ -237,9 +241,20 @@ onUnmounted(() => {
         : 'bg-transparent'"
     >
       <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <NuxtLink to="/" class="font-handwritten text-xl transition-colors" :class="headerSolid ? 'text-foreground' : 'text-white'">
-          Tap & Tell
-        </NuxtLink>
+        <div class="flex items-center gap-2">
+          <NuxtLink to="/" class="font-handwritten text-xl transition-colors" :class="headerSolid ? 'text-foreground' : 'text-white'">
+            Tap & Tell
+          </NuxtLink>
+          <span
+            v-if="isBeta"
+            class="rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors"
+            :class="headerSolid
+              ? 'border-primary/50 text-primary'
+              : 'border-white/50 text-white/90'"
+          >
+            Beta
+          </span>
+        </div>
 
         <nav class="flex items-center gap-1">
           <!-- Anchor links (desktop) -->
@@ -258,6 +273,7 @@ onUnmounted(() => {
             {{ t('landing.security.badge') }}
           </button>
           <button
+            v-if="!isBeta"
             class="hidden h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors sm:flex"
             :class="headerSolid ? 'text-muted-foreground hover:text-foreground' : 'text-white/70 hover:text-white'"
             @click="scrollToSection('pricing')"
@@ -916,9 +932,9 @@ onUnmounted(() => {
     </section>
 
     <!-- ============================================
-         Pricing
+         Pricing (hidden in private beta)
          ============================================ -->
-    <section id="pricing" class="relative overflow-hidden px-6 py-28">
+    <section v-if="!isBeta" id="pricing" class="relative overflow-hidden px-6 py-28">
       <!-- Floating orbs -->
       <div class="orb orb-drift-1 absolute -right-32 top-20 h-80 w-80 rounded-full bg-primary/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.02}px)` }" />
       <div class="orb orb-drift-3 absolute -left-40 bottom-40 h-96 w-96 rounded-full bg-emerald-400/4 blur-[120px]" :style="{ transform: `translateY(${scrollY * -0.015}px)` }" />
@@ -1239,7 +1255,7 @@ onUnmounted(() => {
               </Button>
             </NuxtLink>
           </ClientOnly>
-          <Button variant="outline" size="lg" class="rounded-full border-white/30 bg-white/10 px-8 text-base text-white backdrop-blur-sm hover:bg-white/20 hover:text-white" @click="scrollToSection('pricing')">
+          <Button v-if="!isBeta" variant="outline" size="lg" class="rounded-full border-white/30 bg-white/10 px-8 text-base text-white backdrop-blur-sm hover:bg-white/20 hover:text-white" @click="scrollToSection('pricing')">
             {{ t('landing.pricing.badge') }}
           </Button>
         </div>
@@ -1274,7 +1290,7 @@ onUnmounted(() => {
                   {{ t('landing.footer.features') }}
                 </button>
               </li>
-              <li>
+              <li v-if="!isBeta">
                 <button class="text-sm text-muted-foreground transition-colors hover:text-foreground" @click="scrollToSection('pricing')">
                   {{ t('landing.footer.pricing') }}
                 </button>
