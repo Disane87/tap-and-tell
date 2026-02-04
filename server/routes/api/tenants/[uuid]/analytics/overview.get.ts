@@ -1,4 +1,4 @@
-import { useDrizzle, withTenantContext } from '~~/server/utils/drizzle'
+import { withTenantContext } from '~~/server/utils/drizzle'
 import { analyticsEvents, analyticsSessions, entries, guestbooks } from '~~/server/database/schema'
 import { eq, and, gte, sql, count, countDistinct } from 'drizzle-orm'
 
@@ -62,10 +62,8 @@ export default defineEventHandler(async (event) => {
       previousEndDate = startDate
   }
 
-  const db = useDrizzle()
-
   // Use tenant context for RLS
-  const metrics = await withTenantContext(db, uuid, async () => {
+  const metrics = await withTenantContext(uuid, async (db) => {
     // Build base conditions
     const currentConditions = guestbookId
       ? [eq(analyticsEvents.tenantId, uuid), eq(analyticsEvents.guestbookId, guestbookId), gte(analyticsEvents.createdAt, startDate)]

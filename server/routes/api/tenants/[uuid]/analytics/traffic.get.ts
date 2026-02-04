@@ -1,4 +1,4 @@
-import { useDrizzle, withTenantContext } from '~~/server/utils/drizzle'
+import { withTenantContext } from '~~/server/utils/drizzle'
 import { analyticsEvents } from '~~/server/database/schema'
 import { eq, and, gte, sql, count, countDistinct } from 'drizzle-orm'
 
@@ -56,9 +56,7 @@ export default defineEventHandler(async (event) => {
       dateFormat = 'YYYY-MM-DD'
   }
 
-  const db = useDrizzle()
-
-  const trafficData = await withTenantContext(db, uuid, async () => {
+  const trafficData = await withTenantContext(uuid, async (db) => {
     // Build conditions
     const conditions = guestbookId
       ? [eq(analyticsEvents.tenantId, uuid), eq(analyticsEvents.guestbookId, guestbookId), gte(analyticsEvents.createdAt, startDate)]
