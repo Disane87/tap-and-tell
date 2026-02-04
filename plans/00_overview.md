@@ -12,6 +12,7 @@ All core plans (00–15) have been reviewed. See individual plan files for statu
 | 40 | OIDC Provider | Planned |
 | 41 | Analytics & Statistics System | Planned |
 | 42 | Beta Access System | Planned |
+| 43 | SaaS Admin Dashboard | Planned |
 
 ## Plan 41: Analytics System
 
