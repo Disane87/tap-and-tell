@@ -1170,7 +1170,7 @@ onUnmounted(() => {
     </section>
 
     <!-- ============================================
-         NFC Tag Shop
+         NFC Tag Shop (Coming Soon)
          ============================================ -->
     <section id="nfc-shop" class="relative overflow-hidden border-t border-border/50 bg-muted/30 px-6 py-28">
       <!-- Floating orbs -->
@@ -1180,9 +1180,15 @@ onUnmounted(() => {
         <div class="grid items-center gap-16 lg:grid-cols-2">
           <!-- Left: Text -->
           <div class="reveal-on-scroll">
-            <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-              {{ t('landing.nfcShop.badge') }}
-            </p>
+            <div class="flex items-center gap-3">
+              <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+                {{ t('landing.nfcShop.badge') }}
+              </p>
+              <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
+                <Icon icon="lucide:clock" class="h-3 w-3" />
+                {{ t('landing.nfcShop.comingSoon') }}
+              </span>
+            </div>
             <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
               {{ t('landing.nfcShop.title') }}
             </h2>
@@ -1211,16 +1217,24 @@ onUnmounted(() => {
               </li>
             </ul>
 
-            <div class="mt-8 flex items-end gap-2">
-              <span class="text-sm text-muted-foreground">{{ t('landing.nfcShop.startingAt') }}</span>
-              <span class="text-3xl font-bold tracking-tight">$9.99</span>
-              <span class="pb-0.5 text-sm text-muted-foreground">{{ t('landing.nfcShop.perTag') }}</span>
+            <!-- Coming Soon Notice -->
+            <div class="mt-8 rounded-2xl border border-border/50 bg-card/50 p-5">
+              <div class="flex items-start gap-4">
+                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10">
+                  <Icon icon="lucide:bell" class="h-5 w-5 text-amber-500" />
+                </div>
+                <div>
+                  <p class="font-medium text-foreground">{{ t('landing.nfcShop.notifyTitle') }}</p>
+                  <p class="mt-1 text-sm text-muted-foreground">{{ t('landing.nfcShop.notifyDescription') }}</p>
+                </div>
+              </div>
+              <NuxtLink to="/waitlist" class="mt-4 block">
+                <Button variant="outline" size="sm" class="w-full rounded-full">
+                  <Icon icon="lucide:mail" class="mr-2 h-4 w-4" />
+                  {{ t('landing.nfcShop.notifyMe') }}
+                </Button>
+              </NuxtLink>
             </div>
-
-            <Button size="lg" class="mt-6 rounded-full px-8">
-              <Icon icon="lucide:shopping-bag" class="mr-2 h-4 w-4" />
-              {{ t('landing.nfcShop.cta') }}
-            </Button>
           </div>
 
           <!-- Right: Color picker visual -->

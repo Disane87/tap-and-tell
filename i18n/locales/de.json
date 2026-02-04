@@ -308,6 +308,7 @@
     },
     "nfcShop": {
       "badge": "NFC Tags",
+      "comingSoon": "Demnächst",
       "title": "Wunderschöne NFC Tags, sofort einsatzbereit",
       "subtitle": "3D-gedruckte NFC-Tag-Halter in jeder Wunschfarbe. Vorprogrammiert und bereit für dein Gästebuch.",
       "colorChoice": "Wähle deine Farbe",
@@ -315,9 +316,9 @@
       "preProgrammed": "Vorprogrammiert mit deinem Gästebuch-Link",
       "durable": "Langlebiges 3D-gedrucktes Gehäuse",
       "easySetup": "Kleben oder Stellen — passt überall",
-      "cta": "NFC Tags bestellen",
-      "startingAt": "Ab",
-      "perTag": "/ Tag",
+      "notifyTitle": "Erfahre es als Erster",
+      "notifyDescription": "Unser NFC-Tag-Shop startet bald. Trag dich auf die Warteliste ein, um benachrichtigt zu werden.",
+      "notifyMe": "Benachrichtige mich",
       "colors": {
         "black": "Schwarz",
         "white": "Weiß",
