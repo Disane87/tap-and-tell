@@ -48,8 +48,9 @@ export default defineEventHandler(async (event) => {
       deleteExisting: true
     })
 
-    // Update guestbook settings
-    const settings = { ...(existing.settings || {}), backgroundImageUrl: result.url }
+    // Update guestbook settings with cache-busting timestamp
+    const cacheBustedUrl = `${result.url}?v=${Date.now()}`
+    const settings = { ...(existing.settings || {}), backgroundImageUrl: cacheBustedUrl }
     const updated = await updateGuestbook(gbUuid, { settings })
 
     await recordAuditLog(event, 'guestbook.background.upload', {
