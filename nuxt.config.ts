@@ -227,6 +227,7 @@ export default defineNuxtConfig({
   },
 
   nitro: {
+    preset: process.env.VERCEL ? 'vercel' : 'node-server',
     externals: {
       inline: [],
     },
