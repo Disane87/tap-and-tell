@@ -3,6 +3,7 @@
  * Root application component.
  * Provides NuxtPage routing and global toast notifications.
  */
+import { Toaster } from '~/components/ui/sonner'
 </script>
 
 <template>

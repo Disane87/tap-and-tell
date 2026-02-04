@@ -32,12 +32,19 @@ function getDevServerHttps() {
 }
 
 // Site configuration constants
+// Determine site URL automatically: NUXT_PUBLIC_SITE_URL > VERCEL_URL > localhost
+function getSiteUrl(): string {
+  if (process.env.NUXT_PUBLIC_SITE_URL) return process.env.NUXT_PUBLIC_SITE_URL
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
+  return isDev ? 'https://localhost:3000' : 'https://tap-and-tell.app'
+}
+
 const siteConfig = {
   name: 'Tap & Tell',
   shortName: 'Tap & Tell',
   description: 'Create memorable digital guestbooks with NFC technology. Perfect for weddings, events, and parties. Let your guests tap, record, and share their wishes.',
   descriptionDe: 'Erstelle unvergessliche digitale Gästebücher mit NFC-Technologie. Perfekt für Hochzeiten, Events und Feiern. Lass deine Gäste tippen, aufnehmen und ihre Wünsche teilen.',
-  url: process.env.NUXT_PUBLIC_SITE_URL || 'https://tap-and-tell.app',
+  url: getSiteUrl(),
   author: 'Tap & Tell Team',
   twitterHandle: '@tapandtell',
   themeColor: '#18181b',
