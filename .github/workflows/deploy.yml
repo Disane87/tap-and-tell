@@ -13,9 +13,9 @@ env:
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
-  # Build and type-check
+  # Build, test, and type-check
   build:
-    name: Build & Type Check
+    name: Build, Test & Type Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,6 +34,12 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Prepare Nuxt
+        run: pnpm exec nuxi prepare
+
+      - name: Run tests
+        run: pnpm test
 
       - name: Type check
         run: pnpm exec nuxi typecheck

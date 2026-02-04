@@ -75,7 +75,7 @@ The MVP beta target: A stable, secure, hosted SaaS version that early adopters c
 - [x] Configure environment variables in Vercel dashboard (document which ones)
 - [x] Configure PostgreSQL connection (Vercel Postgres or external)
 - [x] Configure persistent storage for avatars and photos (Vercel Blob or S3)
-- [ ] Document deployment steps in README or dedicated docs
+- [x] Document deployment steps in README or dedicated docs
 - [x] Verify production build works on Vercel
 
 **Why**: No deployment configuration exists. Cannot launch a hosted beta without it.
@@ -94,13 +94,15 @@ The MVP beta target: A stable, secure, hosted SaaS version that early adopters c
   - `server/utils/password-policy.ts` (8 tests)
   - `server/utils/totp.ts` (7 tests)
   - `server/utils/csrf.ts` (6 tests)
-- [ ] Write unit tests for critical composables:
-  - `useAuth` (login, logout, token refresh flow)
-  - `useGuestForm` (validation, step navigation, submit data assembly)
+- [x] Write unit tests for critical composables:
+  - `useAuth` (25 tests — login, register, logout, 2FA, profile management)
+  - `useGuestForm` (35 tests — validation, step navigation, submit data assembly)
 - [x] Add `pnpm test` script to package.json
-- [ ] CI: Run tests on PR (GitHub Actions workflow)
+- [x] CI: Run tests on PR (GitHub Actions workflow)
 
 **Why**: No automated tests exist. Critical auth and security utilities need coverage before real users interact with them.
+
+**Status**: 103 tests across 7 suites. CI workflow updated to run tests before build.
 
 ### 37.8 Production Environment Hardening ✔
 
@@ -121,9 +123,11 @@ The MVP beta target: A stable, secure, hosted SaaS version that early adopters c
 - [x] Implement S3-compatible storage adapter (Vercel Blob, AWS S3, MinIO) — stub ready
 - [x] Environment-based storage selection: local filesystem (dev) vs cloud (prod)
 - [x] Migrate `server/utils/storage.ts` to use the abstraction
-- [ ] Update avatar endpoints to use the abstraction
+- [x] Update avatar endpoints to use the abstraction
 
 **Why**: Local `.data/` filesystem storage doesn't work on serverless platforms (Vercel). Photos and avatars would be lost on redeploy.
+
+**Status**: All avatar endpoints (upload, get, delete) now use the storage driver abstraction. Fixed bug in `avatar.delete.ts` that was using direct filesystem access.
 
 ### 37.10 Loading States & Skeleton UI ✔
 

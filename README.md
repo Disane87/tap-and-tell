@@ -153,15 +153,73 @@ docker run -d \
 
 # ☁️ Vercel Deployment
 
-Deploy to Vercel with one click:
+Deploy to Vercel with the following steps:
+
+## 1. Fork & Import
 
 1. Fork this repository
 2. Import the project in [Vercel](https://vercel.com/)
-3. Set environment variables (`POSTGRES_URL`, `JWT_SECRET`, `CSRF_SECRET`, `ENCRYPTION_MASTER_KEY`)
-4. Deploy! 🚀
 
-> [!NOTE]
-> Since Tap & Tell uses file-based storage, Vercel's serverless functions have ephemeral filesystems. For persistent storage on Vercel, consider attaching a volume or switching to a database adapter.
+## 2. Configure Vercel Blob Storage
+
+Since Vercel's serverless functions have ephemeral filesystems, you need Vercel Blob for persistent photo storage:
+
+1. In your Vercel project, go to **Storage** → **Create** → **Blob**
+2. Name it (e.g., `tap-and-tell-blob`)
+3. Connect it to your project
+4. The `BLOB_READ_WRITE_TOKEN` will be automatically added to your environment
+
+## 3. Configure PostgreSQL
+
+1. In your Vercel project, go to **Storage** → **Create** → **Postgres**
+2. Name it (e.g., `tap-and-tell-db`)
+3. Connect it to your project
+4. The `POSTGRES_URL` will be automatically added to your environment
+
+## 4. Set Required Environment Variables
+
+In **Settings** → **Environment Variables**, add:
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `JWT_SECRET` | ✅ | 32+ character random string for JWT signing |
+| `CSRF_SECRET` | ✅ | 32+ character random string for CSRF tokens |
+| `ENCRYPTION_MASTER_KEY` | ✅ | 64 hex characters for photo encryption |
+| `STORAGE_DRIVER` | ✅ | Set to `vercel-blob` for production |
+| `NODE_ENV` | ✅ | Set to `production` |
+
+Generate secure secrets with:
+```bash
+# JWT_SECRET / CSRF_SECRET
+openssl rand -base64 32
+
+# ENCRYPTION_MASTER_KEY (64 hex chars)
+openssl rand -hex 32
+```
+
+> [!CAUTION]
+> ⚠️ **Security**: The application will refuse to start in production if insecure default secrets are detected!
+
+## 5. Deploy
+
+Click **Deploy** and you're live! 🚀
+
+## CI/CD (Automatic)
+
+This repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that:
+
+- ✅ Runs all unit tests
+- ✅ Type-checks the codebase
+- ✅ Builds the application
+- ✅ Deploys to Vercel (preview for PRs, production for main)
+
+To enable CI/CD, add these secrets to your GitHub repository:
+
+| Secret | Description |
+|--------|-------------|
+| `VERCEL_TOKEN` | Your Vercel API token |
+| `VERCEL_ORG_ID` | Your Vercel organization ID |
+| `VERCEL_PROJECT_ID` | Your Vercel project ID |
 
 ---
 
