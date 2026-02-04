@@ -248,6 +248,12 @@ export function useAnalytics(guestbookId?: Ref<string> | string) {
       return
     }
 
+    // Respect cookie consent - only track if analytics cookies are consented
+    const { hasConsent } = useCookieConsent()
+    if (!hasConsent('analytics')) {
+      return
+    }
+
     const event = {
       eventType,
       eventCategory,

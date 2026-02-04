@@ -1136,5 +1136,35 @@
       "peopleAhead": "{count} people ahead of you",
       "referrals": "{count} referrals"
     }
+  },
+  "cookies": {
+    "banner": {
+      "title": "We value your privacy",
+      "description": "We use cookies to enhance your browsing experience, provide personalized content, and analyze our traffic. You can choose which cookies you want to allow.",
+      "acceptAll": "Accept All",
+      "acceptNecessary": "Necessary Only",
+      "customize": "Customize Settings"
+    },
+    "settings": {
+      "title": "Cookie Settings",
+      "description": "Manage your cookie preferences. You can enable or disable different types of cookies below.",
+      "save": "Save Preferences"
+    },
+    "categories": {
+      "necessary": {
+        "title": "Necessary Cookies",
+        "description": "These cookies are essential for the website to function properly. They enable basic features like page navigation, secure login, and access to protected areas."
+      },
+      "functional": {
+        "title": "Functional Cookies",
+        "description": "These cookies remember your preferences like theme settings (light/dark mode) and language selection to provide a personalized experience."
+      },
+      "analytics": {
+        "title": "Analytics Cookies",
+        "description": "These cookies help us understand how visitors interact with our website by collecting anonymous information. This helps us improve our services."
+      }
+    },
+    "alwaysActive": "Always Active",
+    "managePreferences": "Manage Cookie Preferences"
   }
 }
