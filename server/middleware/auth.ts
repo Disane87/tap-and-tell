@@ -1,3 +1,4 @@
+import { defineEventHandler, getCookie, setCookie, getHeader } from 'h3'
 import { validateAccessToken, refreshSession } from '~~/server/utils/session'
 import { isApiToken, validateApiToken } from '~~/server/utils/api-token'
 
