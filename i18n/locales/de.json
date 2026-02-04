@@ -107,14 +107,52 @@
         "entry2": { "message": "Du hast mir alles beigebracht, was ich über diesen Job weiß. Und vor allem: nie das Mittagessen ausfallen lassen. Danke.", "food": "Kantine-Pizza freitags", "memory": "Deine legendären Präsentations-Rettungen." }
       }
     },
+    "beta": {
+      "badge": "Private Beta",
+      "title": "Du bist früh dran — und das ist besonders",
+      "subtitle": "Tap & Tell ist aktuell in der Private Beta. Wir bauen etwas Bedeutungsvolles, und du bist Teil der Reise.",
+      "features": {
+        "free": {
+          "title": "100% kostenlos während der Beta",
+          "description": "Alle Funktionen freigeschaltet. Keine Kreditkarte. Keine versteckten Kosten."
+        },
+        "feedback": {
+          "title": "Deine Stimme formt das Produkt",
+          "description": "Direkter Draht zum Team. Jeder Vorschlag zählt."
+        },
+        "early": {
+          "title": "Early-Adopter-Vorteile",
+          "description": "Besondere Vergünstigungen für Beta-Teilnehmer beim Launch."
+        },
+        "limit": {
+          "title": "Limitierter Zugang",
+          "description": "Nur auf Einladung — für Qualität und persönlichen Support."
+        }
+      },
+      "cta": "Auf die Warteliste",
+      "hasInvite": "Hast du einen Einladungscode?",
+      "signIn": "Anmelden"
+    },
     "memories": {
       "badge": "Warum es wichtig ist",
-      "title": "In einer Welt voller flüchtiger Inhalte: Sei beständig",
-      "subtitle": "Wir leben in einer Zeit, in der alles verschwindet — Stories, Posts, Nachrichten. Aber die Menschen in deinem Leben verdienen mehr als eine ablaufende Story.",
-      "paragraph1": "Denk an die letzte Feier, auf der du warst. Du hast Fotos gemacht. Vielleicht ein Selfie. Aber erinnerst du dich, was dir jemand gesagt hat? An das Gefühl im Raum? Den Insider-Witz, über den alle gelacht haben?",
-      "paragraph2": "Tap & Tell existiert, weil manche Dinge mehr wert sind als ein Like. Ein Gästebuch-Eintrag ist roh, persönlich und echt. Es ist der Unterschied zwischen einem Schnappschuss und einem Liebesbrief.",
-      "paragraph3": "In ein paar Jahren wirst du nicht durch 10.000 Fotos scrollen. Aber du wirst ein Gästebuch öffnen und die Worte von jemandem lesen, der sich die Mühe gemacht hat, sie aufzuschreiben.",
-      "cta": "Gib deinen Momenten eine Stimme"
+      "title": "Weil manche Momente mehr verdienen als ein Foto",
+      "subtitle": "In einer Welt, in der alles verschwindet, gib deinen Erinnerungen ein dauerhaftes Zuhause.",
+      "cards": {
+        "fleeting": {
+          "title": "Stories verfallen. Worte nicht.",
+          "description": "Social Media verschwindet in 24 Stunden. Ein Gästebuch-Eintrag bleibt für immer."
+        },
+        "personal": {
+          "title": "Roh, echt, persönlich",
+          "description": "Kein Like. Kein Emoji. Eine Nachricht, die jemand sich Zeit genommen hat zu schreiben — nur für dich."
+        },
+        "future": {
+          "title": "Ein Geschenk an dein zukünftiges Ich",
+          "description": "In ein paar Jahren scrollst du nicht durch 10.000 Fotos. Aber du wirst dieses Gästebuch öffnen."
+        }
+      },
+      "quote": "Die besten Feiern werden nicht durch Fotos erinnert — sondern durch das, was Menschen gesagt haben.",
+      "cta": "Beginne Geschichten festzuhalten"
     },
     "features": {
       "badge": "Funktionen",

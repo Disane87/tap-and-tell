@@ -371,6 +371,65 @@ onUnmounted(() => {
     </section>
 
     <!-- ============================================
+         Beta Announcement (only shown in beta mode)
+         ============================================ -->
+    <section v-if="isBeta" class="relative overflow-hidden border-b border-primary/20 bg-primary/5 px-6 py-16">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
+      <div class="relative mx-auto max-w-5xl">
+        <div class="text-center">
+          <div class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+            <span class="relative flex h-2 w-2">
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+              <span class="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+            </span>
+            {{ t('landing.beta.badge') }}
+          </div>
+          <h2 class="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+            {{ t('landing.beta.title') }}
+          </h2>
+          <p class="mx-auto mt-3 max-w-2xl text-base text-muted-foreground">
+            {{ t('landing.beta.subtitle') }}
+          </p>
+        </div>
+
+        <!-- Beta Features Grid -->
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            v-for="(feature, key) in ['free', 'feedback', 'early', 'limit']"
+            :key="key"
+            class="group rounded-2xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:bg-card/80"
+          >
+            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
+              <Icon
+                :icon="feature === 'free' ? 'lucide:gift' : feature === 'feedback' ? 'lucide:message-circle' : feature === 'early' ? 'lucide:star' : 'lucide:key'"
+                class="h-5 w-5 text-primary"
+              />
+            </div>
+            <h3 class="mt-3 text-sm font-semibold">
+              {{ t(`landing.beta.features.${feature}.title`) }}
+            </h3>
+            <p class="mt-1 text-xs text-muted-foreground">
+              {{ t(`landing.beta.features.${feature}.description`) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- CTA Buttons -->
+        <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <NuxtLink to="/waitlist">
+            <Button size="lg" class="rounded-full px-8">
+              {{ t('landing.beta.cta') }}
+            </Button>
+          </NuxtLink>
+          <NuxtLink to="/login" class="text-sm text-muted-foreground hover:text-foreground">
+            {{ t('landing.beta.hasInvite') }}
+            <span class="ml-1 font-medium text-primary">{{ t('landing.beta.signIn') }}</span>
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
          Problem Section
          ============================================ -->
     <section class="relative overflow-hidden px-6 py-28">
@@ -846,7 +905,7 @@ onUnmounted(() => {
       <div class="orb orb-drift-2 absolute -left-32 top-10 h-80 w-80 rounded-full bg-primary/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.02}px)` }" />
       <div class="orb orb-drift-3 absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-emerald-500/4 blur-[90px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
 
-      <div class="mx-auto max-w-3xl">
+      <div class="mx-auto max-w-5xl">
         <div class="reveal-on-scroll text-center">
           <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
             {{ t('landing.memories.badge') }}
@@ -859,18 +918,76 @@ onUnmounted(() => {
           </p>
         </div>
 
-        <div class="reveal-on-scroll mt-14 space-y-6" style="transition-delay: 150ms">
-          <p class="text-base leading-relaxed text-muted-foreground">
-            {{ t('landing.memories.paragraph1') }}
-          </p>
-          <p class="text-base leading-relaxed text-foreground font-medium">
-            {{ t('landing.memories.paragraph2') }}
-          </p>
-          <p class="text-base leading-relaxed text-muted-foreground">
-            {{ t('landing.memories.paragraph3') }}
-          </p>
+        <!-- Memory Cards -->
+        <div class="mt-14 grid gap-6 sm:grid-cols-3">
+          <!-- Card 1: Fleeting -->
+          <div class="reveal-on-scroll group relative overflow-hidden rounded-3xl border border-border/50 bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-1">
+            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 blur-2xl transition-all duration-500 group-hover:scale-150" />
+            <div class="relative">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/10 to-red-500/10">
+                <Icon icon="lucide:timer" class="h-7 w-7 text-orange-500" />
+              </div>
+              <h3 class="mt-6 text-xl font-semibold tracking-tight">
+                {{ t('landing.memories.cards.fleeting.title') }}
+              </h3>
+              <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {{ t('landing.memories.cards.fleeting.description') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2: Personal -->
+          <div class="reveal-on-scroll group relative overflow-hidden rounded-3xl border border-border/50 bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-1" style="transition-delay: 100ms">
+            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-pink-500/20 to-purple-500/20 blur-2xl transition-all duration-500 group-hover:scale-150" />
+            <div class="relative">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/10 to-purple-500/10">
+                <Icon icon="lucide:heart-handshake" class="h-7 w-7 text-pink-500" />
+              </div>
+              <h3 class="mt-6 text-xl font-semibold tracking-tight">
+                {{ t('landing.memories.cards.personal.title') }}
+              </h3>
+              <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {{ t('landing.memories.cards.personal.description') }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 3: Future -->
+          <div class="reveal-on-scroll group relative overflow-hidden rounded-3xl border border-border/50 bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-1" style="transition-delay: 200ms">
+            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-emerald-500/20 blur-2xl transition-all duration-500 group-hover:scale-150" />
+            <div class="relative">
+              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-emerald-500/10">
+                <Icon icon="lucide:sparkles" class="h-7 w-7 text-primary" />
+              </div>
+              <h3 class="mt-6 text-xl font-semibold tracking-tight">
+                {{ t('landing.memories.cards.future.title') }}
+              </h3>
+              <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
+                {{ t('landing.memories.cards.future.description') }}
+              </p>
+            </div>
+          </div>
         </div>
 
+        <!-- Quote -->
+        <div class="reveal-on-scroll mt-14 text-center" style="transition-delay: 300ms">
+          <blockquote class="relative mx-auto max-w-2xl">
+            <Icon icon="lucide:quote" class="absolute -left-4 -top-4 h-8 w-8 text-primary/20 sm:-left-8" />
+            <p class="font-handwritten text-2xl text-foreground/80 sm:text-3xl">
+              "{{ t('landing.memories.quote') }}"
+            </p>
+          </blockquote>
+        </div>
+
+        <!-- CTA -->
+        <div class="reveal-on-scroll mt-10 text-center" style="transition-delay: 400ms">
+          <NuxtLink :to="isAuthenticated ? '/dashboard' : '/register'">
+            <Button size="lg" class="rounded-full px-8">
+              {{ t('landing.memories.cta') }}
+              <Icon icon="lucide:arrow-right" class="ml-2 h-4 w-4" />
+            </Button>
+          </NuxtLink>
+        </div>
       </div>
     </section>
 

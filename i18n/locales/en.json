@@ -107,14 +107,52 @@
         "entry2": { "message": "You taught me everything I know about this job. More importantly, you taught me to never skip lunch. Thank you.", "food": "Cafeteria pizza Fridays", "memory": "Your legendary presentation saves." }
       }
     },
+    "beta": {
+      "badge": "Private Beta",
+      "title": "You're Early — And That's Special",
+      "subtitle": "Tap & Tell is currently in private beta. We're building something meaningful, and you're part of the journey.",
+      "features": {
+        "free": {
+          "title": "100% Free During Beta",
+          "description": "All features unlocked. No credit card. No strings attached."
+        },
+        "feedback": {
+          "title": "Your Voice Shapes the Product",
+          "description": "Direct line to the team. Every suggestion matters."
+        },
+        "early": {
+          "title": "Early Adopter Benefits",
+          "description": "Special perks and pricing for beta participants at launch."
+        },
+        "limit": {
+          "title": "Limited Access",
+          "description": "Invite-only to ensure quality and personal support."
+        }
+      },
+      "cta": "Join the Waitlist",
+      "hasInvite": "Have an invite code?",
+      "signIn": "Sign in"
+    },
     "memories": {
       "badge": "Why It Matters",
-      "title": "In a World of Fleeting Content, Be Permanent",
-      "subtitle": "We live in an age where everything disappears — stories, posts, messages. But the people in your life deserve more than an expiring story.",
-      "paragraph1": "Think about the last party you attended. You took photos. Maybe a selfie. But can you remember what anyone said to you? The feeling in the room? The inside joke that made everyone laugh?",
-      "paragraph2": "Tap & Tell exists because some things are worth more than a like. A guestbook entry is raw, personal, and real. It's the difference between a snapshot and a love letter.",
-      "paragraph3": "Years from now, you won't scroll through 10,000 photos. But you will open a guestbook and read the words of someone who cared enough to write them.",
-      "cta": "Give Your Moments a Voice"
+      "title": "Because Some Moments Deserve More Than a Photo",
+      "subtitle": "In a world where everything disappears, give your memories a permanent home.",
+      "cards": {
+        "fleeting": {
+          "title": "Stories Expire. Words Don't.",
+          "description": "Social media vanishes in 24 hours. A guestbook entry stays forever."
+        },
+        "personal": {
+          "title": "Raw, Real, Personal",
+          "description": "Not a like. Not an emoji. A message someone took time to write — just for you."
+        },
+        "future": {
+          "title": "A Gift to Your Future Self",
+          "description": "Years from now, you won't scroll 10,000 photos. But you'll open that guestbook."
+        }
+      },
+      "quote": "The best parties aren't remembered by the photos — but by what people said.",
+      "cta": "Start Capturing Stories"
     },
     "features": {
       "badge": "Features",
