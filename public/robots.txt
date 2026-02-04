@@ -1,2 +1,21 @@
+# Tap & Tell - Robots.txt
+# https://tap-and-tell.app
+
 User-agent: *
 Allow: /
+
+# Disallow admin and private areas
+Disallow: /dashboard
+Disallow: /profile
+Disallow: /api/
+Disallow: /_nuxt/
+Disallow: /__nuxt_error
+
+# Allow crawling of guestbook pages
+Allow: /g/
+
+# Sitemap (if generated)
+Sitemap: https://tap-and-tell.app/sitemap.xml
+
+# Crawl-delay for politeness (optional)
+Crawl-delay: 1
