@@ -29,9 +29,9 @@ function isActive(path: string): boolean {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background">
-    <!-- Header -->
-    <header class="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
+  <div class="min-h-dvh bg-background safe-x">
+    <!-- Header with iOS safe area support -->
+    <header class="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm safe-top">
       <div class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
         <!-- Logo -->
         <NuxtLink to="/" class="font-handwritten text-xl text-foreground">

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <!-- Apple Touch Icon - 180x180 -->
+  <rect width="180" height="180" rx="22" fill="#18181b"/>
+  <g fill="#ffffff" transform="translate(0, 0) scale(0.35)">
+    <!-- T letter -->
+    <rect x="96" y="128" width="140" height="24" rx="4"/>
+    <rect x="152" y="128" width="28" height="160" rx="4"/>
+    <!-- & symbol -->
+    <path d="M280 240c-20-20-20-52 0-72s52-20 72 0c10 10 15 22 15 36h-24c0-8-3-16-9-22-12-12-32-12-44 0s-12 32 0 44l52 52c12-12 18-28 18-44h24c0 22-10 44-28 62l28 28-17 17-28-28c-20 20-52 20-72 0s-20-52 0-72l33-33zm17 17l-33 33c-12 12-12 32 0 44s32 12 44 0l-11-11z"/>
+    <!-- T letter small -->
+    <rect x="376" y="192" width="80" height="20" rx="4"/>
+    <rect x="404" y="192" width="24" height="96" rx="4"/>
+  </g>
+</svg>
