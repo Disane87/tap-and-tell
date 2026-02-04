@@ -1,4 +1,4 @@
-import { useDrizzle, withTenantContext } from '~~/server/utils/drizzle'
+import { withTenantContext } from '~~/server/utils/drizzle'
 import { analyticsEvents } from '~~/server/database/schema'
 import { eq, and, gte, sql, count } from 'drizzle-orm'
 
@@ -49,9 +49,7 @@ export default defineEventHandler(async (event) => {
       startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
   }
 
-  const db = useDrizzle()
-
-  const funnelData = await withTenantContext(db, uuid, async () => {
+  const funnelData = await withTenantContext(uuid, async (db) => {
     // Build base conditions
     const conditions = guestbookId
       ? [eq(analyticsEvents.tenantId, uuid), eq(analyticsEvents.guestbookId, guestbookId), gte(analyticsEvents.createdAt, startDate)]
