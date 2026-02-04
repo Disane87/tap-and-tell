@@ -87,5 +87,10 @@ function isActive(path: string): boolean {
     <main>
       <slot />
     </main>
+
+    <!-- Cookie Consent Banner -->
+    <ClientOnly>
+      <CookieBanner />
+    </ClientOnly>
   </div>
 </template>

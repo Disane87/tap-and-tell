@@ -15,6 +15,7 @@ definePageMeta({
 const { t, tm, rt, te } = useI18n()
 const { isAuthenticated } = useAuth()
 const { public: { betaMode } } = useRuntimeConfig()
+const { openSettings: openCookieSettings } = useCookieConsent()
 
 /** Whether we're in beta mode (not open) - hides pricing, shows beta badge */
 const isBeta = computed(() => betaMode !== 'open')
@@ -1333,6 +1334,14 @@ onUnmounted(() => {
               <li><span class="text-sm text-muted-foreground">{{ t('landing.footer.privacy') }}</span></li>
               <li><span class="text-sm text-muted-foreground">{{ t('landing.footer.terms') }}</span></li>
               <li><span class="text-sm text-muted-foreground">{{ t('landing.footer.imprint') }}</span></li>
+              <li>
+                <button
+                  class="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  @click="openCookieSettings"
+                >
+                  {{ t('cookies.managePreferences') }}
+                </button>
+              </li>
             </ul>
           </div>
         </div>
@@ -1349,6 +1358,11 @@ onUnmounted(() => {
         </div>
       </div>
     </footer>
+
+    <!-- Cookie Consent Banner -->
+    <ClientOnly>
+      <CookieBanner />
+    </ClientOnly>
   </div>
 </template>
 

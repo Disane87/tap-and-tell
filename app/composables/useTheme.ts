@@ -42,14 +42,18 @@ export function useTheme() {
   }
 
   /**
-   * Sets the theme mode and persists to localStorage.
+   * Sets the theme mode and persists to localStorage if functional cookies are consented.
    *
    * @param mode - The theme mode to set.
    */
   function setTheme(mode: ThemeMode): void {
     theme.value = mode
     if (import.meta.client) {
-      localStorage.setItem('theme', mode)
+      // Only persist to localStorage if functional cookies are consented
+      const { hasConsent } = useCookieConsent()
+      if (hasConsent('functional')) {
+        localStorage.setItem('theme', mode)
+      }
       applyTheme()
     }
   }

@@ -1136,5 +1136,35 @@
       "peopleAhead": "{count} Personen vor dir",
       "referrals": "{count} Empfehlungen"
     }
+  },
+  "cookies": {
+    "banner": {
+      "title": "Wir schätzen deine Privatsphäre",
+      "description": "Wir verwenden Cookies, um dein Surferlebnis zu verbessern, personalisierte Inhalte bereitzustellen und unseren Datenverkehr zu analysieren. Du kannst wählen, welche Cookies du zulassen möchtest.",
+      "acceptAll": "Alle akzeptieren",
+      "acceptNecessary": "Nur notwendige",
+      "customize": "Einstellungen anpassen"
+    },
+    "settings": {
+      "title": "Cookie-Einstellungen",
+      "description": "Verwalte deine Cookie-Präferenzen. Du kannst verschiedene Cookie-Typen unten aktivieren oder deaktivieren.",
+      "save": "Einstellungen speichern"
+    },
+    "categories": {
+      "necessary": {
+        "title": "Notwendige Cookies",
+        "description": "Diese Cookies sind für die ordnungsgemäße Funktion der Website unerlässlich. Sie ermöglichen grundlegende Funktionen wie Seitennavigation, sichere Anmeldung und Zugang zu geschützten Bereichen."
+      },
+      "functional": {
+        "title": "Funktionale Cookies",
+        "description": "Diese Cookies speichern deine Einstellungen wie Theme (Hell-/Dunkelmodus) und Sprachauswahl, um ein personalisiertes Erlebnis zu bieten."
+      },
+      "analytics": {
+        "title": "Analyse-Cookies",
+        "description": "Diese Cookies helfen uns zu verstehen, wie Besucher mit unserer Website interagieren, indem sie anonyme Informationen sammeln. Dies hilft uns, unsere Dienste zu verbessern."
+      }
+    },
+    "alwaysActive": "Immer aktiv",
+    "managePreferences": "Cookie-Einstellungen verwalten"
   }
 }
