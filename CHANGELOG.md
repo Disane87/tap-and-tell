@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1](https://github.com/Disane87/tap-and-tell/compare/v1.6.0...v1.6.1) (2026-02-04)
+
+
+### 🐛 Bug Fixes
+
+* **upload:** add cache-busting timestamps to image URLs on re-upload ([ca1436b](https://github.com/Disane87/tap-and-tell/commit/ca1436bae3e0aa09d26105190aaf11b386a28a2e))
+
 ## [1.6.0](https://github.com/Disane87/tap-and-tell/compare/v1.5.0...v1.6.0) (2026-02-04)
 
 
