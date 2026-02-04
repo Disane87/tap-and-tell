@@ -9,5 +9,13 @@
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
-  <Toaster position="bottom-center" :duration="3000" />
+  <!-- Toast notifications - position bottom-right, high z-index to appear above dialogs -->
+  <Toaster
+    position="bottom-right"
+    :duration="4000"
+    :visible-toasts="5"
+    :gap="12"
+    expand
+    rich-colors
+  />
 </template>
