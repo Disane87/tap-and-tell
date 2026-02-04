@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0](https://github.com/Disane87/tap-and-tell/compare/v1.4.0...v1.5.0) (2026-02-04)
+
+
+### ✨ Features
+
+* **beta:** add beta announcement section and localization for beta features ([f6a05dd](https://github.com/Disane87/tap-and-tell/commit/f6a05dd00ee3057d5ed54736869d22301ce3a357))
+* **toast:** enhance toast notifications with glassmorphism styling and z-index adjustments ([a328d9b](https://github.com/Disane87/tap-and-tell/commit/a328d9bf18087cc73ecef4639ab38e0732d96239))
+* **cookies:** implement GDPR-compliant cookie consent management and UI ([07f411c](https://github.com/Disane87/tap-and-tell/commit/07f411ce5681a3532569f7abeb346c47731fed65))
+* **toast:** refactor Sonner component with glassmorphism styling and z-index adjustments ([f000fd6](https://github.com/Disane87/tap-and-tell/commit/f000fd639434b8b48ecc5378d388012ddda4ff01))
+* **layout:** remove legacy admin link and associated icon from navigation ([bb33bcf](https://github.com/Disane87/tap-and-tell/commit/bb33bcfd191fb147c339469247aab1cd9387ed51))
+* **nfcShop:** update NFC Tag Shop section with "Coming Soon" notice and waitlist functionality ([902cc4f](https://github.com/Disane87/tap-and-tell/commit/902cc4f1fbdfd6706bc4a31dba75ff9e4d643b7e))
+* **env:** update NUXT_PUBLIC_SITE_URL to support auto-detection from VERCEL_URL ([eeacc38](https://github.com/Disane87/tap-and-tell/commit/eeacc387b85b371637cfc3da04931f4a0ef1935e))
+
 ## [1.4.0](https://github.com/Disane87/tap-and-tell/compare/v1.3.0...v1.4.0) (2026-02-04)
 
 
