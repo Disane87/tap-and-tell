@@ -35,8 +35,8 @@ export default defineEventHandler(async (event) => {
       allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
     })
 
-    // Avatar URL is just the user ID (extension is determined by the serve route)
-    const avatarUrl = `/api/auth/avatar/${user.id}`
+    // Avatar URL with cache-busting timestamp to prevent browser caching issues on re-upload
+    const avatarUrl = `/api/auth/avatar/${user.id}?v=${Date.now()}`
 
     const db = useDrizzle()
     await db.update(users)
