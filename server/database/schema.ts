@@ -344,3 +344,194 @@ export type WaitlistStatus = 'waiting' | 'invited' | 'registered' | 'unsubscribe
  * Plan granted reason values.
  */
 export type PlanGrantedReason = 'beta_invite' | 'founder' | 'purchase' | 'trial'
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ANALYTICS TABLES
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Analytics events table for tracking user interactions.
+ * Stores individual events like page views, form steps, submissions, etc.
+ * RLS-protected via tenant_id.
+ */
+export const analyticsEvents = pgTable('analytics_events', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  tenantId: varchar('tenant_id', { length: 24 }).notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  guestbookId: varchar('guestbook_id', { length: 24 }).references(() => guestbooks.id, { onDelete: 'cascade' }),
+  /** Event type: page_view, form_start, form_step_complete, form_submit, etc. */
+  eventType: varchar('event_type', { length: 50 }).notNull(),
+  /** Event category: page, form, entry, slideshow, export, qr, nfc, admin */
+  eventCategory: varchar('event_category', { length: 30 }).notNull(),
+  /** Anonymous session identifier (per browser tab). */
+  sessionId: varchar('session_id', { length: 64 }).notNull(),
+  /** Hashed visitor identifier for returning visitor detection. */
+  visitorId: varchar('visitor_id', { length: 64 }),
+  /** Page path where the event occurred. */
+  pagePath: varchar('page_path', { length: 255 }),
+  /** Referrer URL. */
+  referrer: varchar('referrer', { length: 500 }),
+  /** UTM source parameter. */
+  utmSource: varchar('utm_source', { length: 100 }),
+  /** UTM medium parameter. */
+  utmMedium: varchar('utm_medium', { length: 100 }),
+  /** UTM campaign parameter. */
+  utmCampaign: varchar('utm_campaign', { length: 100 }),
+  /** Device type: mobile, tablet, desktop. */
+  deviceType: varchar('device_type', { length: 20 }),
+  /** Browser name. */
+  browser: varchar('browser', { length: 50 }),
+  /** Operating system. */
+  os: varchar('os', { length: 50 }),
+  /** Country code (ISO 3166-1 alpha-2). No IP stored for privacy. */
+  countryCode: varchar('country_code', { length: 2 }),
+  /** Region/state. */
+  region: varchar('region', { length: 100 }),
+  /** Event-specific data (flexible JSON). */
+  properties: jsonb('properties').$type<Record<string, unknown>>().default({}),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index('idx_analytics_events_tenant_time').on(table.tenantId, table.createdAt),
+  index('idx_analytics_events_guestbook_time').on(table.guestbookId, table.createdAt),
+  index('idx_analytics_events_type').on(table.eventType, table.createdAt),
+  index('idx_analytics_events_session').on(table.sessionId)
+])
+
+/**
+ * Aggregated daily statistics for fast dashboard queries.
+ * Pre-computed metrics per guestbook per day.
+ * RLS-protected via tenant_id.
+ */
+export const analyticsDailyStats = pgTable('analytics_daily_stats', {
+  id: varchar('id', { length: 24 }).primaryKey(),
+  tenantId: varchar('tenant_id', { length: 24 }).notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  guestbookId: varchar('guestbook_id', { length: 24 }).references(() => guestbooks.id, { onDelete: 'cascade' }),
+  /** The date for these statistics (UTC). */
+  date: timestamp('date', { withTimezone: true, mode: 'date' }).notNull(),
+  /** Total page views. */
+  pageViews: integer('page_views').notNull().default(0),
+  /** Unique visitors (distinct visitor IDs). */
+  uniqueVisitors: integer('unique_visitors').notNull().default(0),
+  /** Total sessions. */
+  sessions: integer('sessions').notNull().default(0),
+  /** Entries created. */
+  entriesCreated: integer('entries_created').notNull().default(0),
+  /** Entries with photos. */
+  entriesWithPhoto: integer('entries_with_photo').notNull().default(0),
+  /** Form wizard starts. */
+  formStarts: integer('form_starts').notNull().default(0),
+  /** Form completions (submissions). */
+  formCompletions: integer('form_completions').notNull().default(0),
+  /** Average time on page in seconds. */
+  avgTimeOnPageSeconds: integer('avg_time_on_page_seconds'),
+  /** Bounce rate (sessions with only 1 page view). */
+  bounceRate: integer('bounce_rate'),
+  /** Mobile visits. */
+  mobileVisits: integer('mobile_visits').notNull().default(0),
+  /** Tablet visits. */
+  tabletVisits: integer('tablet_visits').notNull().default(0),
+  /** Desktop visits. */
+  desktopVisits: integer('desktop_visits').notNull().default(0),
+  /** Direct visits (no referrer). */
+  directVisits: integer('direct_visits').notNull().default(0),
+  /** NFC tap visits. */
+  nfcVisits: integer('nfc_visits').notNull().default(0),
+  /** QR scan visits. */
+  qrVisits: integer('qr_visits').notNull().default(0),
+  /** Link/referral visits. */
+  linkVisits: integer('link_visits').notNull().default(0),
+  /** Hourly distribution (array of 24 counts). */
+  hourlyDistribution: jsonb('hourly_distribution').$type<number[]>().default([]),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
+}, (table) => [
+  index('idx_analytics_daily_tenant_date').on(table.tenantId, table.date),
+  index('idx_analytics_daily_guestbook_date').on(table.guestbookId, table.date),
+  uniqueIndex('idx_analytics_daily_unique').on(table.tenantId, table.guestbookId, table.date)
+])
+
+/**
+ * Session details for funnel analysis and user journey tracking.
+ * RLS-protected via tenant_id.
+ */
+export const analyticsSessions = pgTable('analytics_sessions', {
+  id: varchar('id', { length: 64 }).primaryKey(),
+  tenantId: varchar('tenant_id', { length: 24 }).notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  guestbookId: varchar('guestbook_id', { length: 24 }).references(() => guestbooks.id, { onDelete: 'cascade' }),
+  /** Hashed visitor identifier. */
+  visitorId: varchar('visitor_id', { length: 64 }),
+  /** When the session started. */
+  startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+  /** When the session ended (last activity + 30min timeout). */
+  endedAt: timestamp('ended_at', { withTimezone: true }),
+  /** Session duration in seconds. */
+  durationSeconds: integer('duration_seconds'),
+  /** First page visited. */
+  entryPage: varchar('entry_page', { length: 255 }),
+  /** Last page visited before leaving. */
+  exitPage: varchar('exit_page', { length: 255 }),
+  /** Number of pages viewed in this session. */
+  pageCount: integer('page_count').notNull().default(1),
+  /** Whether this session resulted in an entry submission. */
+  converted: boolean('converted').notNull().default(false),
+  /** Highest form step reached (0-4). */
+  formStepReached: integer('form_step_reached').notNull().default(0),
+  /** Traffic source: nfc, qr, direct, referral. */
+  source: varchar('source', { length: 20 }),
+  /** Referrer URL. */
+  referrer: varchar('referrer', { length: 500 }),
+  /** Device type: mobile, tablet, desktop. */
+  deviceType: varchar('device_type', { length: 20 }),
+  /** Browser name. */
+  browser: varchar('browser', { length: 50 }),
+  /** Operating system. */
+  os: varchar('os', { length: 50 }),
+  /** Country code. */
+  countryCode: varchar('country_code', { length: 2 })
+}, (table) => [
+  index('idx_analytics_sessions_tenant').on(table.tenantId),
+  index('idx_analytics_sessions_guestbook').on(table.guestbookId),
+  index('idx_analytics_sessions_started').on(table.startedAt)
+])
+
+/**
+ * Analytics event types.
+ */
+export type AnalyticsEventType =
+  | 'page_view'
+  | 'page_exit'
+  | 'form_start'
+  | 'form_step_complete'
+  | 'form_abandon'
+  | 'form_submit'
+  | 'entry_view'
+  | 'entry_share'
+  | 'slideshow_start'
+  | 'slideshow_exit'
+  | 'pdf_export'
+  | 'qr_scan'
+  | 'nfc_tap'
+  | 'settings_change'
+  | 'entry_moderate'
+
+/**
+ * Analytics event categories.
+ */
+export type AnalyticsEventCategory =
+  | 'page'
+  | 'form'
+  | 'entry'
+  | 'slideshow'
+  | 'export'
+  | 'qr'
+  | 'nfc'
+  | 'admin'
+
+/**
+ * Traffic source types.
+ */
+export type AnalyticsSource = 'nfc' | 'qr' | 'direct' | 'referral'
+
+/**
+ * Device types.
+ */
+export type AnalyticsDeviceType = 'mobile' | 'tablet' | 'desktop'

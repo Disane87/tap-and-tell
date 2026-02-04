@@ -234,6 +234,95 @@ export async function runMigrations(connectionString: string): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_waitlist_referral_code ON waitlist(referral_code);
       CREATE INDEX IF NOT EXISTS idx_waitlist_status ON waitlist(status);
       CREATE INDEX IF NOT EXISTS idx_waitlist_priority ON waitlist(priority);
+
+      -- ══════════════════════════════════════════════════════════════════════════
+      -- ANALYTICS TABLES
+      -- ══════════════════════════════════════════════════════════════════════════
+
+      -- Analytics events table for tracking user interactions
+      CREATE TABLE IF NOT EXISTS analytics_events (
+        id VARCHAR(24) PRIMARY KEY,
+        tenant_id VARCHAR(24) NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        guestbook_id VARCHAR(24) REFERENCES guestbooks(id) ON DELETE CASCADE,
+        event_type VARCHAR(50) NOT NULL,
+        event_category VARCHAR(30) NOT NULL,
+        session_id VARCHAR(64) NOT NULL,
+        visitor_id VARCHAR(64),
+        page_path VARCHAR(255),
+        referrer VARCHAR(500),
+        utm_source VARCHAR(100),
+        utm_medium VARCHAR(100),
+        utm_campaign VARCHAR(100),
+        device_type VARCHAR(20),
+        browser VARCHAR(50),
+        os VARCHAR(50),
+        country_code VARCHAR(2),
+        region VARCHAR(100),
+        properties JSONB DEFAULT '{}',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_analytics_events_tenant_time ON analytics_events(tenant_id, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_analytics_events_guestbook_time ON analytics_events(guestbook_id, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_analytics_events_type ON analytics_events(event_type, created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_analytics_events_session ON analytics_events(session_id);
+
+      -- Aggregated daily statistics for fast dashboard queries
+      CREATE TABLE IF NOT EXISTS analytics_daily_stats (
+        id VARCHAR(24) PRIMARY KEY,
+        tenant_id VARCHAR(24) NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        guestbook_id VARCHAR(24) REFERENCES guestbooks(id) ON DELETE CASCADE,
+        date DATE NOT NULL,
+        page_views INTEGER NOT NULL DEFAULT 0,
+        unique_visitors INTEGER NOT NULL DEFAULT 0,
+        sessions INTEGER NOT NULL DEFAULT 0,
+        entries_created INTEGER NOT NULL DEFAULT 0,
+        entries_with_photo INTEGER NOT NULL DEFAULT 0,
+        form_starts INTEGER NOT NULL DEFAULT 0,
+        form_completions INTEGER NOT NULL DEFAULT 0,
+        avg_time_on_page_seconds INTEGER,
+        bounce_rate INTEGER,
+        mobile_visits INTEGER NOT NULL DEFAULT 0,
+        tablet_visits INTEGER NOT NULL DEFAULT 0,
+        desktop_visits INTEGER NOT NULL DEFAULT 0,
+        direct_visits INTEGER NOT NULL DEFAULT 0,
+        nfc_visits INTEGER NOT NULL DEFAULT 0,
+        qr_visits INTEGER NOT NULL DEFAULT 0,
+        link_visits INTEGER NOT NULL DEFAULT 0,
+        hourly_distribution JSONB DEFAULT '[]',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        UNIQUE(tenant_id, guestbook_id, date)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_analytics_daily_tenant_date ON analytics_daily_stats(tenant_id, date);
+      CREATE INDEX IF NOT EXISTS idx_analytics_daily_guestbook_date ON analytics_daily_stats(guestbook_id, date);
+
+      -- Session details for funnel analysis
+      CREATE TABLE IF NOT EXISTS analytics_sessions (
+        id VARCHAR(64) PRIMARY KEY,
+        tenant_id VARCHAR(24) NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        guestbook_id VARCHAR(24) REFERENCES guestbooks(id) ON DELETE CASCADE,
+        visitor_id VARCHAR(64),
+        started_at TIMESTAMPTZ NOT NULL,
+        ended_at TIMESTAMPTZ,
+        duration_seconds INTEGER,
+        entry_page VARCHAR(255),
+        exit_page VARCHAR(255),
+        page_count INTEGER NOT NULL DEFAULT 1,
+        converted BOOLEAN NOT NULL DEFAULT FALSE,
+        form_step_reached INTEGER NOT NULL DEFAULT 0,
+        source VARCHAR(20),
+        referrer VARCHAR(500),
+        device_type VARCHAR(20),
+        browser VARCHAR(50),
+        os VARCHAR(50),
+        country_code VARCHAR(2)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_analytics_sessions_tenant ON analytics_sessions(tenant_id);
+      CREATE INDEX IF NOT EXISTS idx_analytics_sessions_guestbook ON analytics_sessions(guestbook_id);
+      CREATE INDEX IF NOT EXISTS idx_analytics_sessions_started ON analytics_sessions(started_at);
     `)
 
     log.debug('Core tables created/verified')
@@ -345,6 +434,39 @@ export async function runMigrations(connectionString: string): Promise<void> {
       'ALL',
       `tenant_id = current_setting('app.current_tenant_id', true) OR tenant_id IS NULL`,
       `tenant_id = current_setting('app.current_tenant_id', true) OR tenant_id IS NULL`
+    )
+
+    // ── Analytics Events RLS ──
+    await client.query(`ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY`)
+    await client.query(`ALTER TABLE analytics_events FORCE ROW LEVEL SECURITY`)
+    await createPolicy(
+      'analytics_events',
+      'analytics_events_isolation',
+      'ALL',
+      `tenant_id = current_setting('app.current_tenant_id', true)`,
+      `tenant_id = current_setting('app.current_tenant_id', true)`
+    )
+
+    // ── Analytics Daily Stats RLS ──
+    await client.query(`ALTER TABLE analytics_daily_stats ENABLE ROW LEVEL SECURITY`)
+    await client.query(`ALTER TABLE analytics_daily_stats FORCE ROW LEVEL SECURITY`)
+    await createPolicy(
+      'analytics_daily_stats',
+      'analytics_daily_stats_isolation',
+      'ALL',
+      `tenant_id = current_setting('app.current_tenant_id', true)`,
+      `tenant_id = current_setting('app.current_tenant_id', true)`
+    )
+
+    // ── Analytics Sessions RLS ──
+    await client.query(`ALTER TABLE analytics_sessions ENABLE ROW LEVEL SECURITY`)
+    await client.query(`ALTER TABLE analytics_sessions FORCE ROW LEVEL SECURITY`)
+    await createPolicy(
+      'analytics_sessions',
+      'analytics_sessions_isolation',
+      'ALL',
+      `tenant_id = current_setting('app.current_tenant_id', true)`,
+      `tenant_id = current_setting('app.current_tenant_id', true)`
     )
 
     log.success('RLS policies configured for tenant isolation')

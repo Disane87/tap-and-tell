@@ -17,6 +17,14 @@ const guestbookId = computed(() => route.params.id as string)
 
 // Use simplified composable (we'll create this next)
 const { entries, fetchEntries, createEntry } = useGuestbook(guestbookId)
+
+// Analytics tracking
+const {
+  trackPageView,
+  trackFormStart,
+  trackFormStep,
+  trackConversion
+} = useAnalytics(guestbookId)
 const { apply: applyColorScheme } = useForcedColorScheme()
 const { formState, status, reset, setStatus, setError, getSubmitData, validate, applyFormConfig } = useGuestForm()
 
@@ -135,6 +143,13 @@ const socialLinks = computed(() =>
 /** Whether footer should be displayed. */
 const hasFooter = computed(() => !!(footerText.value || socialLinks.value.length))
 const sheetOpen = ref(false)
+
+// Track form open
+watch(sheetOpen, (open) => {
+  if (open) {
+    trackFormStart()
+  }
+})
 const currentSlide = ref(0)
 const slideDirection = ref<'forward' | 'backward'>('forward')
 const swiperEl = ref<HTMLElement | null>(null)
@@ -181,6 +196,8 @@ async function handleSubmit(): Promise<void> {
   if (entry) {
     setStatus('success')
     toast.success(t('toast.entryAdded'))
+    // Track successful conversion
+    trackConversion(!!data.photo)
     sheetOpen.value = false
     reset()
     slideDirection.value = 'forward'
@@ -210,6 +227,9 @@ onMounted(async () => {
       guestbookInfo.value = response.data
       applyFormConfig(response.data.settings as import('~/types/guestbook').GuestbookSettings)
       applyColorScheme(response.data.settings?.colorScheme as 'system' | 'light' | 'dark' | undefined)
+
+      // Track page view after guestbook info is loaded
+      trackPageView()
 
       // Check if logged-in user can admin this guestbook
       await fetchMe()
