@@ -9,7 +9,10 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "echo 'No linter configured yet'",
+    "typecheck": "nuxi typecheck"
   },
   "dependencies": {
     "@iconify/vue": "^5.0.0",

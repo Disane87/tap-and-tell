@@ -1,0 +1,154 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  # =============================================================================
+  # Stage 1: Check if release is needed
+  # =============================================================================
+  check:
+    name: Check Release
+    runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.check.outputs.should-release }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for releasable commits
+        id: check
+        run: |
+          # Check if there are any conventional commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tag found, will create initial release"
+            echo "should-release=true" >> $GITHUB_OUTPUT
+          else
+            # Check for feat:, fix:, perf:, or BREAKING CHANGE commits
+            COMMITS=$(git log $LAST_TAG..HEAD --oneline --grep="^feat" --grep="^fix" --grep="^perf" --grep="BREAKING CHANGE" 2>/dev/null | wc -l)
+            if [ "$COMMITS" -gt 0 ]; then
+              echo "Found $COMMITS releasable commits since $LAST_TAG"
+              echo "should-release=true" >> $GITHUB_OUTPUT
+            else
+              echo "No releasable commits found since $LAST_TAG"
+              echo "should-release=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+  # =============================================================================
+  # Stage 2: Run Tests Before Release
+  # =============================================================================
+  test:
+    name: Pre-Release Tests
+    needs: check
+    if: needs.check.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prepare Nuxt
+        run: pnpm exec nuxi prepare
+
+      - name: Run tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  # =============================================================================
+  # Stage 3: Semantic Release
+  # =============================================================================
+  release:
+    name: Semantic Release
+    needs: test
+    runs-on: ubuntu-latest
+    outputs:
+      new-release: ${{ steps.semantic.outputs.new_release_published }}
+      version: ${{ steps.semantic.outputs.new_release_version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 23
+          extra_plugins: |
+            @semantic-release/changelog@6
+            @semantic-release/git@10
+            conventional-changelog-conventionalcommits@7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release summary
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          echo "## 🎉 Release v${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | v${{ steps.semantic.outputs.new_release_version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Type** | ${{ steps.semantic.outputs.new_release_type }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Channel** | ${{ steps.semantic.outputs.new_release_channel || 'latest' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Git Tag** | ${{ steps.semantic.outputs.new_release_git_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Release Notes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.semantic.outputs.new_release_notes }}" >> $GITHUB_STEP_SUMMARY
+
+  # =============================================================================
+  # Stage 4: Post-Release Notifications
+  # =============================================================================
+  notify:
+    name: Notify Release
+    needs: release
+    if: needs.release.outputs.new-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Announce release
+        run: |
+          echo "::notice title=New Release::Version ${{ needs.release.outputs.version }} has been released!"
