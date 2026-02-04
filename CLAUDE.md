@@ -269,6 +269,70 @@ Development follows sequential plans in `/plans/`. Plans 00-15 cover core featur
 - **Technical documentation in English** — all `.md` files (plans, PRD, CLAUDE.md, DESIGN_SYSTEM.md, PROJECT_MEMORY.md), code comments, JSDoc, and API docs must be written in English
 - **Commit messages in English** — use conventional commit style in English
 
+### Commit Conventions & Semantic Release
+
+This project uses **Semantic Release** for automated versioning. Commit messages determine the release type.
+
+**Commit Format:**
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+**Commit Types & Changelog Emojis:**
+
+| Type | Emoji | Release | Description |
+|------|-------|---------|-------------|
+| `feat` | ✨ | Minor | New feature |
+| `fix` | 🐛 | Patch | Bug fix |
+| `perf` | ⚡ | Patch | Performance improvement |
+| `refactor` | ♻️ | Patch | Code refactoring (no feature/fix) |
+| `revert` | ⏪ | Patch | Revert previous commit |
+| `docs` | 📚 | None | Documentation only |
+| `style` | 💄 | None | Code style (formatting, semicolons) |
+| `test` | ✅ | None | Adding/updating tests |
+| `build` | 📦 | None | Build system changes |
+| `ci` | 👷 | None | CI/CD configuration |
+| `chore` | 🔧 | None | Other changes (deps, tooling) |
+| `security` | 🔒 | Patch | Security fixes |
+
+**Breaking Changes (Major Release):**
+```
+feat(auth): change login API response format
+
+BREAKING CHANGE: The login endpoint now returns { user, tokens } instead of { token }
+```
+
+**Examples:**
+```bash
+# Minor release (0.X.0)
+feat(analytics): add traffic dashboard
+
+# Patch release (0.0.X)
+fix(api): resolve SQL parameter binding in analytics queries
+
+# No release
+docs: update API documentation
+chore: update dependencies
+```
+
+**CI/CD Workflows:**
+- `ci.yml` — Runs on all PRs: lint, typecheck, test, build, security audit
+- `deploy.yml` — Deploys to Vercel (preview for PRs, production for main)
+- `release.yml` — Runs semantic-release on main branch pushes
+
+**GitHub Secrets Required:**
+| Secret | Purpose |
+|--------|---------|
+| `VERCEL_TOKEN` | Vercel API token |
+| `VERCEL_ORG_ID` | Vercel organization ID |
+| `VERCEL_PROJECT_ID` | Vercel project ID |
+| `GITHUB_TOKEN` | Auto-provided by GitHub |
+| `CODECOV_TOKEN` | Optional: coverage reports |
+
 ### Internationalization (i18n)
 - **All user-facing text must be translatable** — never use hardcoded strings in components or pages. Use i18n translation keys (e.g., `$t('form.submit')`) for all labels, buttons, messages, placeholders, and error texts
 - **Supported languages**: English (default) and German
