@@ -1,6 +1,9 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nuxtjs",
+  "git": {
+    "deploymentEnabled": false
+  },
   "regions": [
     "fra1"
   ]
