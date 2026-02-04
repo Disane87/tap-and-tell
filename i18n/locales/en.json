@@ -12,7 +12,8 @@
     "logout": "Logout",
     "login": "Login",
     "optional": "optional",
-    "required": "required"
+    "required": "required",
+    "refresh": "Refresh"
   },
   "landing": {
     "title": "Tap & Tell",
@@ -1051,6 +1052,51 @@
       "earlyBird": "Early Bird",
       "beach": "Beach",
       "mountains": "Mountains"
+    }
+  },
+  "analytics": {
+    "title": "Analytics",
+    "noData": "No data available",
+    "noDataTitle": "No analytics data yet",
+    "noDataDescription": "Analytics data will appear here once visitors start using your guestbook. Share your guestbook link to start collecting data.",
+    "period": {
+      "24h": "24h",
+      "7d": "7 days",
+      "30d": "30 days",
+      "90d": "90 days"
+    },
+    "metrics": {
+      "pageViews": "Page Views",
+      "uniqueVisitors": "Unique Visitors",
+      "sessions": "Sessions",
+      "entriesCreated": "Entries Created",
+      "entriesWithPhoto": "With Photo",
+      "conversionRate": "Conversion Rate",
+      "formStarts": "Form Starts",
+      "formCompletions": "Completions"
+    },
+    "charts": {
+      "traffic": "Traffic Over Time",
+      "sources": "Traffic Sources",
+      "devices": "Devices",
+      "browsers": "Top Browsers",
+      "funnel": "Form Funnel"
+    },
+    "funnel": {
+      "started": "Started",
+      "completed": "Completed",
+      "conversion": "Conversion"
+    },
+    "sources": {
+      "nfc": "NFC Tap",
+      "qr": "QR Code",
+      "direct": "Direct Link",
+      "referral": "Referral"
+    },
+    "devices": {
+      "mobile": "Mobile",
+      "tablet": "Tablet",
+      "desktop": "Desktop"
     }
   },
   "beta": {

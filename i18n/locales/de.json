@@ -12,7 +12,8 @@
     "logout": "Abmelden",
     "login": "Anmelden",
     "optional": "optional",
-    "required": "erforderlich"
+    "required": "erforderlich",
+    "refresh": "Aktualisieren"
   },
   "landing": {
     "title": "Tap & Tell",
@@ -1051,6 +1052,51 @@
       "earlyBird": "Frühaufsteher",
       "beach": "Strand",
       "mountains": "Berge"
+    }
+  },
+  "analytics": {
+    "title": "Statistiken",
+    "noData": "Keine Daten verfügbar",
+    "noDataTitle": "Noch keine Analysedaten",
+    "noDataDescription": "Hier werden Analysedaten angezeigt, sobald Besucher dein Gästebuch nutzen. Teile deinen Gästebuch-Link, um Daten zu sammeln.",
+    "period": {
+      "24h": "24h",
+      "7d": "7 Tage",
+      "30d": "30 Tage",
+      "90d": "90 Tage"
+    },
+    "metrics": {
+      "pageViews": "Seitenaufrufe",
+      "uniqueVisitors": "Eindeutige Besucher",
+      "sessions": "Sitzungen",
+      "entriesCreated": "Erstellte Einträge",
+      "entriesWithPhoto": "Mit Foto",
+      "conversionRate": "Konversionsrate",
+      "formStarts": "Formular gestartet",
+      "formCompletions": "Abgeschlossen"
+    },
+    "charts": {
+      "traffic": "Traffic im Zeitverlauf",
+      "sources": "Traffic-Quellen",
+      "devices": "Geräte",
+      "browsers": "Top Browser",
+      "funnel": "Formular-Trichter"
+    },
+    "funnel": {
+      "started": "Gestartet",
+      "completed": "Abgeschlossen",
+      "conversion": "Konversion"
+    },
+    "sources": {
+      "nfc": "NFC Tap",
+      "qr": "QR-Code",
+      "direct": "Direkter Link",
+      "referral": "Verweis"
+    },
+    "devices": {
+      "mobile": "Mobil",
+      "tablet": "Tablet",
+      "desktop": "Desktop"
     }
   },
   "beta": {
