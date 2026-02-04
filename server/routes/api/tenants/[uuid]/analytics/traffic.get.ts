@@ -1,6 +1,6 @@
 import { withTenantContext } from '~~/server/utils/drizzle'
 import { analyticsEvents } from '~~/server/database/schema'
-import { eq, and, gte, sql, count, countDistinct } from 'drizzle-orm'
+import { eq, and, gte, sql, count, countDistinct, SQL } from 'drizzle-orm'
 
 /**
  * GET /api/tenants/:uuid/analytics/traffic
@@ -32,28 +32,32 @@ export default defineEventHandler(async (event) => {
   // Calculate date range
   const now = new Date()
   let startDate: Date
-  let dateFormat: string
+  let dateFormatSql: SQL<string>
 
+  // Use SQL template literals for date format to avoid parameter binding issues
+  // These are safe since values come from controlled switch cases, not user input
   switch (period) {
     case '24h':
       startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-      dateFormat = 'YYYY-MM-DD HH24:00'
+      dateFormatSql = sql<string>`TO_CHAR(${analyticsEvents.createdAt}, 'YYYY-MM-DD HH24:00')`
       break
     case '7d':
       startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      dateFormat = 'YYYY-MM-DD'
+      dateFormatSql = sql<string>`TO_CHAR(${analyticsEvents.createdAt}, 'YYYY-MM-DD')`
       break
     case '30d':
       startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-      dateFormat = 'YYYY-MM-DD'
+      dateFormatSql = sql<string>`TO_CHAR(${analyticsEvents.createdAt}, 'YYYY-MM-DD')`
       break
     case '90d':
       startDate = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
-      dateFormat = granularity === 'week' ? 'IYYY-IW' : 'YYYY-MM-DD'
+      dateFormatSql = granularity === 'week'
+        ? sql<string>`TO_CHAR(${analyticsEvents.createdAt}, 'IYYY-IW')`
+        : sql<string>`TO_CHAR(${analyticsEvents.createdAt}, 'YYYY-MM-DD')`
       break
     default:
       startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-      dateFormat = 'YYYY-MM-DD'
+      dateFormatSql = sql<string>`TO_CHAR(${analyticsEvents.createdAt}, 'YYYY-MM-DD')`
   }
 
   const trafficData = await withTenantContext(uuid, async (db) => {
@@ -65,15 +69,15 @@ export default defineEventHandler(async (event) => {
     // Group by date/time period
     const results = await db
       .select({
-        period: sql<string>`TO_CHAR(${analyticsEvents.createdAt}, ${dateFormat})`,
+        period: dateFormatSql,
         pageViews: count(),
         uniqueVisitors: countDistinct(analyticsEvents.visitorId),
         sessions: countDistinct(analyticsEvents.sessionId)
       })
       .from(analyticsEvents)
       .where(and(...conditions, eq(analyticsEvents.eventType, 'page_view')))
-      .groupBy(sql`TO_CHAR(${analyticsEvents.createdAt}, ${dateFormat})`)
-      .orderBy(sql`TO_CHAR(${analyticsEvents.createdAt}, ${dateFormat})`)
+      .groupBy(dateFormatSql)
+      .orderBy(dateFormatSql)
 
     return results.map(r => ({
       period: r.period,
