@@ -8,6 +8,30 @@ const log = createLogger('pool')
 export type DrizzleDb = NodePgDatabase<typeof schema>
 
 /**
+ * Regex pattern for valid tenant IDs (nanoid format).
+ * Only allows alphanumeric characters, underscores, and hyphens.
+ * Max length: 64 characters to prevent excessive memory usage.
+ */
+const SAFE_TENANT_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/
+
+/**
+ * Validates that a tenant ID is safe for use in SQL queries.
+ * Prevents SQL injection by rejecting any tenant ID that contains
+ * characters outside the allowed nanoid character set.
+ *
+ * @param tenantId - The tenant ID to validate.
+ * @throws Error if the tenant ID contains invalid characters.
+ */
+function validateTenantId(tenantId: string): void {
+  if (!tenantId || typeof tenantId !== 'string') {
+    throw new Error('Invalid tenant ID: must be a non-empty string')
+  }
+  if (!SAFE_TENANT_ID_PATTERN.test(tenantId)) {
+    throw new Error('Invalid tenant ID: contains invalid characters')
+  }
+}
+
+/**
  * Singleton PostgreSQL connection pool.
  */
 let _pool: Pool | null = null
@@ -92,13 +116,16 @@ export async function withTenantContext<T>(
   tenantId: string,
   callback: (db: DrizzleDb) => Promise<T>
 ): Promise<T> {
+  // Validate tenantId to prevent SQL injection
+  validateTenantId(tenantId)
+
   const pool = getPool()
   const client = await pool.connect()
 
   try {
     await client.query('BEGIN')
     // Note: SET LOCAL doesn't support parameter binding, so we use literal string.
-    // tenantId is already validated as nanoid (alphanumeric), so this is safe.
+    // tenantId is validated above to only contain safe alphanumeric characters.
     await client.query(`SET LOCAL app.current_tenant_id = '${tenantId}'`)
 
     const txDb = drizzle(client as any, { schema })
@@ -126,13 +153,16 @@ export async function withTenantClient<T>(
   tenantId: string,
   callback: (client: PoolClient) => Promise<T>
 ): Promise<T> {
+  // Validate tenantId to prevent SQL injection
+  validateTenantId(tenantId)
+
   const pool = getPool()
   const client = await pool.connect()
 
   try {
     await client.query('BEGIN')
     // Note: SET LOCAL doesn't support parameter binding, so we use literal string.
-    // tenantId is already validated as nanoid (alphanumeric), so this is safe.
+    // tenantId is validated above to only contain safe alphanumeric characters.
     await client.query(`SET LOCAL app.current_tenant_id = '${tenantId}'`)
 
     const result = await callback(client)
