@@ -331,7 +331,7 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: 'https://api.iconify.design' },
 
         // Fonts
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap' },
 
         // Apple splash screens (for PWA on iOS)
         { rel: 'apple-touch-startup-image', href: '/splash/apple-splash-2048-2732.png', media: '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' },

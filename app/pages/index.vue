@@ -2,9 +2,8 @@
 /**
  * Marketing landing page for Tap & Tell.
  *
- * Apple-inspired design with video hero, scroll-reveal animations,
- * pricing table, NFC shop, open source section, and extended footer.
- * Uses layout: false for full-width immersive design.
+ * "Warm Memories" Design - Emotional, inviting, human-centered.
+ * Optimized for maximum conversion with social proof, urgency, and clear CTAs.
  */
 import { Icon } from '@iconify/vue'
 
@@ -12,37 +11,48 @@ definePageMeta({
   layout: false
 })
 
-const { t, tm, rt, te } = useI18n()
+const { t } = useI18n()
 const { isAuthenticated } = useAuth()
 const { public: { betaMode } } = useRuntimeConfig()
 const { openSettings: openCookieSettings } = useCookieConsent()
 
-/** Whether we're in beta mode (not open) - hides pricing, shows beta badge */
+/** Whether we're in beta mode (not open) - hides pricing, shows beta/waitlist */
 const isBeta = computed(() => betaMode !== 'open')
 
-const heroVideo = ref<HTMLVideoElement | null>(null)
-const videoLoaded = ref(false)
 const scrollY = ref(0)
 const headerSolid = ref(false)
-const billingCycle = ref<'monthly' | 'yearly'>('yearly')
+
+/** Selected card style for customization demo */
+const selectedCardStyle = ref('polaroid')
+const cardStyles = ['polaroid', 'minimal', 'rounded', 'bordered']
+
+/** Selected accent color for customization demo */
+const selectedColor = ref('#E07A5F')
+const accentColors = [
+  { value: '#E07A5F', name: 'Coral' },
+  { value: '#6366f1', name: 'Indigo' },
+  { value: '#10b981', name: 'Emerald' },
+  { value: '#f59e0b', name: 'Amber' },
+  { value: '#ec4899', name: 'Pink' },
+  { value: '#8b5cf6', name: 'Violet' }
+]
+
+/** Selected NFC tag color */
+const selectedNfcColor = ref('black')
+
+/** Pricing toggle */
+const isYearly = ref(true)
 
 /**
- * Hero video source path. Defined as a const to prevent
- * Vite from trying to resolve the static asset at build time.
- */
-const heroVideoSrc = '/videos/hero.mp4'
-
-/**
- * Feature groups displayed in the features section.
- * Three groups: Guest Experience, Customization, Management & Security.
+ * Feature groups for organized display.
  */
 const featureGroups = computed(() => [
   {
     key: 'experience',
     features: [
-      { icon: 'lucide:nfc', key: 'nfc' },
+      { icon: 'lucide:smartphone-nfc', key: 'nfc' },
       { icon: 'lucide:camera', key: 'photo' },
-      { icon: 'lucide:list-checks', key: 'wizard' },
+      { icon: 'lucide:wand-2', key: 'wizard' },
       { icon: 'lucide:message-square-plus', key: 'customQuestions' },
       { icon: 'lucide:wifi-off', key: 'offline' },
       { icon: 'lucide:languages', key: 'i18n' }
@@ -52,8 +62,8 @@ const featureGroups = computed(() => [
     key: 'customization',
     features: [
       { icon: 'lucide:sun-moon', key: 'theme' },
-      { icon: 'lucide:image-plus', key: 'headerImage' },
-      { icon: 'lucide:layout-template', key: 'cardStyles' },
+      { icon: 'lucide:image', key: 'headerImage' },
+      { icon: 'lucide:square', key: 'cardStyles' },
       { icon: 'lucide:layout-grid', key: 'viewLayouts' },
       { icon: 'lucide:type', key: 'fonts' },
       { icon: 'lucide:palette', key: 'colorScheme' }
@@ -64,125 +74,57 @@ const featureGroups = computed(() => [
     features: [
       { icon: 'lucide:shield-check', key: 'moderation' },
       { icon: 'lucide:presentation', key: 'slideshow' },
-      { icon: 'lucide:file-text', key: 'pdf' },
+      { icon: 'lucide:file-down', key: 'pdf' },
       { icon: 'lucide:qr-code', key: 'qr' },
       { icon: 'lucide:users', key: 'team' },
-      { icon: 'lucide:code-2', key: 'api' }
+      { icon: 'lucide:webhook', key: 'api' }
     ]
   }
 ])
 
 /**
- * Customization showcase state.
- */
-const selectedCardStyle = ref<'polaroid' | 'minimal' | 'rounded' | 'bordered'>('polaroid')
-const selectedPreviewColor = ref('#10b981')
-const previewColors = ['#10b981', '#6366f1', '#f59e0b', '#ec4899', '#06b6d4']
-
-const cardStyleOptions = ['polaroid', 'minimal', 'rounded', 'bordered'] as const
-
-/**
- * Security feature cards.
- */
-const securityFeatures = computed(() => [
-  { icon: 'lucide:lock-keyhole', key: 'twoFactor' },
-  { icon: 'lucide:shield', key: 'encryption' },
-  { icon: 'lucide:database', key: 'rls' },
-  { icon: 'lucide:key-round', key: 'csrf' }
-])
-
-/**
- * Steps displayed in the "How it works" section.
+ * How it works steps.
  */
 const steps = computed(() => [
-  { icon: 'lucide:plus-circle', key: 'create', step: 1 },
-  { icon: 'lucide:share-2', key: 'share', step: 2 },
-  { icon: 'lucide:book-open', key: 'entries', step: 3 }
+  { icon: 'lucide:plus-circle', key: 'create', num: '01' },
+  { icon: 'lucide:share-2', key: 'share', num: '02' },
+  { icon: 'lucide:heart', key: 'collect', num: '03' }
 ])
 
 /**
- * Problem section points.
+ * Use cases with detailed entries.
  */
-const problemPoints = computed(() => [
-  { icon: 'lucide:image-off', key: 'point1' },
-  { icon: 'lucide:message-circle-off', key: 'point2' },
-  { icon: 'lucide:bell-off', key: 'point3' }
+const useCases = computed(() => ['wedding', 'birthday', 'housewarming'])
+
+/**
+ * More use cases (simple cards).
+ */
+const moreUseCases = computed(() => [
+  { emoji: '✈️', key: 'farewell' },
+  { emoji: '🎓', key: 'graduation' },
+  { emoji: '👶', key: 'babyshower' }
 ])
 
 /**
- * Solution section points.
+ * Security features.
  */
-const solutionPoints = computed(() => [
-  { icon: 'lucide:heart', key: 'point1' },
-  { icon: 'lucide:book-open', key: 'point2' },
-  { icon: 'lucide:infinity', key: 'point3' }
+const securityFeatures = ['twoFactor', 'encryption', 'rls', 'csrf']
+
+/**
+ * Beta features for waitlist section.
+ */
+const betaFeatures = ['free', 'feedback', 'early', 'limit']
+
+/**
+ * NFC tag colors.
+ */
+const nfcColors = computed(() => [
+  { key: 'black', color: '#1a1a1a' },
+  { key: 'white', color: '#f5f5f5' },
+  { key: 'mint', color: '#81B29A' },
+  { key: 'coral', color: '#E07A5F' },
+  { key: 'custom', color: 'conic-gradient(from 0deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)' }
 ])
-
-/**
- * Use case scenarios with fictional demo entries.
- * Avatars generated via DiceBear Avataaars API (deterministic SVGs, browser-cached).
- */
-const useCases = computed(() => [
-  {
-    key: 'wedding',
-    entries: [
-      { name: 'Sophie Bergmann', seed: 'SophieBergmann', badges: ['tea', 'mountains'] },
-      { name: 'Luca Fontana', seed: 'LucaFontana', badges: ['coffee', 'earlyBird'] }
-    ]
-  },
-  {
-    key: 'birthday',
-    entries: [
-      { name: 'Tom Fischer', seed: 'TomFischer', badges: ['coffee', 'nightOwl'] },
-      { name: 'Mia Chen', seed: 'MiaChen', badges: ['tea', 'beach'] }
-    ]
-  },
-  {
-    key: 'housewarming',
-    entries: [
-      { name: 'Nina Hartmann', seed: 'NinaHartmann', badges: ['coffee', 'mountains'] },
-      { name: 'Felix Braun', seed: 'FelixBraun', badges: ['tea', 'earlyBird'] }
-    ]
-  },
-  {
-    key: 'farewell',
-    entries: [
-      { name: 'Julia Meier', seed: 'JuliaMeier', badges: ['coffee', 'beach'] },
-      { name: 'David Park', seed: 'DavidPark', badges: ['tea', 'nightOwl'] }
-    ]
-  }
-])
-
-/**
- * Generates a DiceBear avatar URL. Deterministic based on seed,
- * browser-cached via standard HTTP caching.
- */
-function avatarUrl(seed: string): string {
-  return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`
-}
-
-/**
- * Pricing plans.
- */
-const plans = computed(() => [
-  { key: 'free', popular: false },
-  { key: 'home', popular: true },
-  { key: 'family', popular: false },
-  { key: 'enterprise', popular: false }
-])
-
-/**
- * NFC tag color swatches.
- */
-const nfcColors = [
-  { key: 'black', hex: '#1a1a1a' },
-  { key: 'white', hex: '#f5f5f5' },
-  { key: 'mint', hex: '#10b981' },
-  { key: 'coral', hex: '#f97316' },
-  { key: 'custom', hex: 'conic-gradient(from 0deg, #f97316, #eab308, #22c55e, #06b6d4, #8b5cf6, #ec4899, #f97316)' }
-]
-
-const selectedNfcColor = ref('mint')
 
 /**
  * Handles scroll for header transparency.
@@ -205,16 +147,16 @@ function setupRevealObserver(): void {
         }
       })
     },
-    { threshold: 0.1, rootMargin: '0px 0px -40px 0px' }
+    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
   )
 
-  document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
+  document.querySelectorAll('.reveal').forEach((el) => {
     observer.observe(el)
   })
 }
 
 /**
- * Scrolls to a section by ID.
+ * Smooth scroll to section.
  */
 function scrollToSection(id: string): void {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -231,759 +173,447 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background text-foreground">
+  <div class="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <!-- Decorative blobs -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+      <div class="blob blob-1" />
+      <div class="blob blob-2" />
+      <div class="blob blob-3" />
+    </div>
+
     <!-- ============================================
          Header
          ============================================ -->
     <header
-      class="fixed top-0 z-50 w-full transition-all duration-300"
+      class="fixed top-0 z-50 w-full transition-all duration-500"
       :class="headerSolid
-        ? 'border-b border-border/50 bg-background/80 backdrop-blur-xl shadow-sm'
+        ? 'bg-background/90 backdrop-blur-xl border-b border-border/50 shadow-sm'
         : 'bg-transparent'"
     >
-      <div class="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-        <div class="flex items-center gap-2">
-          <NuxtLink to="/" class="font-handwritten text-xl transition-colors" :class="headerSolid ? 'text-foreground' : 'text-white'">
+      <div class="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+        <div class="flex items-center gap-3">
+          <NuxtLink to="/" class="font-handwritten text-2xl text-foreground">
             Tap & Tell
           </NuxtLink>
           <span
             v-if="isBeta"
-            class="rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider transition-colors"
-            :class="headerSolid
-              ? 'border-primary/50 text-primary'
-              : 'border-white/50 text-white/90'"
+            class="rounded-full bg-coral/10 border border-coral/30 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-coral"
           >
             Beta
           </span>
         </div>
 
-        <nav class="flex items-center gap-1">
-          <!-- Anchor links (desktop) -->
-          <button
-            class="hidden h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors sm:flex"
-            :class="headerSolid ? 'text-muted-foreground hover:text-foreground' : 'text-white/70 hover:text-white'"
-            @click="scrollToSection('features')"
-          >
-            {{ t('landing.features.badge') }}
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-6 text-sm">
+          <button class="text-muted-foreground hover:text-foreground transition-colors" @click="scrollToSection('features')">
+            {{ t('landing.footer.features') }}
           </button>
-          <button
-            class="hidden h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors sm:flex"
-            :class="headerSolid ? 'text-muted-foreground hover:text-foreground' : 'text-white/70 hover:text-white'"
-            @click="scrollToSection('security')"
-          >
-            {{ t('landing.security.badge') }}
+          <button class="text-muted-foreground hover:text-foreground transition-colors" @click="scrollToSection('usecases')">
+            {{ t('landing.useCases.badge') }}
           </button>
-          <button
-            v-if="!isBeta"
-            class="hidden h-9 items-center rounded-lg px-3 text-sm font-medium transition-colors sm:flex"
-            :class="headerSolid ? 'text-muted-foreground hover:text-foreground' : 'text-white/70 hover:text-white'"
-            @click="scrollToSection('pricing')"
-          >
-            {{ t('landing.pricing.badge') }}
+          <button v-if="!isBeta" class="text-muted-foreground hover:text-foreground transition-colors" @click="scrollToSection('pricing')">
+            {{ t('landing.footer.pricing') }}
           </button>
+          <button class="text-muted-foreground hover:text-foreground transition-colors" @click="scrollToSection('security')">
+            {{ t('landing.footer.security') }}
+          </button>
+        </nav>
 
+        <div class="flex items-center gap-2">
           <ClientOnly>
             <NuxtLink
               v-if="isAuthenticated"
               to="/dashboard"
             >
-              <Button variant="ghost" size="sm" :class="!headerSolid && 'text-white/90 hover:text-white hover:bg-white/10'">
+              <Button variant="ghost" size="sm" class="rounded-full">
                 {{ t('nav.dashboard') }}
               </Button>
             </NuxtLink>
-            <NuxtLink v-else to="/login">
-              <Button variant="ghost" size="sm" :class="!headerSolid && 'text-white/90 hover:text-white hover:bg-white/10'">
-                {{ t('common.login') }}
-              </Button>
-            </NuxtLink>
+            <template v-else>
+              <NuxtLink to="/login">
+                <Button variant="ghost" size="sm" class="rounded-full hidden sm:inline-flex">
+                  {{ t('common.login') }}
+                </Button>
+              </NuxtLink>
+              <NuxtLink :to="isBeta ? '/waitlist' : '/register'">
+                <Button size="sm" class="rounded-full bg-coral hover:bg-coral/90">
+                  {{ isBeta ? t('landing.beta.cta') : t('landing.hero.cta') }}
+                </Button>
+              </NuxtLink>
+            </template>
           </ClientOnly>
-
-        </nav>
+        </div>
       </div>
     </header>
 
     <!-- ============================================
-         Hero
+         Hero - Emotional, Warm with Video Background
          ============================================ -->
-    <section class="relative flex min-h-[100dvh] items-center justify-center overflow-hidden">
+    <section class="relative min-h-[100dvh] flex items-center justify-center px-6 pt-20 overflow-hidden">
+      <!-- Video Background -->
       <video
-        ref="heroVideo"
-        class="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000"
-        :class="videoLoaded ? 'opacity-100' : 'opacity-0'"
         autoplay
-        muted
         loop
+        muted
         playsinline
-        @loadeddata="videoLoaded = true"
+        class="absolute inset-0 w-full h-full object-cover z-0"
       >
-        <source :src="heroVideoSrc" type="video/mp4">
+        <source src="/videos/hero.mp4" type="video/mp4" />
       </video>
 
-      <div
-        class="hero-gradient absolute inset-0 transition-opacity duration-1000"
-        :class="videoLoaded ? 'opacity-0' : 'opacity-100'"
-      />
+      <!-- Overlay for readability -->
+      <div class="absolute inset-0 z-[1] bg-background/60 dark:bg-background/70" />
 
-      <div class="absolute inset-0 bg-black/40" />
-      <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-background to-transparent" />
+      <!-- Gradient overlay -->
+      <div class="absolute inset-0 z-[2] hero-gradient" />
 
-      <div class="relative z-10 mx-auto max-w-3xl px-6 text-center">
-        <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.15em] text-white/80 backdrop-blur-sm">
-          <Icon icon="lucide:sparkles" class="h-3.5 w-3.5" />
+      <div class="relative z-[5] max-w-4xl mx-auto text-center">
+        <!-- Social Proof Badge -->
+        <div class="reveal inline-flex items-center gap-2 rounded-full bg-coral/10 border border-coral/20 px-4 py-2 text-sm font-medium text-coral mb-8">
+          <Icon icon="lucide:heart" class="h-4 w-4" />
           {{ t('landing.hero.badge') }}
         </div>
-        <h1 class="mt-6 font-handwritten text-6xl text-white sm:text-8xl lg:text-9xl">
-          Tap & Tell
+
+        <!-- Headline -->
+        <h1 class="reveal font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-foreground leading-[1.1]">
+          {{ t('landing.hero.title') }}
+          <span class="text-coral">{{ t('landing.hero.titleHighlight') }}</span>
         </h1>
-        <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-white/80 sm:text-xl">
+
+        <!-- Subheadline -->
+        <p class="reveal mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed" style="transition-delay: 100ms">
           {{ t('landing.hero.subtitle') }}
         </p>
-        <div class="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+
+        <!-- CTA Buttons -->
+        <div class="reveal mt-10 flex flex-col sm:flex-row items-center justify-center gap-4" style="transition-delay: 200ms">
           <ClientOnly>
-            <template v-if="isAuthenticated">
-              <NuxtLink to="/dashboard">
-                <Button size="lg" class="rounded-full px-8 text-base">
-                  {{ t('nav.dashboard') }}
-                </Button>
-              </NuxtLink>
-            </template>
-            <template v-else>
-              <NuxtLink to="/register">
-                <Button size="lg" class="rounded-full px-8 text-base">
-                  {{ t('landing.hero.cta') }}
-                </Button>
-              </NuxtLink>
-              <NuxtLink to="/login">
-                <Button variant="outline" size="lg" class="rounded-full border-white/30 bg-white/10 px-8 text-base text-white backdrop-blur-sm hover:bg-white/20 hover:text-white">
-                  {{ t('landing.hero.login') }}
-                </Button>
-              </NuxtLink>
-            </template>
+            <NuxtLink :to="isAuthenticated ? '/dashboard' : (isBeta ? '/waitlist' : '/register')">
+              <Button size="lg" class="rounded-full bg-coral hover:bg-coral/90 px-8 text-base shadow-lg shadow-coral/25 hover:shadow-xl hover:shadow-coral/30 transition-all">
+                {{ isBeta ? t('landing.beta.cta') : t('landing.hero.cta') }}
+                <Icon icon="lucide:arrow-right" class="ml-2 h-4 w-4" />
+              </Button>
+            </NuxtLink>
+            <NuxtLink v-if="!isAuthenticated" to="/login">
+              <Button variant="outline" size="lg" class="rounded-full px-8 text-base border-border/50 hover:bg-muted/50">
+                {{ t('landing.hero.login') }}
+              </Button>
+            </NuxtLink>
           </ClientOnly>
         </div>
+
+        <!-- Trust indicators -->
+        <div class="reveal mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground" style="transition-delay: 300ms">
+          <span class="flex items-center gap-2">
+            <Icon icon="lucide:shield-check" class="h-4 w-4 text-sage" />
+            {{ t('landing.hero.trust1') }}
+          </span>
+          <span class="flex items-center gap-2">
+            <Icon icon="lucide:zap" class="h-4 w-4 text-gold" />
+            {{ t('landing.hero.trust2') }}
+          </span>
+          <span class="flex items-center gap-2">
+            <Icon icon="lucide:heart" class="h-4 w-4 text-coral" />
+            {{ t('landing.hero.trust3') }}
+          </span>
+        </div>
+
       </div>
 
-      <div class="absolute bottom-8 left-1/2 z-10 -translate-x-1/2">
-        <div class="scroll-indicator">
-          <Icon icon="lucide:chevron-down" class="h-5 w-5 text-white/50" />
-        </div>
+      <!-- Scroll indicator -->
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2">
+        <button class="scroll-indicator" @click="scrollToSection(isBeta ? 'beta' : 'problem')">
+          <Icon icon="lucide:chevrons-down" class="h-6 w-6 text-muted-foreground/50" />
+        </button>
       </div>
     </section>
 
     <!-- ============================================
-         Beta Announcement (only shown in beta mode)
+         Beta Section (only in beta mode)
          ============================================ -->
-    <section v-if="isBeta" class="relative overflow-hidden border-b border-primary/20 bg-primary/5 px-6 py-16">
-      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
-      <div class="relative mx-auto max-w-5xl">
-        <div class="text-center">
-          <div class="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-primary">
+    <section v-if="isBeta" id="beta" class="px-6 py-24 sm:py-32 bg-gradient-to-br from-coral/5 via-background to-gold/5 border-y border-coral/10">
+      <div class="max-w-5xl mx-auto">
+        <div class="reveal text-center mb-12">
+          <div class="inline-flex items-center gap-2 rounded-full bg-coral/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-coral mb-4">
             <span class="relative flex h-2 w-2">
-              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-              <span class="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-coral opacity-75" />
+              <span class="relative inline-flex h-2 w-2 rounded-full bg-coral" />
             </span>
             {{ t('landing.beta.badge') }}
           </div>
-          <h2 class="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
+          <h2 class="font-display text-3xl sm:text-4xl font-bold">
             {{ t('landing.beta.title') }}
           </h2>
-          <p class="mx-auto mt-3 max-w-2xl text-base text-muted-foreground">
+          <p class="mt-4 text-muted-foreground max-w-xl mx-auto">
             {{ t('landing.beta.subtitle') }}
           </p>
         </div>
 
         <!-- Beta Features Grid -->
-        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           <div
-            v-for="(feature, key) in ['free', 'feedback', 'early', 'limit']"
-            :key="key"
-            class="group rounded-2xl border border-border/50 bg-card/50 p-5 backdrop-blur-sm transition-all duration-300 hover:border-primary/30 hover:bg-card/80"
+            v-for="(feature, index) in betaFeatures"
+            :key="feature"
+            class="reveal p-6 rounded-2xl bg-card border border-border/50 text-center"
+            :style="{ transitionDelay: `${index * 80}ms` }"
           >
-            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary/15">
+            <div class="w-12 h-12 mx-auto mb-4 rounded-full bg-coral/10 flex items-center justify-center">
               <Icon
-                :icon="feature === 'free' ? 'lucide:gift' : feature === 'feedback' ? 'lucide:message-circle' : feature === 'early' ? 'lucide:star' : 'lucide:key'"
-                class="h-5 w-5 text-primary"
+                :icon="feature === 'free' ? 'lucide:gift' : feature === 'feedback' ? 'lucide:message-circle' : feature === 'early' ? 'lucide:star' : 'lucide:lock'"
+                class="h-6 w-6 text-coral"
               />
             </div>
-            <h3 class="mt-3 text-sm font-semibold">
-              {{ t(`landing.beta.features.${feature}.title`) }}
-            </h3>
-            <p class="mt-1 text-xs text-muted-foreground">
-              {{ t(`landing.beta.features.${feature}.description`) }}
-            </p>
+            <h3 class="font-semibold mb-2">{{ t(`landing.beta.features.${feature}.title`) }}</h3>
+            <p class="text-sm text-muted-foreground">{{ t(`landing.beta.features.${feature}.description`) }}</p>
           </div>
         </div>
 
-        <!-- CTA Buttons -->
-        <div class="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        <!-- CTA -->
+        <div class="reveal text-center">
           <NuxtLink to="/waitlist">
-            <Button size="lg" class="rounded-full px-8">
+            <Button size="lg" class="rounded-full bg-coral hover:bg-coral/90 px-10 shadow-lg shadow-coral/25">
               {{ t('landing.beta.cta') }}
+              <Icon icon="lucide:arrow-right" class="ml-2 h-4 w-4" />
             </Button>
           </NuxtLink>
-          <NuxtLink to="/login" class="text-sm text-muted-foreground hover:text-foreground">
+          <p class="mt-4 text-sm text-muted-foreground">
             {{ t('landing.beta.hasInvite') }}
-            <span class="ml-1 font-medium text-primary">{{ t('landing.beta.signIn') }}</span>
-          </NuxtLink>
+            <NuxtLink to="/login" class="font-medium text-coral hover:underline ml-1">{{ t('landing.beta.signIn') }}</NuxtLink>
+          </p>
         </div>
       </div>
     </section>
 
     <!-- ============================================
-         Problem Section
+         Problem → Solution
          ============================================ -->
-    <section class="relative overflow-hidden px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-1 absolute -right-32 -top-32 h-96 w-96 rounded-full bg-red-500/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.03}px)` }" />
-      <div class="orb orb-drift-2 absolute -left-48 bottom-0 h-72 w-72 rounded-full bg-red-400/5 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
-      <div class="mx-auto max-w-5xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-red-500">
-            {{ t('landing.problem.badge') }}
+    <section id="problem" class="px-6 py-24 sm:py-32">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-16 items-center">
+          <!-- Problem -->
+          <div class="reveal">
+            <p class="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70 mb-3">
+              {{ t('landing.problem.badge') }}
+            </p>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold leading-tight">
+              {{ t('landing.problem.title') }}
+            </h2>
+            <p class="mt-4 text-muted-foreground leading-relaxed">
+              {{ t('landing.problem.description') }}
+            </p>
+
+            <div class="mt-8 space-y-4">
+              <div v-for="i in 3" :key="i" class="flex items-start gap-3">
+                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-destructive/10 flex items-center justify-center mt-0.5">
+                  <Icon icon="lucide:x" class="h-3.5 w-3.5 text-destructive" />
+                </div>
+                <p class="text-sm text-muted-foreground">{{ t(`landing.problem.point${i}`) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Solution -->
+          <div class="reveal" style="transition-delay: 150ms">
+            <div class="relative p-8 rounded-3xl bg-gradient-to-br from-coral/5 via-gold/5 to-sage/5 border border-coral/10">
+              <p class="text-sm font-semibold uppercase tracking-wider text-coral mb-3">
+                {{ t('landing.solution.badge') }}
+              </p>
+              <h2 class="font-display text-3xl sm:text-4xl font-bold leading-tight">
+                {{ t('landing.solution.title') }}
+              </h2>
+              <p class="mt-4 text-muted-foreground leading-relaxed">
+                {{ t('landing.solution.description') }}
+              </p>
+
+              <div class="mt-8 space-y-4">
+                <div v-for="i in 3" :key="i" class="flex items-start gap-3">
+                  <div class="flex-shrink-0 w-6 h-6 rounded-full bg-coral/10 flex items-center justify-center mt-0.5">
+                    <Icon icon="lucide:check" class="h-3.5 w-3.5 text-coral" />
+                  </div>
+                  <p class="text-sm text-foreground">{{ t(`landing.solution.point${i}`) }}</p>
+                </div>
+              </div>
+
+              <!-- Mini CTA -->
+              <div class="mt-8">
+                <NuxtLink :to="isAuthenticated ? '/dashboard' : (isBeta ? '/waitlist' : '/register')">
+                  <Button class="rounded-full bg-coral hover:bg-coral/90">
+                    {{ isBeta ? t('landing.beta.cta') : t('landing.hero.cta') }}
+                    <Icon icon="lucide:arrow-right" class="ml-2 h-4 w-4" />
+                  </Button>
+                </NuxtLink>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+         Use Cases with Mock Entries
+         ============================================ -->
+    <section id="usecases" class="px-6 py-24 sm:py-32 bg-muted/30">
+      <div class="max-w-6xl mx-auto">
+        <div class="reveal text-center mb-16">
+          <p class="text-sm font-semibold uppercase tracking-wider text-coral mb-3">
+            {{ t('landing.useCases.badge') }}
           </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            {{ t('landing.problem.title') }}
+          <h2 class="font-display text-3xl sm:text-4xl font-bold">
+            {{ t('landing.useCases.title') }}
           </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            {{ t('landing.problem.subtitle') }}
+          <p class="mt-4 text-muted-foreground max-w-2xl mx-auto">
+            {{ t('landing.useCases.subtitle') }}
           </p>
         </div>
 
-        <div class="mt-16 grid gap-8 sm:grid-cols-3">
+        <!-- Detailed Use Cases -->
+        <div class="space-y-12">
           <div
-            v-for="(point, index) in problemPoints"
-            :key="point.key"
-            class="reveal-on-scroll text-center"
+            v-for="(useCase, index) in useCases"
+            :key="useCase"
+            class="reveal"
             :style="{ transitionDelay: `${index * 100}ms` }"
           >
-            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-red-500/10">
-              <Icon :icon="point.icon" class="h-7 w-7 text-red-500" />
+            <div class="grid lg:grid-cols-2 gap-8 items-center" :class="index % 2 === 1 ? 'lg:grid-flow-dense' : ''">
+              <!-- Info -->
+              <div :class="index % 2 === 1 ? 'lg:col-start-2' : ''">
+                <div class="flex items-center gap-3 mb-4">
+                  <span class="text-4xl">{{ t(`landing.useCases.${useCase}.emoji`) }}</span>
+                  <div>
+                    <h3 class="font-display text-2xl font-semibold">{{ t(`landing.useCases.${useCase}.title`) }}</h3>
+                    <p class="text-sm text-coral font-medium">{{ t(`landing.useCases.${useCase}.eventName`) }}</p>
+                  </div>
+                </div>
+                <p class="text-muted-foreground leading-relaxed mb-6">
+                  {{ t(`landing.useCases.${useCase}.description`) }}
+                </p>
+              </div>
+
+              <!-- Mock Entries -->
+              <div class="space-y-4" :class="index % 2 === 1 ? 'lg:col-start-1 lg:row-start-1' : ''">
+                <div
+                  v-for="entryNum in 2"
+                  :key="entryNum"
+                  class="p-5 rounded-2xl bg-card border border-border/50 shadow-sm"
+                >
+                  <p class="text-sm leading-relaxed mb-4">
+                    "{{ t(`landing.useCases.${useCase}.entry${entryNum}.message`) }}"
+                  </p>
+                  <div class="flex flex-wrap gap-2">
+                    <span v-if="t(`landing.useCases.${useCase}.entry${entryNum}.song`, '')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-coral/10 text-xs">
+                      <Icon icon="lucide:music" class="h-3 w-3 text-coral" />
+                      <span class="text-muted-foreground">{{ t(`landing.useCases.${useCase}.entry${entryNum}.song`) }}</span>
+                    </span>
+                    <span v-if="t(`landing.useCases.${useCase}.entry${entryNum}.food`, '')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gold/10 text-xs">
+                      <Icon icon="lucide:utensils" class="h-3 w-3 text-gold" />
+                      <span class="text-muted-foreground">{{ t(`landing.useCases.${useCase}.entry${entryNum}.food`) }}</span>
+                    </span>
+                    <span v-if="t(`landing.useCases.${useCase}.entry${entryNum}.superpower`, '')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-sage/10 text-xs">
+                      <Icon icon="lucide:sparkles" class="h-3 w-3 text-sage" />
+                      <span class="text-muted-foreground">{{ t(`landing.useCases.${useCase}.entry${entryNum}.superpower`) }}</span>
+                    </span>
+                    <span v-if="t(`landing.useCases.${useCase}.entry${entryNum}.memory`, '')" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-navy/10 text-xs">
+                      <Icon icon="lucide:heart" class="h-3 w-3 text-navy" />
+                      <span class="text-muted-foreground">{{ t(`landing.useCases.${useCase}.entry${entryNum}.memory`) }}</span>
+                    </span>
+                  </div>
+                </div>
+                <p class="text-xs text-muted-foreground/60 italic text-center">
+                  {{ t('landing.useCases.disclaimer') }}
+                </p>
+              </div>
             </div>
-            <h3 class="mt-5 text-lg font-semibold tracking-tight">
-              {{ t(`landing.problem.${point.key}.title`) }}
-            </h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {{ t(`landing.problem.${point.key}.description`) }}
-            </p>
           </div>
         </div>
 
-        <!-- Stats -->
-        <div class="reveal-on-scroll mt-16 grid gap-6 rounded-2xl border border-border/50 bg-muted/30 p-8 sm:grid-cols-3" style="transition-delay: 200ms">
-          <div v-for="i in 3" :key="i" class="text-center">
-            <p class="text-3xl font-bold tracking-tight text-foreground">
-              {{ t(`landing.problem.stat${i}.number`) }}
-            </p>
-            <p class="mt-1 text-sm text-muted-foreground">
-              {{ t(`landing.problem.stat${i}.label`) }}
-            </p>
+        <!-- More Use Cases (Simple Cards) -->
+        <div class="mt-16">
+          <h3 class="reveal text-center font-display text-xl font-semibold mb-8">{{ t('landing.useCases.title') }}</h3>
+          <div class="grid sm:grid-cols-3 gap-4">
+            <div
+              v-for="(useCase, index) in moreUseCases"
+              :key="useCase.key"
+              class="reveal p-6 rounded-2xl bg-card border border-border/50 text-center hover:border-coral/30 hover:shadow-lg transition-all"
+              :style="{ transitionDelay: `${index * 50}ms` }"
+            >
+              <span class="text-4xl">{{ useCase.emoji }}</span>
+              <h4 class="mt-3 font-semibold">{{ t(`landing.useCases.${useCase.key}.title`) }}</h4>
+              <p class="mt-1 text-sm text-muted-foreground">{{ t(`landing.useCases.${useCase.key}.description`) }}</p>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ============================================
-         Solution Section
+         Emotional Quote
          ============================================ -->
-    <section class="relative overflow-hidden border-t border-border/50 bg-gradient-to-b from-primary/5 to-transparent px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-3 absolute -left-40 top-20 h-80 w-80 rounded-full bg-primary/8 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.04}px)` }" />
-      <div class="orb orb-drift-1 absolute -right-20 bottom-10 h-64 w-64 rounded-full bg-emerald-500/6 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.03}px)` }" />
-      <div class="mx-auto max-w-5xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            {{ t('landing.solution.badge') }}
-          </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            {{ t('landing.solution.title') }}
-          </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            {{ t('landing.solution.subtitle') }}
+    <section class="px-6 py-24 sm:py-32">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="reveal">
+          <Icon icon="lucide:quote" class="h-12 w-12 text-coral/30 mx-auto mb-6" />
+          <blockquote class="font-handwritten text-3xl sm:text-4xl lg:text-5xl text-foreground leading-relaxed">
+            "{{ t('landing.quote.text') }}"
+          </blockquote>
+          <p class="mt-6 text-muted-foreground">
+            — {{ t('landing.quote.author') }}
           </p>
         </div>
-
-        <div class="mt-16 grid gap-8 sm:grid-cols-3">
-          <div
-            v-for="(point, index) in solutionPoints"
-            :key="point.key"
-            class="reveal-on-scroll group rounded-2xl border border-primary/10 bg-card p-8 text-center transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
-            :style="{ transitionDelay: `${index * 100}ms` }"
-          >
-            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/15">
-              <Icon :icon="point.icon" class="h-7 w-7 text-primary" />
-            </div>
-            <h3 class="mt-5 text-lg font-semibold tracking-tight">
-              {{ t(`landing.solution.${point.key}.title`) }}
-            </h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {{ t(`landing.solution.${point.key}.description`) }}
-            </p>
-          </div>
-        </div>
-
       </div>
     </section>
 
     <!-- ============================================
-         Features
+         Features - Organized by Groups
          ============================================ -->
-    <section id="features" class="relative overflow-hidden px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-2 absolute -right-48 top-40 h-96 w-96 rounded-full bg-primary/6 blur-[120px]" :style="{ transform: `translateY(${scrollY * 0.025}px)` }" />
-      <div class="orb orb-drift-3 absolute -left-32 bottom-20 h-72 w-72 rounded-full bg-emerald-400/5 blur-[90px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
-      <div class="mx-auto max-w-6xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+    <section id="features" class="px-6 py-24 sm:py-32 bg-muted/30">
+      <div class="max-w-6xl mx-auto">
+        <div class="reveal text-center mb-16">
+          <p class="text-sm font-semibold uppercase tracking-wider text-coral mb-3">
             {{ t('landing.features.badge') }}
           </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+          <h2 class="font-display text-3xl sm:text-4xl font-bold">
             {{ t('landing.features.title') }}
           </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+          <p class="mt-4 text-muted-foreground max-w-2xl mx-auto">
             {{ t('landing.features.subtitle') }}
           </p>
         </div>
 
         <!-- Feature Groups -->
-        <div
-          v-for="(group, gIdx) in featureGroups"
-          :key="group.key"
-          class="mt-20 first:mt-16"
-        >
-          <div class="reveal-on-scroll mb-8 text-center" :style="{ transitionDelay: `${gIdx * 80}ms` }">
-            <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary/70">
-              {{ t(`landing.features.groups.${group.key}.title`) }}
-            </p>
-            <p class="mx-auto mt-1 max-w-lg text-sm text-muted-foreground">
-              {{ t(`landing.features.groups.${group.key}.subtitle`) }}
-            </p>
-          </div>
-
-          <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <div
-              v-for="(feature, fIdx) in group.features"
-              :key="feature.key"
-              class="reveal-on-scroll feature-card group rounded-2xl border border-border/50 bg-card p-7 transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
-              :style="{ transitionDelay: `${gIdx * 80 + fIdx * 60}ms` }"
-            >
-              <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/15">
-                <Icon :icon="feature.icon" class="h-6 w-6 text-primary" />
-              </div>
-              <h3 class="mt-5 text-lg font-semibold tracking-tight">
-                {{ t(`landing.features.${feature.key}.title`) }}
-              </h3>
-              <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-                {{ t(`landing.features.${feature.key}.description`) }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ============================================
-         How it works
-         ============================================ -->
-    <section class="relative overflow-hidden border-t border-border/50 bg-muted/30 px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-1 absolute right-10 top-10 h-64 w-64 rounded-full bg-primary/5 blur-[80px]" :style="{ transform: `translateY(${scrollY * 0.02}px)` }" />
-      <div class="orb orb-drift-2 absolute -left-24 bottom-0 h-80 w-80 rounded-full bg-emerald-500/4 blur-[100px]" :style="{ transform: `translateY(${scrollY * -0.015}px)` }" />
-
-      <div class="mx-auto max-w-4xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            {{ t('landing.howItWorks.badge') }}
-          </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            {{ t('landing.howItWorks.title') }}
-          </h2>
-          <p class="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
-            {{ t('landing.howItWorks.subtitle') }}
-          </p>
-        </div>
-
-        <div class="mt-20 grid gap-12 sm:grid-cols-3 sm:gap-8">
+        <div class="space-y-16">
           <div
-            v-for="(step, index) in steps"
-            :key="step.key"
-            class="reveal-on-scroll relative text-center"
-            :style="{ transitionDelay: `${index * 120}ms` }"
+            v-for="(group, groupIndex) in featureGroups"
+            :key="group.key"
+            class="reveal"
+            :style="{ transitionDelay: `${groupIndex * 100}ms` }"
           >
-            <!-- Connector line -->
-            <div
-              v-if="index > 0"
-              class="absolute -left-4 top-8 hidden h-px w-8 bg-border sm:block"
-            />
-
-            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 shadow-lg shadow-primary/5">
-              <span class="text-2xl font-bold text-primary">{{ step.step }}</span>
+            <div class="text-center mb-8">
+              <h3 class="font-display text-xl font-semibold">{{ t(`landing.features.groups.${group.key}.title`) }}</h3>
+              <p class="text-sm text-muted-foreground">{{ t(`landing.features.groups.${group.key}.subtitle`) }}</p>
             </div>
-            <h3 class="mt-6 text-xl font-semibold tracking-tight">
-              {{ t(`landing.howItWorks.${step.key}.title`) }}
-            </h3>
-            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {{ t(`landing.howItWorks.${step.key}.description`) }}
-            </p>
-          </div>
-        </div>
 
-        <!-- How it works CTA -->
-        <div class="reveal-on-scroll mt-14 text-center" style="transition-delay: 300ms">
-          <ClientOnly>
-            <NuxtLink :to="isAuthenticated ? '/dashboard' : '/register'">
-              <Button size="lg" class="rounded-full px-10 text-base">
-                {{ t('landing.howItWorks.cta') }}
-                <Icon icon="lucide:arrow-right" class="ml-2 h-4 w-4" />
-              </Button>
-            </NuxtLink>
-          </ClientOnly>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================
-         Use Cases / Scenarios
-         ============================================ -->
-    <section class="relative overflow-hidden px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-3 absolute -right-40 top-0 h-96 w-96 rounded-full bg-primary/6 blur-[120px]" :style="{ transform: `translateY(${scrollY * 0.03}px)` }" />
-      <div class="orb orb-drift-1 absolute left-10 bottom-20 h-64 w-64 rounded-full bg-emerald-400/5 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.025}px)` }" />
-
-      <div class="mx-auto max-w-6xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            {{ t('landing.useCases.badge') }}
-          </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            {{ t('landing.useCases.title') }}
-          </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            {{ t('landing.useCases.subtitle') }}
-          </p>
-        </div>
-
-        <div class="mt-16 grid gap-10 lg:grid-cols-2">
-          <div
-            v-for="(useCase, index) in useCases"
-            :key="useCase.key"
-            class="reveal-on-scroll"
-            :style="{ transitionDelay: `${index * 100}ms` }"
-          >
-            <!-- Use case header -->
-            <div class="flex items-center gap-3">
-              <span class="text-3xl">{{ t(`landing.useCases.${useCase.key}.emoji`) }}</span>
-              <div>
-                <h3 class="text-lg font-semibold tracking-tight">
-                  {{ t(`landing.useCases.${useCase.key}.title`) }}
-                </h3>
-                <p class="text-xs text-muted-foreground">
-                  {{ t(`landing.useCases.${useCase.key}.eventName`) }}
-                </p>
-              </div>
-            </div>
-            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {{ t(`landing.useCases.${useCase.key}.description`) }}
-            </p>
-
-            <!-- Mock guestbook entries -->
-            <div class="mt-5 space-y-3">
+            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div
-                v-for="(entry, eIdx) in useCase.entries"
-                :key="entry.seed"
-                class="group/entry rounded-xl border border-border/50 bg-card p-5 transition-all duration-300 hover:border-primary/15 hover:shadow-md"
+                v-for="(feature, featureIndex) in group.features"
+                :key="feature.key"
+                class="p-5 rounded-2xl bg-card border border-border/50 hover:border-coral/30 hover:shadow-lg transition-all group"
+                :style="{ transitionDelay: `${(groupIndex * 100) + (featureIndex * 30)}ms` }"
               >
-                <div class="flex items-center gap-3">
-                  <img
-                    :src="avatarUrl(entry.seed)"
-                    :alt="entry.name"
-                    class="h-10 w-10 shrink-0 rounded-full bg-muted"
-                    loading="lazy"
-                    width="40"
-                    height="40"
-                  >
-                  <div class="min-w-0">
-                    <p class="text-sm font-medium truncate">{{ entry.name }}</p>
-                    <div class="flex gap-1.5 mt-0.5">
-                      <span
-                        v-for="badge in entry.badges"
-                        :key="badge"
-                        class="inline-flex items-center gap-1 rounded-full bg-primary/8 px-2 py-0.5 text-[10px] font-medium text-primary"
-                      >
-                        <Icon
-                          :icon="badge === 'coffee' ? 'lucide:coffee' : badge === 'tea' ? 'lucide:cup-soda' : badge === 'nightOwl' ? 'lucide:moon' : badge === 'earlyBird' ? 'lucide:sunrise' : badge === 'beach' ? 'lucide:waves' : 'lucide:mountain'"
-                          class="h-2.5 w-2.5"
-                        />
-                        {{ t(`entry.badges.${badge}`) }}
-                      </span>
-                    </div>
-                  </div>
+                <div class="w-10 h-10 rounded-xl bg-coral/10 flex items-center justify-center mb-4 group-hover:bg-coral/20 transition-colors">
+                  <Icon :icon="feature.icon" class="h-5 w-5 text-coral" />
                 </div>
-                <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-                  {{ t(`landing.useCases.${useCase.key}.entry${eIdx + 1}.message`) }}
-                </p>
-                <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground/70">
-                  <span v-if="te(`landing.useCases.${useCase.key}.entry${eIdx + 1}.song`)">
-                    <Icon icon="lucide:music" class="mr-1 inline h-3 w-3" />{{ t(`landing.useCases.${useCase.key}.entry${eIdx + 1}.song`) }}
-                  </span>
-                  <span v-if="te(`landing.useCases.${useCase.key}.entry${eIdx + 1}.food`)">
-                    <Icon icon="lucide:utensils" class="mr-1 inline h-3 w-3" />{{ t(`landing.useCases.${useCase.key}.entry${eIdx + 1}.food`) }}
-                  </span>
-                  <span v-if="te(`landing.useCases.${useCase.key}.entry${eIdx + 1}.superpower`)">
-                    <Icon icon="lucide:zap" class="mr-1 inline h-3 w-3" />{{ t(`landing.useCases.${useCase.key}.entry${eIdx + 1}.superpower`) }}
-                  </span>
-                  <span v-if="te(`landing.useCases.${useCase.key}.entry${eIdx + 1}.memory`)">
-                    <Icon icon="lucide:heart" class="mr-1 inline h-3 w-3" />{{ t(`landing.useCases.${useCase.key}.entry${eIdx + 1}.memory`) }}
-                  </span>
-                </div>
+                <h4 class="font-semibold mb-1">{{ t(`landing.features.${feature.key}.title`) }}</h4>
+                <p class="text-sm text-muted-foreground">{{ t(`landing.features.${feature.key}.description`) }}</p>
               </div>
             </div>
-
-            <!-- Disclaimer -->
-            <p class="mt-2 text-[10px] text-muted-foreground/50 italic">
-              {{ t('landing.useCases.disclaimer') }}
-            </p>
           </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ============================================
-         Customization Showcase
-         ============================================ -->
-    <section id="customization" class="relative overflow-hidden border-t border-border/50 bg-muted/30 px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-1 absolute -right-32 top-20 h-80 w-80 rounded-full bg-primary/6 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.03}px)` }" />
-      <div class="orb orb-drift-3 absolute -left-24 bottom-10 h-72 w-72 rounded-full bg-emerald-400/5 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
-
-      <div class="mx-auto max-w-6xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            {{ t('landing.customization.badge') }}
-          </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            {{ t('landing.customization.title') }}
-          </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            {{ t('landing.customization.subtitle') }}
-          </p>
-        </div>
-
-        <div class="mt-16 grid items-center gap-12 lg:grid-cols-2">
-          <!-- Left: Controls -->
-          <div class="reveal-on-scroll space-y-8" style="transition-delay: 100ms">
-            <!-- Card Style Selector -->
-            <div>
-              <p class="mb-3 text-sm font-medium">{{ t('landing.customization.cardStyleLabel') }}</p>
-              <div class="flex flex-wrap gap-2">
-                <button
-                  v-for="style in cardStyleOptions"
-                  :key="style"
-                  class="rounded-full border px-4 py-2 text-sm font-medium transition-all duration-200"
-                  :class="selectedCardStyle === style
-                    ? 'border-primary bg-primary text-primary-foreground shadow-md'
-                    : 'border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground'"
-                  @click="selectedCardStyle = style"
-                >
-                  {{ t(`landing.customization.styles.${style}`) }}
-                </button>
-              </div>
-            </div>
-
-            <!-- Color Selector -->
-            <div>
-              <p class="mb-3 text-sm font-medium">{{ t('landing.customization.colorLabel') }}</p>
-              <div class="flex gap-3">
-                <button
-                  v-for="color in previewColors"
-                  :key="color"
-                  class="relative h-10 w-10 rounded-full border-2 transition-all duration-200"
-                  :class="selectedPreviewColor === color
-                    ? 'border-foreground scale-110 shadow-lg'
-                    : 'border-border hover:scale-105'"
-                  :style="{ backgroundColor: color }"
-                  @click="selectedPreviewColor = color"
-                >
-                  <Icon
-                    v-if="selectedPreviewColor === color"
-                    icon="lucide:check"
-                    class="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 text-white"
-                  />
-                </button>
-              </div>
-            </div>
-
-            <!-- Feature Bullets -->
-            <ul class="grid gap-3 sm:grid-cols-2">
-              <li v-for="bullet in ['questions', 'socialLinks', 'colorScheme', 'slideshow', 'backgrounds', 'ctaText']" :key="bullet" class="flex items-center gap-2.5 text-sm">
-                <Icon icon="lucide:check" class="h-4 w-4 shrink-0 text-primary" />
-                <span class="text-muted-foreground">{{ t(`landing.customization.bullets.${bullet}`) }}</span>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Right: Mock Card Preview -->
-          <div class="reveal-on-scroll flex justify-center" style="transition-delay: 200ms">
-            <ClientOnly>
-              <div
-                class="w-full max-w-sm transition-all duration-500"
-                :class="{
-                  'preview-polaroid': selectedCardStyle === 'polaroid',
-                  'preview-minimal': selectedCardStyle === 'minimal',
-                  'preview-rounded': selectedCardStyle === 'rounded',
-                  'preview-bordered': selectedCardStyle === 'bordered'
-                }"
-                :style="selectedCardStyle === 'bordered' ? { borderLeftColor: selectedPreviewColor } : {}"
-              >
-                <div
-                  class="overflow-hidden bg-card p-6"
-                  :class="{
-                    'rounded-xl shadow-xl': selectedCardStyle === 'polaroid',
-                    'rounded-lg border border-border': selectedCardStyle === 'minimal',
-                    'rounded-3xl': selectedCardStyle === 'rounded',
-                    'rounded-xl': selectedCardStyle === 'bordered'
-                  }"
-                  :style="selectedCardStyle === 'rounded' ? { backgroundColor: selectedPreviewColor + '10' } : {}"
-                >
-                  <!-- Mock entry header -->
-                  <div class="flex items-center gap-3">
-                    <img
-                      :src="avatarUrl('EmmaLarsson')"
-                      :alt="t('landing.customization.mockEntry.name')"
-                      class="h-12 w-12 shrink-0 rounded-full bg-muted"
-                      loading="lazy"
-                      width="48"
-                      height="48"
-                    >
-                    <div>
-                      <p class="font-medium">{{ t('landing.customization.mockEntry.name') }}</p>
-                      <div class="mt-0.5 flex gap-1.5">
-                        <span
-                          class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                          :style="{ backgroundColor: selectedPreviewColor + '15', color: selectedPreviewColor }"
-                        >
-                          <Icon icon="lucide:music" class="h-2.5 w-2.5" />
-                          Jazz
-                        </span>
-                        <span
-                          class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
-                          :style="{ backgroundColor: selectedPreviewColor + '15', color: selectedPreviewColor }"
-                        >
-                          <Icon icon="lucide:heart" class="h-2.5 w-2.5" />
-                          Travel
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Mock message -->
-                  <p class="mt-4 text-sm leading-relaxed text-muted-foreground">
-                    {{ t('landing.customization.mockEntry.message') }}
-                  </p>
-
-                  <!-- Mock photo placeholder -->
-                  <div
-                    class="mt-4 flex h-40 items-center justify-center rounded-lg"
-                    :style="{ backgroundColor: selectedPreviewColor + '10' }"
-                  >
-                    <Icon icon="lucide:image" class="h-8 w-8" :style="{ color: selectedPreviewColor + '40' }" />
-                  </div>
-                </div>
-              </div>
-            </ClientOnly>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============================================
-         Why Memories Matter
-         ============================================ -->
-    <section class="relative overflow-hidden px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-2 absolute -left-32 top-10 h-80 w-80 rounded-full bg-primary/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.02}px)` }" />
-      <div class="orb orb-drift-3 absolute -right-24 bottom-0 h-72 w-72 rounded-full bg-emerald-500/4 blur-[90px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
-
-      <div class="mx-auto max-w-5xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            {{ t('landing.memories.badge') }}
-          </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            {{ t('landing.memories.title') }}
-          </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            {{ t('landing.memories.subtitle') }}
-          </p>
-        </div>
-
-        <!-- Memory Cards -->
-        <div class="mt-14 grid gap-6 sm:grid-cols-3">
-          <!-- Card 1: Fleeting -->
-          <div class="reveal-on-scroll group relative overflow-hidden rounded-3xl border border-border/50 bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-1">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 blur-2xl transition-all duration-500 group-hover:scale-150" />
-            <div class="relative">
-              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500/10 to-red-500/10">
-                <Icon icon="lucide:timer" class="h-7 w-7 text-orange-500" />
-              </div>
-              <h3 class="mt-6 text-xl font-semibold tracking-tight">
-                {{ t('landing.memories.cards.fleeting.title') }}
-              </h3>
-              <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {{ t('landing.memories.cards.fleeting.description') }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Card 2: Personal -->
-          <div class="reveal-on-scroll group relative overflow-hidden rounded-3xl border border-border/50 bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-1" style="transition-delay: 100ms">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-pink-500/20 to-purple-500/20 blur-2xl transition-all duration-500 group-hover:scale-150" />
-            <div class="relative">
-              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pink-500/10 to-purple-500/10">
-                <Icon icon="lucide:heart-handshake" class="h-7 w-7 text-pink-500" />
-              </div>
-              <h3 class="mt-6 text-xl font-semibold tracking-tight">
-                {{ t('landing.memories.cards.personal.title') }}
-              </h3>
-              <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {{ t('landing.memories.cards.personal.description') }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Card 3: Future -->
-          <div class="reveal-on-scroll group relative overflow-hidden rounded-3xl border border-border/50 bg-card p-8 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-1" style="transition-delay: 200ms">
-            <div class="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-primary/20 to-emerald-500/20 blur-2xl transition-all duration-500 group-hover:scale-150" />
-            <div class="relative">
-              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/10 to-emerald-500/10">
-                <Icon icon="lucide:sparkles" class="h-7 w-7 text-primary" />
-              </div>
-              <h3 class="mt-6 text-xl font-semibold tracking-tight">
-                {{ t('landing.memories.cards.future.title') }}
-              </h3>
-              <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {{ t('landing.memories.cards.future.description') }}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Quote -->
-        <div class="reveal-on-scroll mt-14 text-center" style="transition-delay: 300ms">
-          <blockquote class="relative mx-auto max-w-2xl">
-            <Icon icon="lucide:quote" class="absolute -left-4 -top-4 h-8 w-8 text-primary/20 sm:-left-8" />
-            <p class="font-handwritten text-2xl text-foreground/80 sm:text-3xl">
-              "{{ t('landing.memories.quote') }}"
-            </p>
-          </blockquote>
         </div>
 
         <!-- CTA -->
-        <div class="reveal-on-scroll mt-10 text-center" style="transition-delay: 400ms">
-          <NuxtLink :to="isAuthenticated ? '/dashboard' : '/register'">
-            <Button size="lg" class="rounded-full px-8">
-              {{ t('landing.memories.cta') }}
+        <div class="reveal mt-16 text-center">
+          <NuxtLink :to="isAuthenticated ? '/dashboard' : (isBeta ? '/waitlist' : '/register')">
+            <Button size="lg" class="rounded-full bg-coral hover:bg-coral/90 px-8">
+              {{ t('landing.features.cta') }}
               <Icon icon="lucide:arrow-right" class="ml-2 h-4 w-4" />
             </Button>
           </NuxtLink>
@@ -992,176 +622,266 @@ onUnmounted(() => {
     </section>
 
     <!-- ============================================
-         Security & Trust
+         How It Works
          ============================================ -->
-    <section id="security" class="relative overflow-hidden border-t border-border/50 bg-muted/30 px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-2 absolute -right-32 top-10 h-80 w-80 rounded-full bg-primary/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.025}px)` }" />
-      <div class="orb orb-drift-1 absolute -left-24 bottom-20 h-72 w-72 rounded-full bg-emerald-400/4 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
-
-      <div class="mx-auto max-w-5xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-            {{ t('landing.security.badge') }}
+    <section class="px-6 py-24 sm:py-32">
+      <div class="max-w-5xl mx-auto">
+        <div class="reveal text-center mb-16">
+          <p class="text-sm font-semibold uppercase tracking-wider text-coral mb-3">
+            {{ t('landing.howItWorks.badge') }}
           </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
-            {{ t('landing.security.title') }}
+          <h2 class="font-display text-3xl sm:text-4xl font-bold">
+            {{ t('landing.howItWorks.title') }}
           </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-            {{ t('landing.security.subtitle') }}
-          </p>
         </div>
 
-        <!-- Security Cards -->
-        <div class="mt-16 grid gap-6 sm:grid-cols-2">
+        <div class="grid sm:grid-cols-3 gap-8 sm:gap-12">
           <div
-            v-for="(feature, index) in securityFeatures"
-            :key="feature.key"
-            class="reveal-on-scroll group rounded-2xl border border-border/50 bg-card p-7 transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
-            :style="{ transitionDelay: `${index * 80}ms` }"
+            v-for="(step, index) in steps"
+            :key="step.key"
+            class="reveal text-center"
+            :style="{ transitionDelay: `${index * 100}ms` }"
           >
-            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 transition-colors duration-300 group-hover:bg-primary/15">
-              <Icon :icon="feature.icon" class="h-6 w-6 text-primary" />
+            <div class="relative inline-flex">
+              <div class="w-20 h-20 rounded-full bg-coral/10 flex items-center justify-center">
+                <Icon :icon="step.icon" class="h-8 w-8 text-coral" />
+              </div>
+              <span class="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-coral text-white text-sm font-bold flex items-center justify-center">
+                {{ step.num }}
+              </span>
             </div>
-            <h3 class="mt-5 text-lg font-semibold tracking-tight">
-              {{ t(`landing.security.${feature.key}.title`) }}
+            <h3 class="mt-6 font-display text-xl font-semibold">
+              {{ t(`landing.howItWorks.${step.key}.title`) }}
             </h3>
-            <p class="mt-2 text-sm leading-relaxed text-muted-foreground">
-              {{ t(`landing.security.${feature.key}.description`) }}
+            <p class="mt-3 text-sm text-muted-foreground leading-relaxed">
+              {{ t(`landing.howItWorks.${step.key}.description`) }}
             </p>
           </div>
         </div>
 
-        <!-- Trust Badges -->
-        <div class="reveal-on-scroll mt-12 flex flex-wrap items-center justify-center gap-4" style="transition-delay: 300ms">
-          <div
-            v-for="badge in ['encrypted', 'openSource', 'gdpr']"
-            :key="badge"
-            class="inline-flex items-center gap-2 rounded-full border border-border/50 bg-card/70 px-5 py-2.5 text-sm font-medium backdrop-blur-xl"
-          >
-            <Icon
-              :icon="badge === 'encrypted' ? 'lucide:lock' : badge === 'openSource' ? 'lucide:github' : 'lucide:shield-check'"
-              class="h-4 w-4 text-primary"
-            />
-            {{ t(`landing.security.trustBadges.${badge}`) }}
+        <!-- CTA -->
+        <div class="reveal mt-14 text-center">
+          <NuxtLink :to="isAuthenticated ? '/dashboard' : (isBeta ? '/waitlist' : '/register')">
+            <Button size="lg" class="rounded-full bg-coral hover:bg-coral/90 px-8">
+              {{ t('landing.howItWorks.cta') }}
+              <Icon icon="lucide:arrow-right" class="ml-2 h-4 w-4" />
+            </Button>
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+         Customization Demo
+         ============================================ -->
+    <section class="px-6 py-24 sm:py-32 bg-muted/30">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <!-- Info -->
+          <div class="reveal">
+            <p class="text-sm font-semibold uppercase tracking-wider text-coral mb-3">
+              {{ t('landing.customization.badge') }}
+            </p>
+            <h2 class="font-display text-3xl sm:text-4xl font-bold">
+              {{ t('landing.customization.title') }}
+            </h2>
+            <p class="mt-4 text-muted-foreground leading-relaxed">
+              {{ t('landing.customization.subtitle') }}
+            </p>
+
+            <ul class="mt-8 space-y-3">
+              <li v-for="bullet in ['questions', 'colorScheme', 'backgrounds', 'slideshow']" :key="bullet" class="flex items-center gap-3">
+                <div class="w-5 h-5 rounded-full bg-coral/10 flex items-center justify-center">
+                  <Icon icon="lucide:check" class="h-3 w-3 text-coral" />
+                </div>
+                <span class="text-sm">{{ t(`landing.customization.bullets.${bullet}`) }}</span>
+              </li>
+            </ul>
+
+            <!-- Controls -->
+            <div class="mt-8 space-y-4">
+              <div>
+                <label class="text-sm font-medium mb-2 block">{{ t('landing.customization.cardStyleLabel') }}</label>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="style in cardStyles"
+                    :key="style"
+                    class="px-3 py-1.5 rounded-full text-sm border transition-all"
+                    :class="selectedCardStyle === style ? 'bg-coral text-white border-coral' : 'border-border hover:border-coral/50'"
+                    @click="selectedCardStyle = style"
+                  >
+                    {{ t(`landing.customization.styles.${style}`) }}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-sm font-medium mb-2 block">{{ t('landing.customization.colorLabel') }}</label>
+                <div class="flex gap-2">
+                  <button
+                    v-for="color in accentColors"
+                    :key="color.value"
+                    class="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110"
+                    :class="selectedColor === color.value ? 'border-foreground scale-110' : 'border-transparent'"
+                    :style="{ backgroundColor: color.value }"
+                    :title="color.name"
+                    @click="selectedColor = color.value"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Card -->
+          <div class="reveal" style="transition-delay: 150ms">
+            <div
+              class="p-6 rounded-3xl border transition-all duration-300"
+              :class="{
+                'bg-card shadow-xl': selectedCardStyle === 'polaroid',
+                'bg-transparent border-0': selectedCardStyle === 'minimal',
+                'bg-card rounded-[2rem]': selectedCardStyle === 'rounded',
+                'bg-card border-l-4': selectedCardStyle === 'bordered'
+              }"
+              :style="selectedCardStyle === 'bordered' ? { borderLeftColor: selectedColor } : {}"
+            >
+              <!-- Photo placeholder -->
+              <div
+                class="aspect-square rounded-xl mb-4 flex items-center justify-center"
+                :style="{ backgroundColor: selectedColor + '20' }"
+              >
+                <Icon icon="lucide:image" class="h-16 w-16" :style="{ color: selectedColor }" />
+              </div>
+
+              <h4 class="font-semibold text-lg">{{ t('landing.customization.mockEntry.name') }}</h4>
+              <p class="mt-2 text-sm text-muted-foreground leading-relaxed">
+                "{{ t('landing.customization.mockEntry.message') }}"
+              </p>
+
+              <div class="mt-4 flex flex-wrap gap-2">
+                <span
+                  class="px-2.5 py-1 rounded-full text-xs"
+                  :style="{ backgroundColor: selectedColor + '20', color: selectedColor }"
+                >
+                  <Icon icon="lucide:music" class="inline h-3 w-3 mr-1" />
+                  Song
+                </span>
+                <span
+                  class="px-2.5 py-1 rounded-full text-xs"
+                  :style="{ backgroundColor: selectedColor + '20', color: selectedColor }"
+                >
+                  <Icon icon="lucide:heart" class="inline h-3 w-3 mr-1" />
+                  Memory
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- ============================================
-         Pricing (hidden in private beta)
+         Pricing (only when not in beta)
          ============================================ -->
-    <section v-if="!isBeta" id="pricing" class="relative overflow-hidden px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-1 absolute -right-32 top-20 h-80 w-80 rounded-full bg-primary/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.02}px)` }" />
-      <div class="orb orb-drift-3 absolute -left-40 bottom-40 h-96 w-96 rounded-full bg-emerald-400/4 blur-[120px]" :style="{ transform: `translateY(${scrollY * -0.015}px)` }" />
-      <div class="mx-auto max-w-6xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+    <section v-if="!isBeta" id="pricing" class="px-6 py-24 sm:py-32">
+      <div class="max-w-6xl mx-auto">
+        <div class="reveal text-center mb-12">
+          <p class="text-sm font-semibold uppercase tracking-wider text-coral mb-3">
             {{ t('landing.pricing.badge') }}
           </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+          <h2 class="font-display text-3xl sm:text-4xl font-bold">
             {{ t('landing.pricing.title') }}
           </h2>
-          <p class="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
+          <p class="mt-4 text-muted-foreground max-w-xl mx-auto">
             {{ t('landing.pricing.subtitle') }}
           </p>
 
-          <!-- Billing toggle -->
-          <div class="mt-8 inline-flex items-center gap-3 rounded-full border border-border bg-muted/50 p-1">
+          <!-- Billing Toggle -->
+          <div class="mt-8 inline-flex items-center gap-3 p-1 bg-muted rounded-full">
             <button
-              class="rounded-full px-5 py-2 text-sm font-medium transition-all"
-              :class="billingCycle === 'monthly'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'"
-              @click="billingCycle = 'monthly'"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-all"
+              :class="!isYearly ? 'bg-card shadow text-foreground' : 'text-muted-foreground'"
+              @click="isYearly = false"
             >
               {{ t('landing.pricing.monthly') }}
             </button>
             <button
-              class="flex items-center gap-2 rounded-full px-5 py-2 text-sm font-medium transition-all"
-              :class="billingCycle === 'yearly'
-                ? 'bg-background text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'"
-              @click="billingCycle = 'yearly'"
+              class="px-4 py-2 rounded-full text-sm font-medium transition-all"
+              :class="isYearly ? 'bg-card shadow text-foreground' : 'text-muted-foreground'"
+              @click="isYearly = true"
             >
               {{ t('landing.pricing.yearly') }}
-              <span class="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold text-primary">
-                {{ t('landing.pricing.yearlyDiscount') }}
-              </span>
+              <span class="ml-1 text-xs text-coral">{{ t('landing.pricing.yearlyDiscount') }}</span>
             </button>
           </div>
         </div>
 
-        <!-- Plans grid -->
-        <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div
-            v-for="(plan, index) in plans"
-            :key="plan.key"
-            class="reveal-on-scroll relative flex flex-col rounded-2xl border p-7 transition-all duration-300"
-            :class="plan.popular
-              ? 'border-primary bg-card shadow-xl shadow-primary/10 ring-1 ring-primary/20'
-              : 'border-border/50 bg-card hover:border-border'"
-            :style="{ transitionDelay: `${index * 80}ms` }"
-          >
-            <!-- Popular badge -->
-            <div
-              v-if="plan.popular"
-              class="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground"
-            >
-              {{ t(`landing.pricing.${plan.key}.popular`) }}
+        <!-- Pricing Cards -->
+        <div class="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <!-- Free -->
+          <div class="reveal p-6 rounded-2xl bg-card border border-border/50">
+            <h3 class="font-semibold text-lg">{{ t('landing.pricing.free.name') }}</h3>
+            <p class="text-sm text-muted-foreground mt-1">{{ t('landing.pricing.free.description') }}</p>
+            <div class="mt-4">
+              <span class="text-4xl font-bold">${{ t('landing.pricing.free.price') }}</span>
             </div>
+            <Button variant="outline" class="w-full mt-6 rounded-full">{{ t('landing.pricing.free.cta') }}</Button>
+            <ul class="mt-6 space-y-2 text-sm">
+              <li v-for="(feature, i) in (t('landing.pricing.free.features') as unknown as string[])" :key="i" class="flex items-center gap-2">
+                <Icon icon="lucide:check" class="h-4 w-4 text-coral" />
+                {{ feature }}
+              </li>
+            </ul>
+          </div>
 
-            <h3 class="text-lg font-semibold">
-              {{ t(`landing.pricing.${plan.key}.name`) }}
-            </h3>
-            <p class="mt-1 text-sm text-muted-foreground">
-              {{ t(`landing.pricing.${plan.key}.description`) }}
-            </p>
-
-            <!-- Price -->
-            <div class="mt-5 flex items-baseline gap-1">
-              <template v-if="plan.key === 'enterprise'">
-                <span class="text-3xl font-bold tracking-tight">
-                  {{ t(`landing.pricing.${plan.key}.price`) }}
-                </span>
-              </template>
-              <template v-else-if="plan.key === 'free'">
-                <span class="text-4xl font-bold tracking-tight">${{ t(`landing.pricing.${plan.key}.price`) }}</span>
-              </template>
-              <template v-else>
-                <span class="text-4xl font-bold tracking-tight">
-                  ${{ billingCycle === 'yearly'
-                    ? t(`landing.pricing.${plan.key}.priceYearly`)
-                    : t(`landing.pricing.${plan.key}.price`)
-                  }}
-                </span>
-                <span class="text-sm text-muted-foreground">
-                  {{ billingCycle === 'yearly' ? t('landing.pricing.perYear') : t('landing.pricing.perMonth') }}
-                </span>
-              </template>
+          <!-- Home (Popular) -->
+          <div class="reveal p-6 rounded-2xl bg-coral text-white relative" style="transition-delay: 100ms">
+            <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 bg-gold text-navy text-xs font-semibold rounded-full">
+              {{ t('landing.pricing.home.popular') }}
+            </span>
+            <h3 class="font-semibold text-lg">{{ t('landing.pricing.home.name') }}</h3>
+            <p class="text-sm text-white/80 mt-1">{{ t('landing.pricing.home.description') }}</p>
+            <div class="mt-4">
+              <span class="text-4xl font-bold">${{ isYearly ? Math.round(parseInt(t('landing.pricing.home.priceYearly')) / 12) : t('landing.pricing.home.price') }}</span>
+              <span class="text-white/70">{{ t('landing.pricing.perMonth') }}</span>
             </div>
+            <Button class="w-full mt-6 rounded-full bg-white text-coral hover:bg-white/90">{{ t('landing.pricing.home.cta') }}</Button>
+            <ul class="mt-6 space-y-2 text-sm">
+              <li v-for="(feature, i) in (t('landing.pricing.home.features') as unknown as string[])" :key="i" class="flex items-center gap-2">
+                <Icon icon="lucide:check" class="h-4 w-4" />
+                {{ feature }}
+              </li>
+            </ul>
+          </div>
 
-            <!-- CTA -->
-            <NuxtLink :to="plan.key === 'enterprise' ? '#' : '/register'" class="mt-6">
-              <Button
-                class="w-full rounded-full"
-                :variant="plan.popular ? 'default' : 'outline'"
-              >
-                {{ t(`landing.pricing.${plan.key}.cta`) }}
-              </Button>
-            </NuxtLink>
+          <!-- Family -->
+          <div class="reveal p-6 rounded-2xl bg-card border border-border/50" style="transition-delay: 150ms">
+            <h3 class="font-semibold text-lg">{{ t('landing.pricing.family.name') }}</h3>
+            <p class="text-sm text-muted-foreground mt-1">{{ t('landing.pricing.family.description') }}</p>
+            <div class="mt-4">
+              <span class="text-4xl font-bold">${{ isYearly ? Math.round(parseInt(t('landing.pricing.family.priceYearly')) / 12) : t('landing.pricing.family.price') }}</span>
+              <span class="text-muted-foreground">{{ t('landing.pricing.perMonth') }}</span>
+            </div>
+            <Button variant="outline" class="w-full mt-6 rounded-full">{{ t('landing.pricing.family.cta') }}</Button>
+            <ul class="mt-6 space-y-2 text-sm">
+              <li v-for="(feature, i) in (t('landing.pricing.family.features') as unknown as string[])" :key="i" class="flex items-center gap-2">
+                <Icon icon="lucide:check" class="h-4 w-4 text-coral" />
+                {{ feature }}
+              </li>
+            </ul>
+          </div>
 
-            <!-- Features list -->
-            <ul class="mt-7 flex flex-1 flex-col gap-3">
-              <li
-                v-for="(feature, fIdx) in tm(`landing.pricing.${plan.key}.features`)"
-                :key="fIdx"
-                class="flex items-start gap-2.5 text-sm"
-              >
-                <Icon icon="lucide:check" class="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                <span class="text-muted-foreground">{{ rt(feature) }}</span>
+          <!-- Enterprise -->
+          <div class="reveal p-6 rounded-2xl bg-card border border-border/50" style="transition-delay: 200ms">
+            <h3 class="font-semibold text-lg">{{ t('landing.pricing.enterprise.name') }}</h3>
+            <p class="text-sm text-muted-foreground mt-1">{{ t('landing.pricing.enterprise.description') }}</p>
+            <div class="mt-4">
+              <span class="text-4xl font-bold">{{ t('landing.pricing.enterprise.price') }}</span>
+            </div>
+            <Button variant="outline" class="w-full mt-6 rounded-full">{{ t('landing.pricing.enterprise.cta') }}</Button>
+            <ul class="mt-6 space-y-2 text-sm">
+              <li v-for="(feature, i) in (t('landing.pricing.enterprise.features') as unknown as string[])" :key="i" class="flex items-center gap-2">
+                <Icon icon="lucide:check" class="h-4 w-4 text-coral" />
+                {{ feature }}
               </li>
             </ul>
           </div>
@@ -1170,110 +890,109 @@ onUnmounted(() => {
     </section>
 
     <!-- ============================================
-         NFC Tag Shop (Coming Soon)
+         Security & Trust
          ============================================ -->
-    <section id="nfc-shop" class="relative overflow-hidden border-t border-border/50 bg-muted/30 px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-2 absolute right-20 top-0 h-72 w-72 rounded-full bg-primary/5 blur-[90px]" :style="{ transform: `translateY(${scrollY * 0.02}px)` }" />
-      <div class="orb orb-drift-1 absolute -left-20 bottom-10 h-64 w-64 rounded-full bg-emerald-500/4 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
-      <div class="mx-auto max-w-6xl">
-        <div class="grid items-center gap-16 lg:grid-cols-2">
-          <!-- Left: Text -->
-          <div class="reveal-on-scroll">
-            <div class="flex items-center gap-3">
-              <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
-                {{ t('landing.nfcShop.badge') }}
-              </p>
-              <span class="inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-600 dark:text-amber-400">
-                <Icon icon="lucide:clock" class="h-3 w-3" />
-                {{ t('landing.nfcShop.comingSoon') }}
-              </span>
+    <section id="security" class="px-6 py-24 sm:py-32 bg-navy text-white">
+      <div class="max-w-5xl mx-auto">
+        <div class="reveal text-center mb-16">
+          <p class="text-sm font-semibold uppercase tracking-wider text-coral mb-3">
+            {{ t('landing.security.badge') }}
+          </p>
+          <h2 class="font-display text-3xl sm:text-4xl font-bold">
+            {{ t('landing.security.title') }}
+          </h2>
+          <p class="mt-4 text-white/70 max-w-2xl mx-auto">
+            {{ t('landing.security.subtitle') }}
+          </p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div
+            v-for="(feature, index) in securityFeatures"
+            :key="feature"
+            class="reveal p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors"
+            :style="{ transitionDelay: `${index * 80}ms` }"
+          >
+            <Icon
+              :icon="feature === 'encryption' ? 'lucide:lock' : feature === 'twoFactor' ? 'lucide:shield-check' : feature === 'rls' ? 'lucide:database' : 'lucide:shield'"
+              class="h-8 w-8 text-coral mb-4"
+            />
+            <h3 class="font-semibold mb-2">
+              {{ t(`landing.security.${feature}.title`) }}
+            </h3>
+            <p class="text-sm text-white/60">
+              {{ t(`landing.security.${feature}.description`) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================
+         NFC Shop Preview
+         ============================================ -->
+    <section class="px-6 py-24 sm:py-32">
+      <div class="max-w-5xl mx-auto">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <!-- Info -->
+          <div class="reveal">
+            <div class="inline-flex items-center gap-2 rounded-full bg-coral/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-coral mb-4">
+              {{ t('landing.nfcShop.comingSoon') }}
             </div>
-            <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+            <h2 class="font-display text-3xl sm:text-4xl font-bold">
               {{ t('landing.nfcShop.title') }}
             </h2>
-            <p class="mt-4 text-lg leading-relaxed text-muted-foreground">
+            <p class="mt-4 text-muted-foreground leading-relaxed">
               {{ t('landing.nfcShop.subtitle') }}
             </p>
 
-            <ul class="mt-8 flex flex-col gap-4">
-              <li class="flex items-center gap-3">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <Icon icon="lucide:link" class="h-4 w-4 text-primary" />
-                </div>
-                <span class="text-sm">{{ t('landing.nfcShop.preProgrammed') }}</span>
+            <ul class="mt-6 space-y-3">
+              <li class="flex items-center gap-3 text-sm">
+                <Icon icon="lucide:check" class="h-4 w-4 text-coral" />
+                {{ t('landing.nfcShop.preProgrammed') }}
               </li>
-              <li class="flex items-center gap-3">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <Icon icon="lucide:shield" class="h-4 w-4 text-primary" />
-                </div>
-                <span class="text-sm">{{ t('landing.nfcShop.durable') }}</span>
+              <li class="flex items-center gap-3 text-sm">
+                <Icon icon="lucide:check" class="h-4 w-4 text-coral" />
+                {{ t('landing.nfcShop.durable') }}
               </li>
-              <li class="flex items-center gap-3">
-                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <Icon icon="lucide:zap" class="h-4 w-4 text-primary" />
-                </div>
-                <span class="text-sm">{{ t('landing.nfcShop.easySetup') }}</span>
+              <li class="flex items-center gap-3 text-sm">
+                <Icon icon="lucide:check" class="h-4 w-4 text-coral" />
+                {{ t('landing.nfcShop.easySetup') }}
               </li>
             </ul>
 
-            <!-- Coming Soon Notice -->
-            <div class="mt-8 rounded-2xl border border-border/50 bg-card/50 p-5">
-              <div class="flex items-start gap-4">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/10">
-                  <Icon icon="lucide:bell" class="h-5 w-5 text-amber-500" />
-                </div>
-                <div>
-                  <p class="font-medium text-foreground">{{ t('landing.nfcShop.notifyTitle') }}</p>
-                  <p class="mt-1 text-sm text-muted-foreground">{{ t('landing.nfcShop.notifyDescription') }}</p>
-                </div>
+            <!-- Color selection -->
+            <div class="mt-8">
+              <p class="text-sm font-medium mb-3">{{ t('landing.nfcShop.colorChoice') }}</p>
+              <div class="flex gap-3">
+                <button
+                  v-for="nfcColor in nfcColors"
+                  :key="nfcColor.key"
+                  class="w-10 h-10 rounded-full border-2 transition-transform hover:scale-110"
+                  :class="selectedNfcColor === nfcColor.key ? 'border-coral scale-110' : 'border-border'"
+                  :style="{ background: nfcColor.color }"
+                  :title="t(`landing.nfcShop.colors.${nfcColor.key}`)"
+                  @click="selectedNfcColor = nfcColor.key"
+                />
               </div>
-              <NuxtLink to="/waitlist" class="mt-4 block">
-                <Button variant="outline" size="sm" class="w-full rounded-full">
-                  <Icon icon="lucide:mail" class="mr-2 h-4 w-4" />
-                  {{ t('landing.nfcShop.notifyMe') }}
-                </Button>
-              </NuxtLink>
+              <p class="mt-2 text-xs text-muted-foreground">{{ t('landing.nfcShop.colorHint') }}</p>
             </div>
           </div>
 
-          <!-- Right: Color picker visual -->
-          <div class="reveal-on-scroll" style="transition-delay: 150ms">
-            <div class="mx-auto max-w-sm">
-              <!-- NFC Tag visual -->
-              <div class="nfc-tag-visual relative mx-auto flex h-64 w-64 items-center justify-center rounded-[2rem] shadow-2xl transition-all duration-500" :style="{ background: nfcColors.find(c => c.key === selectedNfcColor)?.hex }">
-                <div class="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm">
-                  <Icon icon="lucide:nfc" class="h-10 w-10" :class="selectedNfcColor === 'white' ? 'text-gray-800' : 'text-white'" />
+          <!-- NFC Tag Visual -->
+          <div class="reveal" style="transition-delay: 150ms">
+            <div class="relative w-64 h-64 mx-auto">
+              <div
+                class="w-full h-full rounded-full shadow-2xl flex items-center justify-center"
+                :style="{ background: nfcColors.find(c => c.key === selectedNfcColor)?.color || '#1a1a1a' }"
+              >
+                <div class="text-center">
+                  <Icon icon="lucide:nfc" class="h-16 w-16 mx-auto mb-2" :class="selectedNfcColor === 'white' ? 'text-navy' : 'text-white'" />
+                  <span class="font-handwritten text-xl" :class="selectedNfcColor === 'white' ? 'text-navy' : 'text-white'">Tap & Tell</span>
                 </div>
-                <!-- Pulse ring -->
-                <div class="nfc-pulse absolute inset-0 rounded-[2rem]" />
               </div>
-
-              <!-- Color selector -->
-              <div class="mt-8 text-center">
-                <p class="text-sm font-medium text-muted-foreground">{{ t('landing.nfcShop.colorChoice') }}</p>
-                <div class="mt-3 flex justify-center gap-3">
-                  <button
-                    v-for="color in nfcColors"
-                    :key="color.key"
-                    class="group relative h-10 w-10 rounded-full border-2 transition-all duration-200"
-                    :class="selectedNfcColor === color.key
-                      ? 'border-primary scale-110 shadow-lg'
-                      : 'border-border hover:scale-105'"
-                    :style="{ background: color.hex }"
-                    :title="t(`landing.nfcShop.colors.${color.key}`)"
-                    @click="selectedNfcColor = color.key"
-                  >
-                    <Icon
-                      v-if="selectedNfcColor === color.key"
-                      icon="lucide:check"
-                      class="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2"
-                      :class="['white', 'custom'].includes(color.key) ? 'text-gray-800' : 'text-white'"
-                    />
-                  </button>
-                </div>
-                <p class="mt-3 text-xs text-muted-foreground">{{ t('landing.nfcShop.colorHint') }}</p>
-              </div>
+              <!-- Tap animation ring -->
+              <div class="absolute inset-0 rounded-full border-2 border-coral animate-ping opacity-30" />
             </div>
           </div>
         </div>
@@ -1281,88 +1000,39 @@ onUnmounted(() => {
     </section>
 
     <!-- ============================================
-         Open Source & Self-Hosting
+         Open Source
          ============================================ -->
-    <section id="open-source" class="relative overflow-hidden px-6 py-28">
-      <!-- Floating orbs -->
-      <div class="orb orb-drift-3 absolute -right-24 top-10 h-80 w-80 rounded-full bg-primary/5 blur-[100px]" :style="{ transform: `translateY(${scrollY * 0.025}px)` }" />
-      <div class="orb orb-drift-2 absolute -left-32 bottom-20 h-72 w-72 rounded-full bg-emerald-400/4 blur-[80px]" :style="{ transform: `translateY(${scrollY * -0.02}px)` }" />
-      <div class="mx-auto max-w-6xl">
-        <div class="reveal-on-scroll text-center">
-          <p class="text-sm font-semibold uppercase tracking-[0.15em] text-primary">
+    <section class="px-6 py-24 sm:py-32 bg-muted/30">
+      <div class="max-w-5xl mx-auto text-center">
+        <div class="reveal">
+          <p class="text-sm font-semibold uppercase tracking-wider text-coral mb-3">
             {{ t('landing.openSource.badge') }}
           </p>
-          <h2 class="mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
+          <h2 class="font-display text-3xl sm:text-4xl font-bold">
             {{ t('landing.openSource.title') }}
           </h2>
-          <p class="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+          <p class="mt-4 text-muted-foreground max-w-xl mx-auto">
             {{ t('landing.openSource.subtitle') }}
           </p>
-        </div>
 
-        <div class="mt-16 grid gap-8 lg:grid-cols-2">
-          <!-- GitHub Card -->
-          <div class="reveal-on-scroll group rounded-2xl border border-border/50 bg-card p-8 transition-all duration-300 hover:border-border hover:shadow-lg">
-            <div class="flex items-center gap-4">
-              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground/5">
-                <Icon icon="lucide:github" class="h-7 w-7" />
-              </div>
-              <div>
-                <h3 class="text-xl font-semibold tracking-tight">tap-and-tell</h3>
-                <div class="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
-                  <span class="flex items-center gap-1">
-                    <Icon icon="lucide:scale" class="h-3.5 w-3.5" />
-                    {{ t('landing.openSource.license') }}
-                  </span>
-                  <span class="flex items-center gap-1">
-                    <Icon icon="lucide:users" class="h-3.5 w-3.5" />
-                    {{ t('landing.openSource.contributors') }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-6 flex gap-3">
-              <Button variant="outline" class="rounded-full">
-                <Icon icon="lucide:github" class="mr-2 h-4 w-4" />
+          <div class="mt-8 flex flex-wrap justify-center gap-4">
+            <a href="https://github.com/Disane87/tap-and-tell" target="_blank">
+              <Button size="lg" class="rounded-full bg-navy text-white hover:bg-navy/90">
+                <Icon icon="lucide:github" class="mr-2 h-5 w-5" />
                 {{ t('landing.openSource.github') }}
               </Button>
-              <Button variant="outline" class="rounded-full">
-                <Icon icon="lucide:star" class="mr-2 h-4 w-4" />
-                Star
-              </Button>
-            </div>
+            </a>
           </div>
 
-          <!-- Docker Card -->
-          <div class="reveal-on-scroll group rounded-2xl border border-border/50 bg-card p-8 transition-all duration-300 hover:border-border hover:shadow-lg" style="transition-delay: 100ms">
-            <div class="flex items-center gap-4">
-              <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-500/10">
-                <Icon icon="lucide:container" class="h-7 w-7 text-blue-500" />
-              </div>
-              <div>
-                <h3 class="text-xl font-semibold tracking-tight">{{ t('landing.openSource.docker.title') }}</h3>
-                <p class="mt-1 text-sm text-muted-foreground">{{ t('landing.openSource.docker.description') }}</p>
-              </div>
-            </div>
-
-            <!-- Terminal-style code block -->
-            <div class="mt-6 overflow-hidden rounded-xl border border-border bg-[#0d1117] text-sm">
-              <div class="flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5">
-                <div class="h-3 w-3 rounded-full bg-red-500/70" />
-                <div class="h-3 w-3 rounded-full bg-yellow-500/70" />
-                <div class="h-3 w-3 rounded-full bg-green-500/70" />
-                <span class="ml-3 text-xs text-white/40">Terminal</span>
-              </div>
-              <div class="space-y-1 p-4 font-mono text-xs leading-relaxed text-green-400">
-                <p><span class="text-white/40"># {{ t('landing.openSource.docker.step1') }}</span></p>
-                <p>$ git clone https://github.com/tap-and-tell/tap-and-tell.git</p>
-                <p class="mt-2"><span class="text-white/40"># {{ t('landing.openSource.docker.step2') }}</span></p>
-                <p>$ cp .env.example .env</p>
-                <p class="mt-2"><span class="text-white/40"># {{ t('landing.openSource.docker.step3') }}</span></p>
-                <p>$ docker compose up -d</p>
-              </div>
-            </div>
+          <div class="mt-8 flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+            <span class="flex items-center gap-2">
+              <Icon icon="lucide:scale" class="h-4 w-4" />
+              {{ t('landing.openSource.license') }}
+            </span>
+            <span class="flex items-center gap-2">
+              <Icon icon="lucide:users" class="h-4 w-4" />
+              {{ t('landing.openSource.contributors') }}
+            </span>
           </div>
         </div>
       </div>
@@ -1371,25 +1041,29 @@ onUnmounted(() => {
     <!-- ============================================
          Final CTA
          ============================================ -->
-    <section class="px-6 py-28">
-      <div class="reveal-on-scroll mx-auto max-w-4xl overflow-hidden rounded-3xl bg-gradient-to-br from-primary to-emerald-600 p-12 text-center sm:p-20">
-        <h2 class="text-3xl font-bold tracking-tight text-white sm:text-5xl">
-          {{ t('landing.ctaSection.title') }}
-        </h2>
-        <p class="mx-auto mt-5 max-w-md text-lg text-white/80">
-          {{ t('landing.ctaSection.subtitle') }}
-        </p>
-        <div class="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-          <ClientOnly>
-            <NuxtLink :to="isAuthenticated ? '/dashboard' : '/register'">
-              <Button size="lg" class="rounded-full bg-white px-10 text-base font-semibold text-primary shadow-xl hover:bg-white/90">
-                {{ isAuthenticated ? t('nav.dashboard') : t('landing.hero.cta') }}
-              </Button>
-            </NuxtLink>
-          </ClientOnly>
-          <Button v-if="!isBeta" variant="outline" size="lg" class="rounded-full border-white/30 bg-white/10 px-8 text-base text-white backdrop-blur-sm hover:bg-white/20 hover:text-white" @click="scrollToSection('pricing')">
-            {{ t('landing.pricing.badge') }}
-          </Button>
+    <section class="px-6 py-24 sm:py-32">
+      <div class="max-w-4xl mx-auto">
+        <div class="reveal relative overflow-hidden rounded-3xl bg-gradient-to-br from-coral via-terracotta to-gold p-12 sm:p-16 text-center text-white">
+          <!-- Decorative elements -->
+          <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+          <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+          <div class="relative">
+            <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold">
+              {{ t('landing.cta.title') }}
+            </h2>
+            <p class="mt-4 text-lg text-white/80 max-w-xl mx-auto">
+              {{ t('landing.cta.subtitle') }}
+            </p>
+            <div class="mt-8">
+              <NuxtLink :to="isAuthenticated ? '/dashboard' : (isBeta ? '/waitlist' : '/register')">
+                <Button size="lg" class="rounded-full bg-white text-coral hover:bg-white/90 px-10 text-base font-semibold shadow-xl">
+                  {{ isBeta ? t('landing.beta.cta') : t('landing.cta.button') }}
+                  <Icon icon="lucide:sparkles" class="ml-2 h-4 w-4" />
+                </Button>
+              </NuxtLink>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1397,79 +1071,45 @@ onUnmounted(() => {
     <!-- ============================================
          Footer
          ============================================ -->
-    <footer class="border-t border-border bg-muted/30 px-6 py-16">
-      <div class="mx-auto max-w-6xl">
-        <div class="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+    <footer class="px-6 py-16 border-t border-border/50 bg-muted/30">
+      <div class="max-w-6xl mx-auto">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <!-- Brand -->
           <div class="lg:col-span-1">
             <span class="font-handwritten text-2xl">Tap & Tell</span>
-            <p class="mt-3 text-sm leading-relaxed text-muted-foreground">
-              {{ t('landing.footer.madeWith') }}
+            <p class="mt-3 text-sm text-muted-foreground">
+              {{ t('landing.footer.tagline') }}
             </p>
-            <div class="mt-4 flex gap-3">
-              <Button variant="ghost" size="sm" class="h-9 w-9 rounded-full p-0">
-                <Icon icon="lucide:github" class="h-4 w-4" />
-              </Button>
-            </div>
           </div>
 
-          <!-- Product links -->
+          <!-- Product -->
           <div>
-            <h4 class="text-sm font-semibold">{{ t('landing.footer.product') }}</h4>
-            <ul class="mt-3 flex flex-col gap-2">
-              <li>
-                <button class="text-sm text-muted-foreground transition-colors hover:text-foreground" @click="scrollToSection('features')">
-                  {{ t('landing.footer.features') }}
-                </button>
-              </li>
-              <li v-if="!isBeta">
-                <button class="text-sm text-muted-foreground transition-colors hover:text-foreground" @click="scrollToSection('pricing')">
-                  {{ t('landing.footer.pricing') }}
-                </button>
-              </li>
-              <li>
-                <button class="text-sm text-muted-foreground transition-colors hover:text-foreground" @click="scrollToSection('nfc-shop')">
-                  {{ t('landing.footer.nfcTags') }}
-                </button>
-              </li>
-              <li>
-                <button class="text-sm text-muted-foreground transition-colors hover:text-foreground" @click="scrollToSection('security')">
-                  {{ t('landing.footer.security') }}
-                </button>
-              </li>
+            <h4 class="font-semibold mb-4">{{ t('landing.footer.product') }}</h4>
+            <ul class="space-y-2 text-sm text-muted-foreground">
+              <li><button class="hover:text-foreground transition-colors" @click="scrollToSection('features')">{{ t('landing.footer.features') }}</button></li>
+              <li><button class="hover:text-foreground transition-colors" @click="scrollToSection('security')">{{ t('landing.footer.security') }}</button></li>
+              <li v-if="!isBeta"><button class="hover:text-foreground transition-colors" @click="scrollToSection('pricing')">{{ t('landing.footer.pricing') }}</button></li>
             </ul>
           </div>
 
           <!-- Resources -->
           <div>
-            <h4 class="text-sm font-semibold">{{ t('landing.footer.resources') }}</h4>
-            <ul class="mt-3 flex flex-col gap-2">
-              <li><span class="text-sm text-muted-foreground">{{ t('landing.footer.docs') }}</span></li>
-              <li>
-                <button class="text-sm text-muted-foreground transition-colors hover:text-foreground" @click="scrollToSection('open-source')">
-                  {{ t('landing.footer.github') }}
-                </button>
-              </li>
-              <li>
-                <button class="text-sm text-muted-foreground transition-colors hover:text-foreground" @click="scrollToSection('open-source')">
-                  {{ t('landing.footer.docker') }}
-                </button>
-              </li>
+            <h4 class="font-semibold mb-4">{{ t('landing.footer.resources') }}</h4>
+            <ul class="space-y-2 text-sm text-muted-foreground">
+              <li><span>{{ t('landing.footer.docs') }}</span></li>
+              <li><a href="https://github.com/Disane87/tap-and-tell" target="_blank" class="hover:text-foreground transition-colors">GitHub</a></li>
             </ul>
           </div>
 
           <!-- Legal -->
           <div>
-            <h4 class="text-sm font-semibold">{{ t('landing.footer.legal') }}</h4>
-            <ul class="mt-3 flex flex-col gap-2">
-              <li><span class="text-sm text-muted-foreground">{{ t('landing.footer.privacy') }}</span></li>
-              <li><span class="text-sm text-muted-foreground">{{ t('landing.footer.terms') }}</span></li>
-              <li><span class="text-sm text-muted-foreground">{{ t('landing.footer.imprint') }}</span></li>
+            <h4 class="font-semibold mb-4">{{ t('landing.footer.legal') }}</h4>
+            <ul class="space-y-2 text-sm text-muted-foreground">
+              <li><span>{{ t('landing.footer.privacy') }}</span></li>
+              <li><span>{{ t('landing.footer.terms') }}</span></li>
+              <li><span>{{ t('landing.footer.imprint') }}</span></li>
               <li>
-                <button
-                  class="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  @click="openCookieSettings"
-                >
+                <button class="hover:text-foreground transition-colors" @click="openCookieSettings">
                   {{ t('cookies.managePreferences') }}
                 </button>
               </li>
@@ -1477,20 +1117,19 @@ onUnmounted(() => {
           </div>
         </div>
 
-        <!-- Bottom bar -->
-        <div class="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 sm:flex-row">
-          <p class="text-sm text-muted-foreground">
-            {{ t('landing.footer.copyright', { year: new Date().getFullYear() }) }}
-          </p>
-          <div class="flex items-center gap-1 text-sm text-muted-foreground">
-            <Icon icon="lucide:heart" class="h-3.5 w-3.5 text-red-500" />
-            <span>Open Source</span>
+        <!-- Bottom -->
+        <div class="mt-12 pt-8 border-t border-border/50 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+          <p>{{ t('landing.footer.copyright', { year: new Date().getFullYear() }) }}</p>
+          <div class="flex items-center gap-1">
+            <span>Made with</span>
+            <Icon icon="lucide:heart" class="h-4 w-4 text-coral" />
+            <span>in Germany</span>
           </div>
         </div>
       </div>
     </footer>
 
-    <!-- Cookie Consent Banner -->
+    <!-- Cookie Banner -->
     <ClientOnly>
       <CookieBanner />
     </ClientOnly>
@@ -1498,20 +1137,101 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Animated gradient hero background (fallback when no video) */
+/* Hero gradient - warm, inviting */
 .hero-gradient {
-  background: linear-gradient(-45deg, #0f766e, #059669, #10b981, #047857, #064e3b);
-  background-size: 400% 400%;
-  animation: hero-gradient-shift 15s ease infinite;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(224, 122, 95, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(233, 196, 106, 0.06) 0%, transparent 40%),
+    radial-gradient(ellipse at 60% 80%, rgba(129, 178, 154, 0.05) 0%, transparent 40%),
+    linear-gradient(to bottom, var(--color-background), var(--color-muted));
 }
 
-@keyframes hero-gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* Decorative blobs */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.5;
 }
 
-/* Scroll indicator bounce */
+.blob-1 {
+  top: 10%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(224, 122, 95, 0.15), transparent 70%);
+  animation: blob-float 20s ease-in-out infinite;
+}
+
+.blob-2 {
+  bottom: 20%;
+  left: -15%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(233, 196, 106, 0.12), transparent 70%);
+  animation: blob-float 25s ease-in-out infinite reverse;
+}
+
+.blob-3 {
+  top: 50%;
+  right: 20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(129, 178, 154, 0.1), transparent 70%);
+  animation: blob-float 30s ease-in-out infinite;
+}
+
+@keyframes blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -30px) scale(1.05); }
+  50% { transform: translate(-20px, 20px) scale(0.95); }
+  75% { transform: translate(20px, 30px) scale(1.02); }
+}
+
+/* Floating polaroids */
+.polaroid {
+  position: absolute;
+  width: 120px;
+  padding: 8px 8px 32px;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.polaroid-inner {
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.polaroid-1 {
+  top: 15%;
+  left: 5%;
+  transform: rotate(-12deg);
+  animation: polaroid-float 8s ease-in-out infinite;
+}
+
+.polaroid-2 {
+  top: 25%;
+  right: 8%;
+  transform: rotate(8deg);
+  animation: polaroid-float 10s ease-in-out infinite reverse;
+}
+
+.polaroid-3 {
+  bottom: 20%;
+  left: 10%;
+  transform: rotate(6deg);
+  animation: polaroid-float 12s ease-in-out infinite;
+}
+
+@keyframes polaroid-float {
+  0%, 100% { transform: translateY(0) rotate(var(--rotate, 0deg)); }
+  50% { transform: translateY(-15px) rotate(calc(var(--rotate, 0deg) + 2deg)); }
+}
+
+/* Scroll indicator */
 .scroll-indicator {
   animation: scroll-bounce 2s ease-in-out infinite;
 }
@@ -1521,112 +1241,45 @@ onUnmounted(() => {
   50% { transform: translateY(8px); opacity: 0.5; }
 }
 
-/* Scroll-reveal animation */
-.reveal-on-scroll {
+/* Reveal animations */
+.reveal {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.reveal-on-scroll.revealed {
+.reveal.revealed {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Feature card staggered reveal */
-.feature-card.reveal-on-scroll {
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.3s ease,
-              box-shadow 0.3s ease;
+/* Dark mode adjustments */
+.dark .polaroid {
+  background: var(--color-card);
+  opacity: 0.4;
 }
 
-/* Customization showcase card style variants */
-.preview-polaroid {
-  box-shadow: 0 8px 30px -5px rgba(0, 0, 0, 0.15);
-  transform: rotate(-1deg);
+.dark .hero-gradient {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(224, 122, 95, 0.1) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(233, 196, 106, 0.08) 0%, transparent 40%),
+    radial-gradient(ellipse at 60% 80%, rgba(129, 178, 154, 0.06) 0%, transparent 40%),
+    linear-gradient(to bottom, var(--color-background), var(--color-muted));
 }
 
-.preview-minimal {
-  box-shadow: none;
-}
-
-.preview-rounded {
-  border-radius: 1.5rem;
-}
-
-.preview-bordered {
-  border-left: 4px solid;
-}
-
-/* NFC Tag pulse animation */
-.nfc-pulse {
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  animation: nfc-ring 2.5s ease-out infinite;
-}
-
-@keyframes nfc-ring {
-  0% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(1.15);
-    opacity: 0;
-  }
-}
-
-/* NFC tag visual shadow */
-.nfc-tag-visual {
-  box-shadow:
-    0 20px 60px -15px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
-}
-
-/* Floating orb animations — three different drift patterns */
-.orb {
-  pointer-events: none;
-  will-change: transform;
-}
-
-.orb-drift-1 {
-  animation: orb-float-1 20s ease-in-out infinite;
-}
-
-.orb-drift-2 {
-  animation: orb-float-2 25s ease-in-out infinite;
-}
-
-.orb-drift-3 {
-  animation: orb-float-3 30s ease-in-out infinite;
-}
-
-@keyframes orb-float-1 {
-  0%, 100% { translate: 0 0; }
-  25% { translate: 30px -20px; }
-  50% { translate: -15px -35px; }
-  75% { translate: 20px 15px; }
-}
-
-@keyframes orb-float-2 {
-  0%, 100% { translate: 0 0; }
-  33% { translate: -25px 30px; }
-  66% { translate: 35px -15px; }
-}
-
-@keyframes orb-float-3 {
-  0%, 100% { translate: 0 0; }
-  20% { translate: 20px 25px; }
-  40% { translate: -30px 10px; }
-  60% { translate: 10px -30px; }
-  80% { translate: -20px -10px; }
-}
-
-/* Reduce motion for accessibility */
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .orb {
+  .blob,
+  .polaroid,
+  .scroll-indicator {
     animation: none !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 </style>

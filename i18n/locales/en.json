@@ -23,51 +23,30 @@
     "adminBar": "Manage Guestbook",
     "hero": {
       "badge": "Digital Guestbook",
-      "title": "Tap & Tell",
-      "subtitle": "Some moments deserve more than a photo. Capture the words, the laughter, the stories — before they fade.",
-      "cta": "Get Started",
-      "login": "Sign In"
+      "title": "Capture moments that ",
+      "titleHighlight": "matter forever",
+      "subtitle": "Give your guests a voice. Collect heartfelt messages, photos, and memories in one beautiful digital guestbook.",
+      "cta": "Start Free",
+      "login": "Sign In",
+      "trust1": "End-to-end encrypted",
+      "trust2": "Setup in 2 minutes",
+      "trust3": "Made with love"
     },
     "problem": {
       "badge": "The Problem",
       "title": "Memories Fade Faster Than You Think",
-      "subtitle": "We take hundreds of photos — but who remembers the stories behind them?",
-      "point1": {
-        "title": "Lost in the Scroll",
-        "description": "Your best moments are buried under thousands of photos you'll never look at again."
-      },
-      "point2": {
-        "title": "Words Disappear",
-        "description": "The toast your best friend gave. The joke your uncle told. That handwritten note — gone."
-      },
-      "point3": {
-        "title": "Digital Noise",
-        "description": "Group chats get archived. Stories expire in 24 hours. Real emotions drown in notifications."
-      },
-      "stat1": { "number": "2,500+", "label": "photos taken at the average wedding" },
-      "stat2": { "number": "87%", "label": "of people forget event details within a year" },
-      "stat3": { "number": "0", "label": "of those photos capture how someone felt" }
+      "description": "We take hundreds of photos — but who remembers the stories behind them? The heartfelt words, the inside jokes, the emotions of the moment.",
+      "point1": "Your best moments are buried under thousands of photos you'll never look at again.",
+      "point2": "The toast your best friend gave. The joke your uncle told. That handwritten note — gone.",
+      "point3": "Group chats get archived. Stories expire in 24 hours. Real emotions drown in notifications."
     },
     "solution": {
       "badge": "The Solution",
       "title": "One Tap. Real Words. Forever.",
-      "subtitle": "Tap & Tell gives your guests a voice — not just a pose. Every entry is a real moment, captured in their own words.",
-      "point1": {
-        "icon": "heart",
-        "title": "Authentic, Not Staged",
-        "description": "No filters, no poses. Just honest words from the people who matter most."
-      },
-      "point2": {
-        "icon": "book-open",
-        "title": "A Book You'll Actually Open",
-        "description": "Unlike a photo album, a guestbook tells you who was there and what they felt."
-      },
-      "point3": {
-        "icon": "infinity",
-        "title": "Preserved Forever",
-        "description": "Export as PDF, keep it digital, or print it. Your memories, your way — for generations."
-      },
-      "cta": "Start Preserving Memories"
+      "description": "Tap & Tell gives your guests a voice — not just a pose. Every entry is a real moment, captured in their own words.",
+      "point1": "Authentic messages from the people who matter most — no filters, no poses.",
+      "point2": "A digital keepsake you'll actually open, unlike those 2,000 photos on your phone.",
+      "point3": "Export as PDF, share as slideshow, or print — your memories, your way."
     },
     "useCases": {
       "badge": "Made For Your Moments",
@@ -100,12 +79,23 @@
       },
       "farewell": {
         "emoji": "✈️",
-        "title": "Farewells & Retirements",
-        "eventName": "David's Farewell Party",
-        "description": "When someone leaves, words matter more than gifts. Give them something they can carry forever.",
-        "entry1": { "message": "15 years of coffee breaks, deadline panics, and Friday beers. The office won't be the same. Go change the world!", "superpower": "Fixing any bug at 5 PM on a Friday", "memory": "The server room incident of 2019." },
-        "entry2": { "message": "You taught me everything I know about this job. More importantly, you taught me to never skip lunch. Thank you.", "food": "Cafeteria pizza Fridays", "memory": "Your legendary presentation saves." }
+        "title": "Farewells",
+        "description": "When someone leaves, words matter more than gifts."
+      },
+      "graduation": {
+        "emoji": "🎓",
+        "title": "Graduations",
+        "description": "Celebrate achievements with messages from those who helped get there."
+      },
+      "babyshower": {
+        "emoji": "👶",
+        "title": "Baby Showers",
+        "description": "Collect wishes and advice for the little one on the way."
       }
+    },
+    "quote": {
+      "text": "The best moments aren't just captured in photos — they're remembered in words.",
+      "author": "Every guest who took a moment to write"
     },
     "beta": {
       "badge": "Private Beta",
@@ -174,12 +164,20 @@
         }
       },
       "nfc": {
-        "title": "NFC Enabled",
-        "description": "Guests simply tap their phone on an NFC tag to start writing."
+        "title": "One Tap to Share",
+        "description": "Guests simply tap their phone on an NFC tag or scan a QR code. No app download, no sign-up — just instant access to your guestbook."
       },
       "photo": {
-        "title": "Photo Upload",
-        "description": "Capture the moment with camera or gallery photos."
+        "title": "Photos & Messages",
+        "description": "Capture the moment with photos and heartfelt messages, all in one beautiful entry."
+      },
+      "customize": {
+        "title": "Fully Customizable",
+        "description": "Match your event's style with custom colors, fonts, and card designs."
+      },
+      "secure": {
+        "title": "Private & Secure",
+        "description": "End-to-end encryption protects your memories. GDPR compliant."
       },
       "wizard": {
         "title": "Guided Wizard",
@@ -248,21 +246,19 @@
     },
     "howItWorks": {
       "badge": "Simple Setup",
-      "title": "How It Works",
-      "subtitle": "Up and running in three simple steps.",
-      "cta": "Try It Free",
-      "stepLabel": "Step {number}",
+      "title": "Three Steps to Forever",
+      "cta": "Start Your Guestbook",
       "create": {
-        "title": "Create a Guestbook",
-        "description": "Sign up and create your first guestbook in seconds."
+        "title": "Create Your Guestbook",
+        "description": "Sign up in seconds. Customize colors, fonts, and questions to match your event."
       },
       "share": {
-        "title": "Share the Link",
-        "description": "Share via NFC tag, QR code, or a simple link."
+        "title": "Share with Guests",
+        "description": "Let guests scan a QR code or tap an NFC tag. No app needed — works on any phone."
       },
-      "entries": {
-        "title": "Collect Entries",
-        "description": "Guests leave messages, photos, and fun facts."
+      "collect": {
+        "title": "Treasure Forever",
+        "description": "Watch heartfelt messages appear in real-time. Export as PDF or display as a slideshow."
       }
     },
     "pricing": {
@@ -387,18 +383,23 @@
         "title": "CSRF Protection",
         "description": "Double-submit cookie pattern protects every authenticated request."
       },
-      "trustBadges": {
-        "encrypted": "Encrypted at Rest",
-        "openSource": "Open Source & Auditable",
-        "gdpr": "GDPR-Friendly"
+      "gdpr": {
+        "title": "GDPR Compliant",
+        "description": "Full data control. Export or delete anytime."
+      },
+      "openSource": {
+        "title": "Open Source",
+        "description": "Transparent code you can audit and self-host."
       }
     },
-    "ctaSection": {
-      "title": "Ready to Create Your Guestbook?",
-      "subtitle": "Start collecting memories from your guests today — for free."
+    "cta": {
+      "title": "Ready to Start?",
+      "subtitle": "Create your first guestbook in under 2 minutes. Free forever for personal use.",
+      "button": "Create Your Guestbook"
     },
     "footer": {
       "copyright": "\u00a9 {year} Tap & Tell. All rights reserved.",
+      "tagline": "Capture moments that matter forever.",
       "product": "Product",
       "resources": "Resources",
       "legal": "Legal",
