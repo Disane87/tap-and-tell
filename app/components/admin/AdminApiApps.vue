@@ -259,7 +259,7 @@ async function handleRevokeToken(appId: string, tokenId: string): Promise<void> 
 
                 <!-- Expanded token section -->
                 <div v-if="expandedAppId === app.id" class="border-t border-border/20 p-4">
-                  <ApiTokenList
+                  <AdminApiTokenList
                     :tokens="tokens[app.id] ?? []"
                     @create="openCreateTokenDialog(app.id)"
                     @revoke="handleRevokeToken(app.id, $event)"
@@ -340,7 +340,7 @@ async function handleRevokeToken(appId: string, tokenId: string): Promise<void> 
     </Dialog>
 
     <!-- Create Token Dialog -->
-    <CreateTokenDialog
+    <AdminCreateTokenDialog
       :open="showCreateTokenDialog"
       :scopes="scopes"
       :loading="createTokenLoading"
@@ -349,7 +349,7 @@ async function handleRevokeToken(appId: string, tokenId: string): Promise<void> 
     />
 
     <!-- Token Reveal Dialog -->
-    <TokenRevealDialog
+    <AdminTokenRevealDialog
       :open="showTokenReveal"
       :token="revealedToken"
       @close="showTokenReveal = false"
