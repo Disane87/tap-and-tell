@@ -1000,18 +1000,3 @@ body {
     background: rgba(23, 23, 23, 0.95);
   }
 }
-
-/* ============================================
-   Toast Notifications (Sonner)
-   Ensure toasts appear above all overlays including Radix dialogs
-   ============================================ */
-[data-sonner-toaster] {
-  z-index: 99999 !important;
-  position: fixed !important;
-}
-
-[data-sonner-toast] {
-  /* Glassmorphism styling */
-  --normal-bg: rgba(var(--color-card), 0.9);
-  backdrop-filter: blur(20px);
-}
