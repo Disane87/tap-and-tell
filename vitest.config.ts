@@ -10,7 +10,22 @@ export default defineConfig({
       'app/composables/__tests__/**/*.test.ts'
     ],
     environment: 'node',
-    globals: true
+    globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      exclude: [
+        'node_modules/**',
+        '.nuxt/**',
+        '.output/**',
+        'e2e/**',
+        '**/*.d.ts',
+        '**/*.test.ts',
+        '**/types/**'
+      ]
+    },
+    testTimeout: 10000,
+    hookTimeout: 10000
   },
   resolve: {
     alias: {
