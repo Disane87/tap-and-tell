@@ -6,7 +6,7 @@
  * Requires authentication and tenant membership.
  */
 import QRCode from 'qrcode'
-import { Trash2, QrCode, Check, X, Clock, CheckCircle, XCircle, Settings, Download, Copy, RefreshCw, Eye } from 'lucide-vue-next'
+import { Trash2, QrCode, Check, X, Clock, CheckCircle, XCircle, Settings, Download, Copy, RefreshCw, Eye, BarChart3 } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import type { EntryStatus, GuestEntry } from '~/types/guest'
 import type { TenantRole } from '~/types/tenant'
@@ -329,6 +329,16 @@ onMounted(async () => {
           <QrCode class="mr-2 h-4 w-4" />
           {{ $t('admin.qr.title') }}
         </Button>
+        <NuxtLink :to="`/g/${guestbookId}/analytics`">
+          <Button
+            variant="outline"
+            size="sm"
+            class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
+          >
+            <BarChart3 class="mr-2 h-4 w-4" />
+            {{ $t('analytics.title') }}
+          </Button>
+        </NuxtLink>
         <NuxtLink to="/dashboard">
           <Button variant="outline" size="sm" class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50">
             {{ $t('common.back') }}
