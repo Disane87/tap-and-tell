@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0](https://github.com/Disane87/tap-and-tell/compare/v1.5.0...v1.6.0) (2026-02-04)
+
+
+### ✨ Features
+
+* **i18n:** update German and English translations for improved clarity and engagement ([39ef83e](https://github.com/Disane87/tap-and-tell/commit/39ef83e9a1e100a293347ed720bb1e894b79e0cd))
+
 ## [1.5.0](https://github.com/Disane87/tap-and-tell/compare/v1.4.0...v1.5.0) (2026-02-04)
 
 
