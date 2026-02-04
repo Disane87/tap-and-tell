@@ -8,7 +8,7 @@
  * - Main content slot
  * - Toast notifications via Sonner
  */
-import { Home, Settings } from 'lucide-vue-next'
+import { Home } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -63,18 +63,6 @@ function isActive(path: string): boolean {
           >
             <component :is="link.icon" class="h-4 w-4" />
             <span class="hidden sm:inline">{{ link.label }}</span>
-          </NuxtLink>
-
-          <!-- Admin link (legacy) -->
-          <NuxtLink
-            to="/admin"
-            class="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors"
-            :class="route.path.startsWith('/admin')
-              ? 'bg-primary/10 text-primary'
-              : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
-          >
-            <Settings class="h-4 w-4" />
-            <span class="hidden sm:inline">Admin</span>
           </NuxtLink>
 
           <!-- User menu (avatar dropdown for auth, login+language+theme for guests) -->
