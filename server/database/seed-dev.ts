@@ -51,10 +51,10 @@ export async function seedDevTenant(connectionString: string): Promise<void> {
 
     await client.query('BEGIN')
 
-    // Create dev user
+    // Create dev user (with admin privileges for SaaS dashboard access)
     await client.query(
-      'INSERT INTO users (id, email, password_hash, name) VALUES ($1, $2, $3, $4)',
-      [DEV_USER_ID, DEV_EMAIL, passwordHash, DEV_USER_NAME]
+      'INSERT INTO users (id, email, password_hash, name, is_admin) VALUES ($1, $2, $3, $4, $5)',
+      [DEV_USER_ID, DEV_EMAIL, passwordHash, DEV_USER_NAME, true]
     )
 
     // Create dev tenant with encryption salt
