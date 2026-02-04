@@ -736,3 +736,267 @@ body {
   );
   background-size: 1000px 100%;
 }
+
+/* ============================================
+   iOS Safe Areas (iPhone X+, Dynamic Island)
+   Critical for notch/home indicator areas
+   ============================================ */
+
+/* CSS environment variables for safe areas */
+:root {
+  /* Fallbacks for browsers without env() support */
+  --safe-area-inset-top: 0px;
+  --safe-area-inset-right: 0px;
+  --safe-area-inset-bottom: 0px;
+  --safe-area-inset-left: 0px;
+}
+
+/* Use env() when available (iOS Safari) */
+@supports (padding-top: env(safe-area-inset-top)) {
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top);
+    --safe-area-inset-right: env(safe-area-inset-right);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom);
+    --safe-area-inset-left: env(safe-area-inset-left);
+  }
+}
+
+/* Safe area utility classes */
+.safe-top {
+  padding-top: var(--safe-area-inset-top);
+}
+
+.safe-bottom {
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-left {
+  padding-left: var(--safe-area-inset-left);
+}
+
+.safe-right {
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-x {
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+.safe-y {
+  padding-top: var(--safe-area-inset-top);
+  padding-bottom: var(--safe-area-inset-bottom);
+}
+
+.safe-all {
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+}
+
+/* Margin variants */
+.safe-top-margin {
+  margin-top: var(--safe-area-inset-top);
+}
+
+.safe-bottom-margin {
+  margin-bottom: var(--safe-area-inset-bottom);
+}
+
+/* Min-height that accounts for safe areas */
+.min-h-safe-screen {
+  min-height: calc(100dvh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom));
+}
+
+.h-safe-screen {
+  height: calc(100dvh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom));
+}
+
+/* Fixed elements with safe area awareness */
+.fixed-top-safe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding-top: var(--safe-area-inset-top);
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+.fixed-bottom-safe {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
+}
+
+/* ============================================
+   PWA Standalone Mode Specific Styles
+   ============================================ */
+@media all and (display-mode: standalone) {
+  /* When running as installed PWA */
+  html {
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+  }
+
+  body {
+    /* Prevent text selection which can feel buggy in PWA */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* But allow text selection in form inputs and content areas */
+  input,
+  textarea,
+  [contenteditable="true"],
+  .selectable {
+    -webkit-user-select: auto;
+    user-select: auto;
+  }
+
+  /* Ensure header respects safe area in PWA mode */
+  header {
+    padding-top: var(--safe-area-inset-top);
+  }
+}
+
+/* ============================================
+   iOS-specific Touch Optimizations
+   ============================================ */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific */
+
+  /* Faster tap response */
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  /* Prevent zoom on double-tap for buttons */
+  button {
+    touch-action: manipulation;
+  }
+
+  /* Smooth momentum scrolling */
+  .scroll-smooth-ios {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Prevent callout menu on long-press */
+  .no-callout {
+    -webkit-touch-callout: none;
+  }
+}
+
+/* ============================================
+   Pull-to-Refresh Prevention (PWA)
+   ============================================ */
+body {
+  overscroll-behavior-y: contain;
+}
+
+/* ============================================
+   Keyboard Viewport Handling (iOS Safari)
+   ============================================ */
+@supports (height: 100dvh) {
+  /* Use dynamic viewport height for better keyboard handling */
+  .h-dvh {
+    height: 100dvh;
+  }
+
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+
+  .max-h-dvh {
+    max-height: 100dvh;
+  }
+}
+
+/* ============================================
+   Dark Mode Status Bar Handling
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+  /* Ensure meta theme-color works well with dark mode */
+  :root {
+    color-scheme: dark;
+  }
+}
+
+.light {
+  color-scheme: light;
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* ============================================
+   Notch/Dynamic Island Aware Positioning
+   ============================================ */
+.notch-aware-header {
+  padding-top: max(1rem, var(--safe-area-inset-top));
+}
+
+.notch-aware-nav {
+  padding-top: max(0.5rem, calc(var(--safe-area-inset-top) - 0.5rem));
+}
+
+/* Home indicator aware footer */
+.home-indicator-aware {
+  padding-bottom: max(1rem, var(--safe-area-inset-bottom));
+}
+
+/* ============================================
+   iOS Form Input Zoom Prevention
+   ============================================ */
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
+  /* Prevent zoom on focus for inputs on iOS */
+  select,
+  textarea,
+  input[type="text"],
+  input[type="password"],
+  input[type="datetime"],
+  input[type="datetime-local"],
+  input[type="date"],
+  input[type="month"],
+  input[type="time"],
+  input[type="week"],
+  input[type="number"],
+  input[type="email"],
+  input[type="url"],
+  input[type="search"],
+  input[type="tel"] {
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* ============================================
+   Touch Highlight Customization
+   ============================================ */
+.tap-highlight-primary {
+  -webkit-tap-highlight-color: rgba(16, 185, 129, 0.2);
+}
+
+.tap-highlight-none {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ============================================
+   Backdrop Blur Fallback (older iOS)
+   ============================================ */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+  }
+
+  .dark .glass-card {
+    background: rgba(23, 23, 23, 0.95);
+  }
+}
