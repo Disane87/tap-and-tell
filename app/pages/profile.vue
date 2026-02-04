@@ -15,6 +15,10 @@ definePageMeta({ layout: 'default' })
 
 const { t } = useI18n()
 const router = useRouter()
+const { public: { betaMode } } = useRuntimeConfig()
+
+/** Whether we're in beta mode (not open) - hides plan section */
+const isBeta = computed(() => betaMode !== 'open')
 const {
   user, isAuthenticated, initialized, fetchMe,
   updateProfile, changePassword, deleteAccount, uploadAvatar, deleteAvatar
@@ -305,8 +309,8 @@ const initials = computed(() => {
         </form>
       </Card>
 
-      <!-- Plan -->
-      <Card class="p-6">
+      <!-- Plan (hidden in beta) -->
+      <Card v-if="!isBeta" class="p-6">
         <h2 class="mb-4 text-lg font-semibold text-foreground">{{ t('profile.plan') }}</h2>
         <div v-if="loadingPlan" class="space-y-3">
           <Skeleton class="h-8 w-24 rounded-full" />
