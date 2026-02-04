@@ -321,7 +321,7 @@ chore: update dependencies
 
 **CI/CD Workflows:**
 - `ci.yml` — Runs on all PRs: lint, typecheck, test, build, security audit
-- `deploy.yml` — Deploys to Vercel (preview for PRs, production for main)
+- `deploy.yml` — Deploys to Vercel (production only, triggered on main branch push or manual dispatch)
 - `release.yml` — Runs semantic-release on main branch pushes
 
 **GitHub Secrets Required:**
