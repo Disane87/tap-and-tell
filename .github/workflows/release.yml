@@ -127,16 +127,25 @@ jobs:
       - name: Create release summary
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
+          # Map release type to emoji
+          RELEASE_TYPE="${{ steps.semantic.outputs.new_release_type }}"
+          case $RELEASE_TYPE in
+            major) TYPE_EMOJI="💥" ;;
+            minor) TYPE_EMOJI="✨" ;;
+            patch) TYPE_EMOJI="🐛" ;;
+            *) TYPE_EMOJI="📦" ;;
+          esac
+
           echo "## 🎉 Release v${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
           echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Version** | v${{ steps.semantic.outputs.new_release_version }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Type** | ${{ steps.semantic.outputs.new_release_type }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Channel** | ${{ steps.semantic.outputs.new_release_channel || 'latest' }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Git Tag** | ${{ steps.semantic.outputs.new_release_git_tag }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | \`v${{ steps.semantic.outputs.new_release_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Type** | $TYPE_EMOJI $RELEASE_TYPE |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Channel** | 🚀 ${{ steps.semantic.outputs.new_release_channel || 'latest' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Git Tag** | 🏷️ \`${{ steps.semantic.outputs.new_release_git_tag }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Release Notes" >> $GITHUB_STEP_SUMMARY
+          echo "### 📝 Release Notes" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "${{ steps.semantic.outputs.new_release_notes }}" >> $GITHUB_STEP_SUMMARY
 
@@ -151,4 +160,12 @@ jobs:
     steps:
       - name: Announce release
         run: |
-          echo "::notice title=New Release::Version ${{ needs.release.outputs.version }} has been released!"
+          echo "::notice title=🎉 New Release::Version v${{ needs.release.outputs.version }} has been released!"
+          echo ""
+          echo "## 🚀 Release Published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Version **v${{ needs.release.outputs.version }}** is now available." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Links" >> $GITHUB_STEP_SUMMARY
+          echo "- [📦 GitHub Release](https://github.com/${{ github.repository }}/releases/tag/v${{ needs.release.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+          echo "- [📋 Changelog](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)" >> $GITHUB_STEP_SUMMARY
