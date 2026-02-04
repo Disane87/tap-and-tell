@@ -2,47 +2,58 @@
 
 /* ============================================
    Theme Configuration (Tailwind v4 @theme)
+   "Warm Memories" Design System
    ============================================ */
 @theme {
   /* Font families */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Playfair Display', ui-serif, Georgia, serif;
   --font-handwritten: 'Caveat', cursive;
 
-  /* Brand colors */
-  --color-primary: #10b981;
+  /* Brand colors - Warm Memories Palette */
+  --color-primary: #E07A5F;           /* Warm Coral - inviting, joyful */
   --color-primary-foreground: #ffffff;
 
-  /* Neutral palette */
-  --color-background: #ffffff;
-  --color-foreground: #171717;
-  --color-muted: #f5f5f5;
-  --color-muted-foreground: #737373;
-  --color-border: #e5e5e5;
-  --color-card: #ffffff;
-  --color-card-foreground: #171717;
+  /* Extended brand colors */
+  --color-coral: #E07A5F;
+  --color-cream: #F4F1DE;
+  --color-navy: #3D405B;
+  --color-gold: #E9C46A;
+  --color-sage: #81B29A;
+  --color-terracotta: #D4A373;
+
+  /* Neutral palette - Warm tones */
+  --color-background: #FFFBF7;        /* Warm off-white */
+  --color-foreground: #2D2A26;        /* Warm dark brown */
+  --color-muted: #F5F0E8;             /* Warm light beige */
+  --color-muted-foreground: #6B6560;  /* Warm gray */
+  --color-border: #E8E0D5;            /* Warm border */
+  --color-card: #FFFDFB;              /* Slightly warm white */
+  --color-card-foreground: #2D2A26;
 
   /* Secondary (muted UI surfaces) */
-  --color-secondary: #f5f5f5;
-  --color-secondary-foreground: #171717;
+  --color-secondary: #F4F1DE;         /* Cream */
+  --color-secondary-foreground: #3D405B;
 
   /* Popover / Dropdown */
-  --color-popover: #ffffff;
-  --color-popover-foreground: #171717;
+  --color-popover: #FFFDFB;
+  --color-popover-foreground: #2D2A26;
 
   /* Accent (hover highlights in menus) */
-  --color-accent: #f5f5f5;
-  --color-accent-foreground: #171717;
+  --color-accent: #FEF3E2;            /* Soft peach */
+  --color-accent-foreground: #2D2A26;
 
   /* Ring (focus ring) */
-  --color-ring: #10b981;
+  --color-ring: #E07A5F;
 
   /* Input border */
-  --color-input: #e5e5e5;
+  --color-input: #E8E0D5;
 
   /* Semantic colors */
-  --color-destructive: #ef4444;
+  --color-destructive: #C1666B;       /* Muted red - less aggressive */
   --color-destructive-foreground: #ffffff;
+  --color-success: #81B29A;           /* Sage green */
+  --color-warning: #E9C46A;           /* Gold */
 
   /* Spacing & radius */
   --radius-lg: 1rem;
@@ -51,24 +62,24 @@
 }
 
 /* ============================================
-   Dark Mode Overrides
+   Dark Mode Overrides - Warm & Cozy
    ============================================ */
 .dark {
-  --color-background: #0a0a0a;
-  --color-foreground: #fafafa;
-  --color-muted: #262626;
-  --color-muted-foreground: #a3a3a3;
-  --color-border: #404040;
-  --color-card: #171717;
-  --color-card-foreground: #fafafa;
-  --color-secondary: #262626;
-  --color-secondary-foreground: #fafafa;
-  --color-popover: #171717;
-  --color-popover-foreground: #fafafa;
-  --color-accent: #262626;
-  --color-accent-foreground: #fafafa;
-  --color-ring: #10b981;
-  --color-input: #404040;
+  --color-background: #1A1816;        /* Warm dark */
+  --color-foreground: #F5F0E8;        /* Warm off-white */
+  --color-muted: #2D2A26;             /* Warm dark muted */
+  --color-muted-foreground: #A39E96;  /* Warm gray */
+  --color-border: #3D3835;            /* Warm dark border */
+  --color-card: #242120;              /* Warm dark card */
+  --color-card-foreground: #F5F0E8;
+  --color-secondary: #2D2A26;
+  --color-secondary-foreground: #F5F0E8;
+  --color-popover: #242120;
+  --color-popover-foreground: #F5F0E8;
+  --color-accent: #3D3835;
+  --color-accent-foreground: #F5F0E8;
+  --color-ring: #E07A5F;
+  --color-input: #3D3835;
 }
 
 /* ============================================

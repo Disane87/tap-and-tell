@@ -23,51 +23,30 @@
     "adminBar": "Gästebuch verwalten",
     "hero": {
       "badge": "Digitales Gästebuch",
-      "title": "Tap & Tell",
-      "subtitle": "Manche Momente verdienen mehr als ein Foto. Halte die Worte fest, das Lachen, die Geschichten — bevor sie verblassen.",
-      "cta": "Jetzt starten",
-      "login": "Anmelden"
+      "title": "Halte Momente fest, die ",
+      "titleHighlight": "für immer zählen",
+      "subtitle": "Gib deinen Gästen eine Stimme. Sammle herzliche Nachrichten, Fotos und Erinnerungen in einem wunderschönen digitalen Gästebuch.",
+      "cta": "Kostenlos starten",
+      "login": "Anmelden",
+      "trust1": "Ende-zu-Ende verschlüsselt",
+      "trust2": "Setup in 2 Minuten",
+      "trust3": "Mit Liebe gemacht"
     },
     "problem": {
       "badge": "Das Problem",
       "title": "Erinnerungen verblassen schneller, als du denkst",
-      "subtitle": "Wir machen hunderte Fotos — aber wer erinnert sich an die Geschichten dahinter?",
-      "point1": {
-        "title": "Verloren im Scrollen",
-        "description": "Deine schönsten Momente sind unter tausenden Fotos begraben, die du nie wieder anschaust."
-      },
-      "point2": {
-        "title": "Worte verschwinden",
-        "description": "Die Rede deines besten Freundes. Der Witz deines Onkels. Die handgeschriebene Karte — weg."
-      },
-      "point3": {
-        "title": "Digitales Rauschen",
-        "description": "Gruppenchats werden archiviert. Stories verschwinden nach 24 Stunden. Echte Emotionen gehen in Benachrichtigungen unter."
-      },
-      "stat1": { "number": "2.500+", "label": "Fotos werden bei einer durchschnittlichen Hochzeit gemacht" },
-      "stat2": { "number": "87%", "label": "der Menschen vergessen Event-Details innerhalb eines Jahres" },
-      "stat3": { "number": "0", "label": "dieser Fotos fangen ein, wie sich jemand gefühlt hat" }
+      "description": "Wir machen hunderte Fotos — aber wer erinnert sich an die Geschichten dahinter? Die herzlichen Worte, die Insider-Witze, die Emotionen des Moments.",
+      "point1": "Deine schönsten Momente sind unter tausenden Fotos begraben, die du nie wieder anschaust.",
+      "point2": "Die Rede deines besten Freundes. Der Witz deines Onkels. Die handgeschriebene Karte — weg.",
+      "point3": "Gruppenchats werden archiviert. Stories verschwinden nach 24 Stunden. Echte Emotionen gehen in Benachrichtigungen unter."
     },
     "solution": {
       "badge": "Die Lösung",
       "title": "Ein Tap. Echte Worte. Für immer.",
-      "subtitle": "Tap & Tell gibt deinen Gästen eine Stimme — nicht nur eine Pose. Jeder Eintrag ist ein echter Moment, festgehalten in ihren eigenen Worten.",
-      "point1": {
-        "icon": "heart",
-        "title": "Authentisch, nicht inszeniert",
-        "description": "Keine Filter, keine Posen. Nur ehrliche Worte von den Menschen, die dir am wichtigsten sind."
-      },
-      "point2": {
-        "icon": "book-open",
-        "title": "Ein Buch, das du wirklich öffnest",
-        "description": "Anders als ein Fotoalbum erzählt ein Gästebuch, wer da war und was sie empfunden haben."
-      },
-      "point3": {
-        "icon": "infinity",
-        "title": "Für immer bewahrt",
-        "description": "Exportiere als PDF, behalte es digital oder drucke es aus. Deine Erinnerungen, auf deine Art — für Generationen."
-      },
-      "cta": "Beginne, Erinnerungen zu bewahren"
+      "description": "Tap & Tell gibt deinen Gästen eine Stimme — nicht nur eine Pose. Jeder Eintrag ist ein echter Moment, festgehalten in ihren eigenen Worten.",
+      "point1": "Authentische Nachrichten von den Menschen, die dir am wichtigsten sind — keine Filter, keine Posen.",
+      "point2": "Ein digitales Andenken, das du wirklich öffnest, anders als die 2.000 Fotos auf deinem Handy.",
+      "point3": "Exportiere als PDF, zeige als Diashow oder drucke aus — deine Erinnerungen, deine Art."
     },
     "useCases": {
       "badge": "Für deine Momente",
@@ -100,12 +79,23 @@
       },
       "farewell": {
         "emoji": "✈️",
-        "title": "Abschiede & Ruhestand",
-        "eventName": "Davids Abschiedsfeier",
-        "description": "Wenn jemand geht, bedeuten Worte mehr als Geschenke. Gib ihnen etwas, das sie für immer bei sich tragen können.",
-        "entry1": { "message": "15 Jahre Kaffeepausen, Deadline-Panik und Freitags-Bier. Das Büro wird nicht mehr dasselbe sein. Geh die Welt verändern!", "superpower": "Jeden Bug um 17 Uhr am Freitag fixen", "memory": "Der Serverraum-Vorfall von 2019." },
-        "entry2": { "message": "Du hast mir alles beigebracht, was ich über diesen Job weiß. Und vor allem: nie das Mittagessen ausfallen lassen. Danke.", "food": "Kantine-Pizza freitags", "memory": "Deine legendären Präsentations-Rettungen." }
+        "title": "Abschiede",
+        "description": "Wenn jemand geht, bedeuten Worte mehr als Geschenke."
+      },
+      "graduation": {
+        "emoji": "🎓",
+        "title": "Abschlussfeiern",
+        "description": "Feiere Erfolge mit Nachrichten von denen, die geholfen haben, dorthin zu kommen."
+      },
+      "babyshower": {
+        "emoji": "👶",
+        "title": "Babypartys",
+        "description": "Sammle Wünsche und Ratschläge für den kleinen Menschen auf dem Weg."
       }
+    },
+    "quote": {
+      "text": "Die besten Momente werden nicht nur in Fotos festgehalten — sie werden in Worten erinnert.",
+      "author": "Jeder Gast, der sich die Zeit nahm zu schreiben"
     },
     "beta": {
       "badge": "Private Beta",
@@ -174,12 +164,20 @@
         }
       },
       "nfc": {
-        "title": "NFC-fähig",
-        "description": "Gäste halten einfach ihr Handy an einen NFC-Tag, um loszuschreiben."
+        "title": "Ein Tap zum Teilen",
+        "description": "Gäste halten einfach ihr Handy an einen NFC-Tag oder scannen einen QR-Code. Kein App-Download, keine Anmeldung — sofortiger Zugang zu deinem Gästebuch."
       },
       "photo": {
-        "title": "Foto-Upload",
-        "description": "Halte den Moment fest mit Kamera- oder Galerie-Fotos."
+        "title": "Fotos & Nachrichten",
+        "description": "Halte den Moment fest mit Fotos und herzlichen Nachrichten, alles in einem schönen Eintrag."
+      },
+      "customize": {
+        "title": "Vollständig anpassbar",
+        "description": "Passe den Stil deines Events mit eigenen Farben, Schriften und Karten-Designs an."
+      },
+      "secure": {
+        "title": "Privat & Sicher",
+        "description": "Ende-zu-Ende-Verschlüsselung schützt deine Erinnerungen. DSGVO-konform."
       },
       "wizard": {
         "title": "Geführter Assistent",
@@ -248,21 +246,19 @@
     },
     "howItWorks": {
       "badge": "Einfaches Setup",
-      "title": "So funktioniert's",
-      "subtitle": "In drei einfachen Schritten startklar.",
-      "cta": "Kostenlos testen",
-      "stepLabel": "Schritt {number}",
+      "title": "Drei Schritte zur Ewigkeit",
+      "cta": "Gästebuch erstellen",
       "create": {
         "title": "Gästebuch erstellen",
-        "description": "Registriere dich und erstelle dein erstes Gästebuch in Sekunden."
+        "description": "Melde dich in Sekunden an. Passe Farben, Schriften und Fragen an dein Event an."
       },
       "share": {
-        "title": "Link teilen",
-        "description": "Teile per NFC-Tag, QR-Code oder einfachem Link."
+        "title": "Mit Gästen teilen",
+        "description": "Lass Gäste einen QR-Code scannen oder einen NFC-Tag berühren. Keine App nötig — funktioniert auf jedem Handy."
       },
-      "entries": {
-        "title": "Einträge sammeln",
-        "description": "Gäste hinterlassen Nachrichten, Fotos und Fun Facts."
+      "collect": {
+        "title": "Für immer bewahren",
+        "description": "Sieh herzliche Nachrichten in Echtzeit erscheinen. Exportiere als PDF oder zeige als Diashow."
       }
     },
     "pricing": {
@@ -387,18 +383,23 @@
         "title": "CSRF-Schutz",
         "description": "Double-Submit-Cookie-Verfahren schützt jede authentifizierte Anfrage."
       },
-      "trustBadges": {
-        "encrypted": "Verschlüsselt gespeichert",
-        "openSource": "Open Source & überprüfbar",
-        "gdpr": "DSGVO-konform"
+      "gdpr": {
+        "title": "DSGVO-konform",
+        "description": "Volle Datenkontrolle. Exportiere oder lösche jederzeit."
+      },
+      "openSource": {
+        "title": "Open Source",
+        "description": "Transparenter Code, den du prüfen und selbst hosten kannst."
       }
     },
-    "ctaSection": {
-      "title": "Bereit, dein Gästebuch zu erstellen?",
-      "subtitle": "Fang heute an, Erinnerungen deiner Gäste zu sammeln — kostenlos."
+    "cta": {
+      "title": "Bereit zum Starten?",
+      "subtitle": "Erstelle dein erstes Gästebuch in unter 2 Minuten. Für immer kostenlos für private Nutzung.",
+      "button": "Gästebuch erstellen"
     },
     "footer": {
       "copyright": "\u00a9 {year} Tap & Tell. Alle Rechte vorbehalten.",
+      "tagline": "Halte Momente fest, die für immer zählen.",
       "product": "Produkt",
       "resources": "Ressourcen",
       "legal": "Rechtliches",
