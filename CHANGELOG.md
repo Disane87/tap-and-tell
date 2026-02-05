@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0](https://github.com/Disane87/tap-and-tell/compare/v1.9.0...v1.10.0) (2026-02-05)
+
+
+### ✨ Features
+
+* enhance form validation with i18n error messages and improve error handling ([0947392](https://github.com/Disane87/tap-and-tell/commit/0947392611bbbc4a8ee8011c3c33c596dd0ff948))
+
 ## [1.9.0](https://github.com/Disane87/tap-and-tell/compare/v1.8.0...v1.9.0) (2026-02-04)
 
 
