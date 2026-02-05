@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.1](https://github.com/Disane87/tap-and-tell/compare/v1.11.0...v1.11.1) (2026-02-05)
+
+
+### 🐛 Bug Fixes
+
+* move Tailwind dependencies to production deps for Vercel build ([63401b3](https://github.com/Disane87/tap-and-tell/commit/63401b385e3ca4dabeb3e14368f81ab38b951955))
+
 ## [1.11.0](https://github.com/Disane87/tap-and-tell/compare/v1.10.0...v1.11.0) (2026-02-05)
 
 
