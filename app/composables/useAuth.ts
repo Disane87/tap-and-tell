@@ -46,6 +46,21 @@ export function useAuth() {
   }
 
   /**
+   * Refreshes the current user data from the API.
+   * Unlike fetchMe, this always fetches regardless of initialized state.
+   */
+  async function refreshUser(): Promise<void> {
+    try {
+      const response = await $fetch<{ success: boolean; data?: AuthUser }>('/api/auth/me')
+      if (response.success && response.data) {
+        user.value = response.data
+      }
+    } catch {
+      // Keep existing user value on error
+    }
+  }
+
+  /**
    * Registers a new owner account.
    *
    * @param data - Registration data (email, password, name).
@@ -292,6 +307,7 @@ export function useAuth() {
     twoFactorToken: readonly(twoFactorToken),
     twoFactorMethod: readonly(twoFactorMethod),
     fetchMe,
+    refreshUser,
     register,
     login,
     verify2fa,

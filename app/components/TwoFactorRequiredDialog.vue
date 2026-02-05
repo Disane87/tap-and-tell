@@ -8,7 +8,7 @@ import { ShieldAlert, LogOut, ArrowRight } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const router = useRouter()
-const { user, isAuthenticated, logout, fetchMe } = useAuth()
+const { user, isAuthenticated, logout, refreshUser } = useAuth()
 
 const isOpen = computed(() => {
   return isAuthenticated.value
@@ -30,7 +30,7 @@ function goToSetup() {
 
 async function handleTwoFactorCompleted() {
   // Refresh user data to update twoFactorEnabled status
-  await fetchMe()
+  await refreshUser()
   showSetupDialog.value = false
 }
 </script>
