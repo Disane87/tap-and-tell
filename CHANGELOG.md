@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0](https://github.com/Disane87/tap-and-tell/compare/v1.11.2...v1.12.0) (2026-02-05)
+
+
+### ✨ Features
+
+* **tests:** enhance guestbook and tenant admin tests for error handling and response validation ([4806033](https://github.com/Disane87/tap-and-tell/commit/48060333b34d1bf2ff87362a3c30a4cc674acf4c))
+
+
+### 🐛 Bug Fixes
+
+* add missing newline at end of package.json ([a46448c](https://github.com/Disane87/tap-and-tell/commit/a46448c0ce813b11ecff13f62445ca69f91b2c7f))
+* update version to 1.11.2 in package.json ([f59ae69](https://github.com/Disane87/tap-and-tell/commit/f59ae69e1ff77510991b0af6e7958fe1987f8fde))
+
 ## [1.11.1](https://github.com/Disane87/tap-and-tell/compare/v1.11.0...v1.11.1) (2026-02-05)
 
 
