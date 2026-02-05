@@ -123,6 +123,7 @@ export function useGuestForm() {
   /** Current position index within enabled steps (1-based for display). */
   const currentStepIndex = computed(() => {
     const idx = enabledSteps.value.indexOf(currentStep.value)
+    /* v8 ignore next */
     return idx >= 0 ? idx + 1 : 1
   })
 

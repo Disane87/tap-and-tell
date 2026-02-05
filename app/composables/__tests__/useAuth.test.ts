@@ -44,6 +44,7 @@ describe('useAuth', () => {
       expect(auth).toHaveProperty('twoFactorToken')
       expect(auth).toHaveProperty('twoFactorMethod')
       expect(auth).toHaveProperty('fetchMe')
+      expect(auth).toHaveProperty('refreshUser')
       expect(auth).toHaveProperty('register')
       expect(auth).toHaveProperty('login')
       expect(auth).toHaveProperty('verify2fa')
@@ -214,6 +215,61 @@ describe('useAuth', () => {
         body: { token: 'temp-token-abc', code: '654321' }
       })
     })
+
+    it('returns true and sets user when verification succeeds', async () => {
+      // Set up 2FA state first
+      mockFetch.mockResolvedValueOnce({
+        requires2fa: true,
+        twoFactorToken: 'temp-token-abc',
+        twoFactorMethod: 'totp'
+      })
+      const { login, verify2fa, user, twoFactorToken, twoFactorMethod } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      // Then verify
+      const mockUser = { id: '1', email: 'test@example.com', name: 'Test' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+      const result = await verify2fa('654321')
+
+      expect(result).toBe(true)
+      expect(user.value).toEqual(mockUser)
+      expect(twoFactorToken.value).toBeNull()
+      expect(twoFactorMethod.value).toBeNull()
+    })
+
+    it('returns false when API returns success: false', async () => {
+      // Set up 2FA state first
+      mockFetch.mockResolvedValueOnce({
+        requires2fa: true,
+        twoFactorToken: 'temp-token-abc',
+        twoFactorMethod: 'totp'
+      })
+      const { login, verify2fa } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      // Verify fails
+      mockFetch.mockResolvedValueOnce({ success: false })
+      const result = await verify2fa('654321')
+
+      expect(result).toBe(false)
+    })
+
+    it('returns false on network error', async () => {
+      // Set up 2FA state first
+      mockFetch.mockResolvedValueOnce({
+        requires2fa: true,
+        twoFactorToken: 'temp-token-abc',
+        twoFactorMethod: 'totp'
+      })
+      const { login, verify2fa } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      // Network error
+      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+      const result = await verify2fa('654321')
+
+      expect(result).toBe(false)
+    })
   })
 
   describe('clear2fa', () => {
@@ -342,6 +398,61 @@ describe('useAuth', () => {
         body: expect.any(FormData)
       })
     })
+
+    it('returns true and updates user avatarUrl on success when user is logged in', async () => {
+      // First login to set user
+      const mockUser = { id: '123', email: 'test@example.com', name: 'Test', avatarUrl: null }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+      const { login, uploadAvatar, user } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      // Upload avatar
+      mockFetch.mockResolvedValueOnce({ success: true, data: { avatarUrl: '/api/auth/avatar/123' } })
+      const file = new File(['test'], 'avatar.jpg', { type: 'image/jpeg' })
+      const result = await uploadAvatar(file)
+
+      expect(result).toBe(true)
+      expect(user.value?.avatarUrl).toBe('/api/auth/avatar/123')
+    })
+
+    it('returns false when API returns success but no data', async () => {
+      // First login to set user
+      const mockUser = { id: '123', email: 'test@example.com', name: 'Test', avatarUrl: null }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+      const { login, uploadAvatar } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      // Upload avatar with no data in response
+      mockFetch.mockResolvedValueOnce({ success: true })
+      const file = new File(['test'], 'avatar.jpg', { type: 'image/jpeg' })
+      const result = await uploadAvatar(file)
+
+      expect(result).toBe(false)
+    })
+
+    it('returns false when user is not logged in', async () => {
+      // Logout first to ensure no user
+      mockFetch.mockResolvedValueOnce({ success: true })
+      const { logout, uploadAvatar } = useAuth()
+      await logout()
+
+      // Try to upload avatar
+      mockFetch.mockResolvedValueOnce({ success: true, data: { avatarUrl: '/api/auth/avatar/123' } })
+      const file = new File(['test'], 'avatar.jpg', { type: 'image/jpeg' })
+      const result = await uploadAvatar(file)
+
+      expect(result).toBe(false)
+    })
+
+    it('returns false on network error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+
+      const { uploadAvatar } = useAuth()
+      const file = new File(['test'], 'avatar.jpg', { type: 'image/jpeg' })
+      const result = await uploadAvatar(file)
+
+      expect(result).toBe(false)
+    })
   })
 
   describe('deleteAvatar', () => {
@@ -354,6 +465,59 @@ describe('useAuth', () => {
       expect(mockFetch).toHaveBeenCalledWith('/api/auth/avatar', {
         method: 'DELETE'
       })
+    })
+
+    it('returns true and clears avatarUrl when user is logged in and API succeeds', async () => {
+      // First login to set user with avatar
+      const mockUser = { id: '123', email: 'test@example.com', name: 'Test', avatarUrl: '/api/auth/avatar/123' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+      const { login, deleteAvatar, user } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      expect(user.value?.avatarUrl).toBe('/api/auth/avatar/123')
+
+      // Delete avatar
+      mockFetch.mockResolvedValueOnce({ success: true })
+      const result = await deleteAvatar()
+
+      expect(result).toBe(true)
+      expect(user.value?.avatarUrl).toBeNull()
+    })
+
+    it('returns false when API succeeds but user is not logged in', async () => {
+      // Logout first
+      mockFetch.mockResolvedValueOnce({ success: true })
+      const { logout, deleteAvatar } = useAuth()
+      await logout()
+
+      // Try to delete avatar
+      mockFetch.mockResolvedValueOnce({ success: true })
+      const result = await deleteAvatar()
+
+      expect(result).toBe(false)
+    })
+
+    it('returns false when API returns success: false', async () => {
+      // First login to set user
+      const mockUser = { id: '123', email: 'test@example.com', name: 'Test', avatarUrl: '/api/auth/avatar/123' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+      const { login, deleteAvatar } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      // Delete avatar fails
+      mockFetch.mockResolvedValueOnce({ success: false })
+      const result = await deleteAvatar()
+
+      expect(result).toBe(false)
+    })
+
+    it('returns false on network error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+
+      const { deleteAvatar } = useAuth()
+      const result = await deleteAvatar()
+
+      expect(result).toBe(false)
     })
   })
 
@@ -368,6 +532,96 @@ describe('useAuth', () => {
     })
   })
 
+  describe('refreshUser', () => {
+    it('calls me endpoint', async () => {
+      mockFetch.mockResolvedValueOnce({ success: true, data: { id: '1', email: 'test@example.com', name: 'Test' } })
+
+      const { refreshUser } = useAuth()
+      await refreshUser()
+
+      expect(mockFetch).toHaveBeenCalledWith('/api/auth/me')
+    })
+
+    it('updates user on success', async () => {
+      const mockUser = { id: '1', email: 'test@example.com', name: 'Updated' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+
+      const { refreshUser, user } = useAuth()
+      await refreshUser()
+
+      expect(user.value).toEqual(mockUser)
+    })
+
+    it('does not update user when API returns success without data', async () => {
+      // First set a user
+      const initialUser = { id: '1', email: 'test@example.com', name: 'Initial' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: initialUser })
+      const { login, refreshUser, user } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      expect(user.value).toEqual(initialUser)
+
+      // Refresh returns success but no data
+      mockFetch.mockResolvedValueOnce({ success: true })
+      await refreshUser()
+
+      // User should remain unchanged
+      expect(user.value).toEqual(initialUser)
+    })
+
+    it('does not update user when API returns success: false', async () => {
+      // First set a user
+      const initialUser = { id: '1', email: 'test@example.com', name: 'Initial' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: initialUser })
+      const { login, refreshUser, user } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      expect(user.value).toEqual(initialUser)
+
+      // Refresh returns success: false
+      mockFetch.mockResolvedValueOnce({ success: false })
+      await refreshUser()
+
+      // User should remain unchanged
+      expect(user.value).toEqual(initialUser)
+    })
+
+    it('keeps existing user value on network error', async () => {
+      // First set a user
+      const initialUser = { id: '1', email: 'test@example.com', name: 'Initial' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: initialUser })
+      const { login, refreshUser, user } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      expect(user.value).toEqual(initialUser)
+
+      // Refresh fails with network error
+      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+      await refreshUser()
+
+      // User should remain unchanged
+      expect(user.value).toEqual(initialUser)
+    })
+
+    it('can refresh multiple times (unlike fetchMe)', async () => {
+      const mockUser1 = { id: '1', email: 'test@example.com', name: 'First' }
+      const mockUser2 = { id: '1', email: 'test@example.com', name: 'Second' }
+
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser1 })
+      const { refreshUser, user } = useAuth()
+      await refreshUser()
+
+      expect(user.value).toEqual(mockUser1)
+
+      // Refresh again - should fetch again
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser2 })
+      await refreshUser()
+
+      expect(user.value).toEqual(mockUser2)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+    })
+  })
+
   describe('resend2faCode', () => {
     it('returns false when no token is set', async () => {
       const { clear2fa, resend2faCode } = useAuth()
@@ -375,6 +629,246 @@ describe('useAuth', () => {
 
       const result = await resend2faCode()
       expect(result).toBe(false)
+    })
+
+    it('calls resend endpoint and returns true on success', async () => {
+      // Set up 2FA state first
+      mockFetch.mockResolvedValueOnce({
+        requires2fa: true,
+        twoFactorToken: 'temp-token-abc',
+        twoFactorMethod: 'email'
+      })
+      const { login, resend2faCode } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      // Resend succeeds
+      mockFetch.mockResolvedValueOnce({ success: true })
+      const result = await resend2faCode()
+
+      expect(result).toBe(true)
+      expect(mockFetch).toHaveBeenCalledWith('/api/auth/2fa/resend', {
+        method: 'POST',
+        body: { token: 'temp-token-abc' }
+      })
+    })
+
+    it('returns false on network error', async () => {
+      // Set up 2FA state first
+      mockFetch.mockResolvedValueOnce({
+        requires2fa: true,
+        twoFactorToken: 'temp-token-abc',
+        twoFactorMethod: 'email'
+      })
+      const { login, resend2faCode } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      // Network error
+      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+      const result = await resend2faCode()
+
+      expect(result).toBe(false)
+    })
+  })
+
+  describe('login - 2FA method defaults', () => {
+    it('defaults twoFactorMethod to totp when not provided', async () => {
+      mockFetch.mockResolvedValueOnce({
+        requires2fa: true,
+        twoFactorToken: 'temp-token-123'
+        // Note: twoFactorMethod is intentionally not provided
+      })
+
+      const { login, twoFactorMethod } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      expect(twoFactorMethod.value).toBe('totp')
+    })
+  })
+
+  describe('updateProfile - additional cases', () => {
+    it('returns false when API returns success: false', async () => {
+      mockFetch.mockResolvedValueOnce({ success: false })
+
+      const { updateProfile } = useAuth()
+      const result = await updateProfile({ name: 'New Name' })
+
+      expect(result).toBe(false)
+    })
+
+    it('returns false on network error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+
+      const { updateProfile } = useAuth()
+      const result = await updateProfile({ name: 'New Name' })
+
+      expect(result).toBe(false)
+    })
+
+    it('updates user state on success', async () => {
+      const updatedUser = { id: '1', email: 'test@example.com', name: 'Updated Name' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: updatedUser })
+
+      const { updateProfile, user } = useAuth()
+      const result = await updateProfile({ name: 'Updated Name' })
+
+      expect(result).toBe(true)
+      expect(user.value).toEqual(updatedUser)
+    })
+  })
+
+  describe('deleteAccount - additional cases', () => {
+    it('returns true and clears user on success', async () => {
+      // First login to set user
+      const mockUser = { id: '1', email: 'test@example.com', name: 'Test' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+      const { login, deleteAccount, user } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      expect(user.value).toEqual(mockUser)
+
+      // Delete account
+      mockFetch.mockResolvedValueOnce({ success: true })
+      const result = await deleteAccount('confirmPassword')
+
+      expect(result).toBe(true)
+      expect(user.value).toBeNull()
+    })
+
+    it('returns false when API returns success: false', async () => {
+      mockFetch.mockResolvedValueOnce({ success: false })
+
+      const { deleteAccount } = useAuth()
+      const result = await deleteAccount('wrongPassword')
+
+      expect(result).toBe(false)
+    })
+
+    it('returns false on network error', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'))
+
+      const { deleteAccount } = useAuth()
+      const result = await deleteAccount('password')
+
+      expect(result).toBe(false)
+    })
+  })
+
+  describe('fetchMe - additional cases', () => {
+    it('sets user to null on error', async () => {
+      // Need a fresh module to reset initialized state
+      vi.resetModules()
+
+      // Re-setup mocks
+      vi.stubGlobal('ref', ref)
+      vi.stubGlobal('computed', computed)
+      vi.stubGlobal('readonly', readonly)
+      vi.stubGlobal('$fetch', mockFetch)
+
+      const freshModule = await import('../useAuth')
+      const freshAuth = freshModule.useAuth()
+
+      mockFetch.mockRejectedValueOnce(new Error('Unauthorized'))
+      await freshAuth.fetchMe()
+
+      expect(freshAuth.user.value).toBeNull()
+      expect(freshAuth.initialized.value).toBe(true)
+    })
+
+    it('does not fetch again after initialized', async () => {
+      // Need a fresh module to reset initialized state
+      vi.resetModules()
+
+      // Re-setup mocks
+      vi.stubGlobal('ref', ref)
+      vi.stubGlobal('computed', computed)
+      vi.stubGlobal('readonly', readonly)
+      vi.stubGlobal('$fetch', mockFetch)
+
+      const freshModule = await import('../useAuth')
+      const freshAuth = freshModule.useAuth()
+
+      const mockUser = { id: '1', email: 'test@example.com', name: 'Test' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+      await freshAuth.fetchMe()
+
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+
+      // Try to fetch again
+      await freshAuth.fetchMe()
+
+      // Should not have called again
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not set user when API returns success without data', async () => {
+      // Need a fresh module to reset initialized state
+      vi.resetModules()
+
+      // Re-setup mocks
+      vi.stubGlobal('ref', ref)
+      vi.stubGlobal('computed', computed)
+      vi.stubGlobal('readonly', readonly)
+      vi.stubGlobal('$fetch', mockFetch)
+
+      const freshModule = await import('../useAuth')
+      const freshAuth = freshModule.useAuth()
+
+      // API returns success but no data
+      mockFetch.mockResolvedValueOnce({ success: true })
+      await freshAuth.fetchMe()
+
+      expect(freshAuth.user.value).toBeNull()
+      expect(freshAuth.initialized.value).toBe(true)
+    })
+
+    it('does not set user when API returns success: false', async () => {
+      // Need a fresh module to reset initialized state
+      vi.resetModules()
+
+      // Re-setup mocks
+      vi.stubGlobal('ref', ref)
+      vi.stubGlobal('computed', computed)
+      vi.stubGlobal('readonly', readonly)
+      vi.stubGlobal('$fetch', mockFetch)
+
+      const freshModule = await import('../useAuth')
+      const freshAuth = freshModule.useAuth()
+
+      // API returns success: false
+      mockFetch.mockResolvedValueOnce({ success: false })
+      await freshAuth.fetchMe()
+
+      expect(freshAuth.user.value).toBeNull()
+      expect(freshAuth.initialized.value).toBe(true)
+    })
+  })
+
+  describe('register - sets user on success', () => {
+    it('sets user state when registration succeeds', async () => {
+      const mockUser = { id: '1', email: 'new@example.com', name: 'New User' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+
+      const { register, user } = useAuth()
+      await register({
+        email: 'new@example.com',
+        password: 'SecurePass123!',
+        name: 'New User'
+      })
+
+      expect(user.value).toEqual(mockUser)
+    })
+  })
+
+  describe('login - sets user on success', () => {
+    it('sets user state when login succeeds', async () => {
+      const mockUser = { id: '123', email: 'test@example.com', name: 'Test' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+
+      const { login, user, isAuthenticated } = useAuth()
+      await login({ email: 'test@example.com', password: 'password123' })
+
+      expect(user.value).toEqual(mockUser)
+      expect(isAuthenticated.value).toBe(true)
     })
   })
 })

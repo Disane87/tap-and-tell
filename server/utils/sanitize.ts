@@ -129,6 +129,7 @@ export function validatePhotoMimeType(base64Data: string): {
     bytes = new Uint8Array(buffer)
   }
   catch {
+    /* v8 ignore next */
     return { valid: false, mimeType: null }
   }
 

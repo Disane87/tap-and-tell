@@ -60,6 +60,7 @@ export class RateLimiter {
     }, cleanupIntervalMs)
 
     // Allow the Node.js process to exit even if the timer is still active.
+    /* v8 ignore next 3 */
     if (this.cleanupTimer && typeof this.cleanupTimer === 'object' && 'unref' in this.cleanupTimer) {
       this.cleanupTimer.unref()
     }

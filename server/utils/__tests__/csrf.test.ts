@@ -38,4 +38,30 @@ describe('CSRF', () => {
     const t2 = generateCsrfToken()
     expect(t1).not.toBe(t2)
   })
+
+  it('rejects token with empty random part', () => {
+    // Token format ".signature" - empty random part
+    expect(validateCsrfToken('.0000000000000000000000000000000000000000000000000000000000000000')).toBe(false)
+  })
+
+  it('rejects token with empty signature part', () => {
+    // Token format "random." - empty signature part
+    expect(validateCsrfToken('0000000000000000000000000000000000000000000000000000000000000000.')).toBe(false)
+  })
+
+  it('rejects token with signature of wrong length', () => {
+    // Valid random but signature is too short (not 64 hex chars)
+    const token = generateCsrfToken()
+    const [random] = token.split('.')
+    // Use a short signature that won't match the expected HMAC length
+    expect(validateCsrfToken(`${random}.abc123`)).toBe(false)
+  })
+
+  it('rejects token with signature longer than expected', () => {
+    const token = generateCsrfToken()
+    const [random] = token.split('.')
+    // Use a signature that is longer than 64 hex chars
+    const longSignature = '0'.repeat(128)
+    expect(validateCsrfToken(`${random}.${longSignature}`)).toBe(false)
+  })
 })

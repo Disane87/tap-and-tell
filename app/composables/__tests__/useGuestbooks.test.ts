@@ -109,6 +109,27 @@ describe('useGuestbooks', () => {
 
       expect(error.value).toBe('Failed to fetch guestbooks')
     })
+
+    it('should handle non-Error exceptions', async () => {
+      mockFetch.mockRejectedValueOnce('String error')
+
+      const { error, fetchGuestbooks } = useGuestbooks('tenant-123')
+      await fetchGuestbooks()
+
+      expect(error.value).toBe('Failed to fetch guestbooks')
+    })
+
+    it('should set error when response has success but no data', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: true
+        // data is missing
+      })
+
+      const { error, fetchGuestbooks } = useGuestbooks('tenant-123')
+      await fetchGuestbooks()
+
+      expect(error.value).toBe('Failed to fetch guestbooks')
+    })
   })
 
   describe('createGuestbook', () => {
@@ -147,6 +168,50 @@ describe('useGuestbooks', () => {
       expect(result).toBeNull()
       expect(error.value).toBe('Server error')
     })
+
+    it('should return null and set error on unsuccessful response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: false
+      })
+
+      const { createGuestbook, error } = useGuestbooks('tenant-123')
+      const result = await createGuestbook({
+        name: 'Test',
+        type: 'permanent'
+      })
+
+      expect(result).toBeNull()
+      expect(error.value).toBe('Failed to create guestbook')
+    })
+
+    it('should return null and set error when response has success but no data', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: true
+        // data is missing
+      })
+
+      const { createGuestbook, error } = useGuestbooks('tenant-123')
+      const result = await createGuestbook({
+        name: 'Test',
+        type: 'permanent'
+      })
+
+      expect(result).toBeNull()
+      expect(error.value).toBe('Failed to create guestbook')
+    })
+
+    it('should handle non-Error exceptions in creation', async () => {
+      mockFetch.mockRejectedValueOnce('String error')
+
+      const { createGuestbook, error } = useGuestbooks('tenant-123')
+      const result = await createGuestbook({
+        name: 'Test',
+        type: 'permanent'
+      })
+
+      expect(result).toBeNull()
+      expect(error.value).toBe('Failed to create guestbook')
+    })
   })
 
   describe('updateGuestbook', () => {
@@ -180,6 +245,44 @@ describe('useGuestbooks', () => {
       const result = await updateGuestbook('gb-123', { name: 'Test' })
 
       expect(result).toBeNull()
+    })
+
+    it('should return null on unsuccessful response', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: false
+      })
+
+      const { updateGuestbook } = useGuestbooks('tenant-123')
+      const result = await updateGuestbook('gb-123', { name: 'Test' })
+
+      expect(result).toBeNull()
+    })
+
+    it('should return null when response has success but no data', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: true
+        // data is missing
+      })
+
+      const { updateGuestbook } = useGuestbooks('tenant-123')
+      const result = await updateGuestbook('gb-123', { name: 'Test' })
+
+      expect(result).toBeNull()
+    })
+
+    it('should return updated guestbook but not modify list when guestbook not found in local state', async () => {
+      const updatedGuestbook = { ...mockGuestbook, name: 'Updated Name' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: updatedGuestbook })
+
+      const { guestbooks, updateGuestbook } = useGuestbooks('tenant-123')
+      // Don't fetch guestbooks first, so the local list is empty
+      expect(guestbooks.value).toHaveLength(0)
+
+      const result = await updateGuestbook('gb-123', { name: 'Updated Name' })
+
+      expect(result).toEqual(updatedGuestbook)
+      // List should still be empty since guestbook wasn't found in local state
+      expect(guestbooks.value).toHaveLength(0)
     })
   })
 
