@@ -60,6 +60,54 @@ describe('sanitizeEntryInput', () => {
     expect(result.answers?.color).toBe('red')
     expect((result.answers?.nested as Record<string, string>).song).toBe('test')
   })
+
+  it('deep sanitizes arrays in answers', () => {
+    const result = sanitizeEntryInput({
+      name: 'John',
+      message: 'Hi',
+      answers: { colors: ['<b>red</b>', '<i>blue</i>'] }
+    })
+    expect(result.answers?.colors).toEqual(['red', 'blue'])
+  })
+
+  it('preserves non-string primitives in answers', () => {
+    const result = sanitizeEntryInput({
+      name: 'John',
+      message: 'Hi',
+      answers: { count: 42, active: true, empty: null }
+    })
+    expect(result.answers?.count).toBe(42)
+    expect(result.answers?.active).toBe(true)
+    expect(result.answers?.empty).toBeNull()
+  })
+
+  it('handles deeply nested arrays and objects', () => {
+    const result = sanitizeEntryInput({
+      name: 'John',
+      message: 'Hi',
+      answers: {
+        nested: {
+          items: [
+            { name: '<script>bad</script>good' },
+            { name: '<p>text</p>' }
+          ]
+        }
+      }
+    })
+    const nested = result.answers?.nested as Record<string, unknown>
+    const items = nested.items as Array<Record<string, string>>
+    expect(items[0].name).toBe('badgood')
+    expect(items[1].name).toBe('text')
+  })
+
+  it('returns result without answers when answers is undefined', () => {
+    const result = sanitizeEntryInput({
+      name: 'John',
+      message: 'Hi'
+    })
+    expect(result.answers).toBeUndefined()
+    expect('answers' in result).toBe(false)
+  })
 })
 
 describe('validatePhotoMimeType', () => {
@@ -87,9 +135,66 @@ describe('validatePhotoMimeType', () => {
     expect(result.mimeType).toBe('image/png')
   })
 
-  it('rejects invalid data', () => {
-    const result = validatePhotoMimeType('not-valid-base64!!!')
+  it('validates WebP magic bytes', () => {
+    // WebP: RIFF at offset 0 + WEBP at offset 8
+    const webpBuffer = Buffer.alloc(12)
+    // RIFF
+    webpBuffer[0] = 0x52
+    webpBuffer[1] = 0x49
+    webpBuffer[2] = 0x46
+    webpBuffer[3] = 0x46
+    // WEBP at offset 8
+    webpBuffer[8] = 0x57
+    webpBuffer[9] = 0x45
+    webpBuffer[10] = 0x42
+    webpBuffer[11] = 0x50
+    const base64 = webpBuffer.toString('base64')
+    const result = validatePhotoMimeType(base64)
+    expect(result.valid).toBe(true)
+    expect(result.mimeType).toBe('image/webp')
+  })
+
+  it('validates HEIC magic bytes', () => {
+    // HEIC: ftyp at offset 4
+    const heicBuffer = Buffer.alloc(12)
+    heicBuffer[4] = 0x66 // f
+    heicBuffer[5] = 0x74 // t
+    heicBuffer[6] = 0x79 // y
+    heicBuffer[7] = 0x70 // p
+    const base64 = heicBuffer.toString('base64')
+    const result = validatePhotoMimeType(base64)
+    expect(result.valid).toBe(true)
+    expect(result.mimeType).toBe('image/heic')
+  })
+
+  it('rejects data that is too short', () => {
+    // Create a buffer with less than 12 bytes
+    const shortBuffer = Buffer.alloc(8)
+    const base64 = shortBuffer.toString('base64')
+    const result = validatePhotoMimeType(base64)
     expect(result.valid).toBe(false)
+    expect(result.mimeType).toBeNull()
+  })
+
+  it('rejects invalid base64 that throws during decode', () => {
+    // A string that would cause Buffer.from to throw or produce invalid output
+    // Using a string with invalid base64 characters that may cause issues
+    const result = validatePhotoMimeType('!!!invalid-base64$$$')
+    expect(result.valid).toBe(false)
+    expect(result.mimeType).toBeNull()
+  })
+
+  it('rejects unrecognized magic bytes', () => {
+    // Valid base64 but unrecognized image format
+    const unknownBuffer = Buffer.alloc(12)
+    unknownBuffer[0] = 0x00
+    unknownBuffer[1] = 0x01
+    unknownBuffer[2] = 0x02
+    unknownBuffer[3] = 0x03
+    const base64 = unknownBuffer.toString('base64')
+    const result = validatePhotoMimeType(base64)
+    expect(result.valid).toBe(false)
+    expect(result.mimeType).toBeNull()
   })
 
   it('handles data URI prefix', () => {

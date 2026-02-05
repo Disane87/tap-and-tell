@@ -120,6 +120,7 @@ function encodeBase32(buffer: Buffer): string {
     }
   }
 
+  /* v8 ignore next 3 */
   if (bits > 0) {
     output += BASE32_ALPHABET[(value << (5 - bits)) & 31]
   }

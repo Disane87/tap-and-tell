@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { SignJWT } from 'jose'
 import { createAccessToken, createRefreshToken, createJwt, verifyJwt, type JwtPayload } from '../jwt'
 
 /**
@@ -222,6 +223,46 @@ describe('jwt utilities', () => {
       // This is harder to test directly since we control token creation
       // But we can test that tokens without sub or email are rejected
       const verified = await verifyJwt('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmb28iOiJiYXIifQ.invalid')
+      expect(verified).toBeNull()
+    })
+
+    it('should return null for valid token missing sub claim', async () => {
+      // Create a properly signed token that is missing the 'sub' claim
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+      const tokenWithoutSub = await new SignJWT({ email: 'test@example.com', type: 'access' })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('15m')
+        .sign(secret)
+
+      const verified = await verifyJwt(tokenWithoutSub)
+      expect(verified).toBeNull()
+    })
+
+    it('should return null for valid token missing email claim', async () => {
+      // Create a properly signed token that is missing the 'email' claim
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+      const tokenWithoutEmail = await new SignJWT({ type: 'access' })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setSubject('user-123')
+        .setIssuedAt()
+        .setExpirationTime('15m')
+        .sign(secret)
+
+      const verified = await verifyJwt(tokenWithoutEmail)
+      expect(verified).toBeNull()
+    })
+
+    it('should return null for valid token missing both sub and email claims', async () => {
+      // Create a properly signed token that is missing both required claims
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET)
+      const tokenWithoutRequiredClaims = await new SignJWT({ type: 'access', foo: 'bar' })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('15m')
+        .sign(secret)
+
+      const verified = await verifyJwt(tokenWithoutRequiredClaims)
       expect(verified).toBeNull()
     })
   })

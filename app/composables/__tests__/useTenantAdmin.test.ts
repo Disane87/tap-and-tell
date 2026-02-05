@@ -154,6 +154,18 @@ describe('useTenantAdmin', () => {
 
       expect(result).toBeNull()
     })
+
+    it('should return null when response success is true but data is missing', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: true
+        // data is undefined
+      })
+
+      const { updateEntryStatus } = useTenantAdmin('tenant-123', 'guestbook-456')
+      const result = await updateEntryStatus('entry-123', 'approved')
+
+      expect(result).toBeNull()
+    })
   })
 
   describe('bulkUpdateStatus', () => {
@@ -178,6 +190,18 @@ describe('useTenantAdmin', () => {
 
     it('should return -1 on bulk update failure', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Server error'))
+
+      const { bulkUpdateStatus } = useTenantAdmin('tenant-123', 'guestbook-456')
+      const result = await bulkUpdateStatus(['entry-1', 'entry-2'], 'approved')
+
+      expect(result).toBe(-1)
+    })
+
+    it('should return -1 when response success is true but data is missing', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: true
+        // data is undefined
+      })
 
       const { bulkUpdateStatus } = useTenantAdmin('tenant-123', 'guestbook-456')
       const result = await bulkUpdateStatus(['entry-1', 'entry-2'], 'approved')
