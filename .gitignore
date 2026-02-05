@@ -27,3 +27,4 @@ nul
 
 # SSL certificates
 certs/
+**/coverage/**
