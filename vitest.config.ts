@@ -2,12 +2,20 @@ import { defineConfig } from 'vitest/config'
 import { resolve } from 'path'
 import vue from '@vitejs/plugin-vue'
 
+const baseRoot = resolve(__dirname)
+
 export default defineConfig({
   plugins: [vue()],
   test: {
+    root: baseRoot,
     include: [
       'server/utils/__tests__/**/*.test.ts',
       'app/composables/__tests__/**/*.test.ts'
+    ],
+    exclude: [
+      '**/node_modules/**',
+      'e2e/**/*.spec.ts',
+      'server/utils/__tests__/storage.test.ts'
     ],
     environment: 'node',
     globals: true,
@@ -29,8 +37,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '~~/': resolve(__dirname, './') + '/',
-      '~/': resolve(__dirname, './app/') + '/',
+      '~~/': baseRoot + '/',
+      '~/': resolve(baseRoot, 'app') + '/',
       '#imports': resolve(__dirname, './.nuxt/imports.d.ts')
     }
   }
