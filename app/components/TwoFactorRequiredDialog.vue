@@ -8,7 +8,7 @@ import { ShieldAlert, LogOut, ArrowRight } from 'lucide-vue-next'
 
 const { t } = useI18n()
 const router = useRouter()
-const { user, isAuthenticated, logout } = useAuth()
+const { user, isAuthenticated, logout, fetchMe } = useAuth()
 
 const isOpen = computed(() => {
   return isAuthenticated.value
@@ -16,13 +16,22 @@ const isOpen = computed(() => {
     && !user.value.twoFactorEnabled
 })
 
+const showSetupDialog = ref(false)
+
 async function handleLogout() {
   await logout()
   router.push('/login')
 }
 
 function goToSetup() {
-  router.push('/profile#security')
+  // Open the 2FA setup dialog directly
+  showSetupDialog.value = true
+}
+
+async function handleTwoFactorCompleted() {
+  // Refresh user data to update twoFactorEnabled status
+  await fetchMe()
+  showSetupDialog.value = false
 }
 </script>
 
@@ -82,4 +91,11 @@ function goToSetup() {
       </div>
     </DialogContent>
   </Dialog>
+
+  <!-- 2FA Setup Dialog -->
+  <TwoFactorSetupDialog
+    :open="showSetupDialog"
+    @update:open="showSetupDialog = $event"
+    @completed="handleTwoFactorCompleted"
+  />
 </template>
