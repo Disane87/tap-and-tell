@@ -3,8 +3,14 @@
  * Step 1: Basics - Name (required) and Photo (optional).
  *
  * Uses the shared form state from useGuestForm composable.
+ * Error values are i18n keys that are translated for display.
  */
+const { t } = useI18n()
 const { formState, errors } = useGuestForm()
+
+/** Translate error key if present. */
+const nameError = computed(() => errors.name ? t(errors.name) : undefined)
+const photoError = computed(() => errors.photo ? t(errors.photo) : undefined)
 </script>
 
 <template>
@@ -28,8 +34,8 @@ const { formState, errors } = useGuestForm()
         :class="{ 'border-destructive': errors.name }"
         maxlength="100"
       />
-      <p v-if="errors.name" class="text-sm text-destructive">
-        {{ errors.name }}
+      <p v-if="nameError" class="text-sm text-destructive">
+        {{ nameError }}
       </p>
     </div>
 
@@ -38,7 +44,7 @@ const { formState, errors } = useGuestForm()
       <Label>{{ $t('form.basics.photo') }} ({{ $t('common.optional') }})</Label>
       <PhotoUpload
         v-model="formState.photo"
-        :error="errors.photo"
+        :error="photoError"
       />
     </div>
   </div>

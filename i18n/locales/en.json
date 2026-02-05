@@ -2,6 +2,7 @@
   "common": {
     "loading": "Loading...",
     "saving": "Saving...",
+    "dismiss": "Dismiss",
     "entry": "entry",
     "entries": "entries",
     "cancel": "Cancel",
@@ -592,7 +593,11 @@
   },
   "errors": {
     "nameRequired": "Name is required",
-    "messageRequired": "Message is required"
+    "nameTooLong": "Name must be 100 characters or less",
+    "messageRequired": "Message is required",
+    "messageTooLong": "Message must be 1000 characters or less",
+    "photoTooLarge": "Photo must be 5MB or less",
+    "fieldRequired": "This field is required"
   },
   "auth": {
     "loginTitle": "Owner Login",
@@ -1042,12 +1047,48 @@
     "disableDescription": "Enter your password to disable 2FA. Your account will be less secure.",
     "disableButton": "Disable 2FA",
     "disableSuccess": "Two-factor authentication has been disabled.",
-    "disableFailed": "Failed to disable 2FA. Check your password."
+    "disableFailed": "Failed to disable 2FA. Check your password.",
+    "banner": {
+      "message": "Two-factor authentication is required for full access. Please set up 2FA to secure your account.",
+      "setup": "Set up 2FA"
+    },
+    "required": {
+      "title": "Two-Factor Authentication Required",
+      "description": "To protect your account and data, you must set up two-factor authentication before continuing.",
+      "whyTitle": "Why is this required?",
+      "why1": "Protects your guestbooks and personal data",
+      "why2": "Prevents unauthorized access to your account",
+      "why3": "Required for all administrative actions",
+      "setupButton": "Set Up 2FA Now",
+      "logoutButton": "Log Out Instead"
+    }
   },
   "error": {
     "notFound": "The page you're looking for doesn't exist.",
     "serverError": "Something went wrong. Please try again later.",
     "backHome": "Back to Home"
+  },
+  "apiErrors": {
+    "twoFactorRequired": "Two-factor authentication is required. Please set up 2FA in your security settings.",
+    "notAuthenticated": "You are not logged in. Please log in to continue.",
+    "invalidCredentials": "Invalid email or password.",
+    "emailInUse": "This email address is already in use.",
+    "accountNotFound": "Account not found.",
+    "invalidPassword": "Invalid password.",
+    "sessionExpired": "Your session has expired. Please log in again.",
+    "tenantNotFound": "Organization not found.",
+    "notTenantMember": "You are not a member of this organization.",
+    "ownerOnly": "Only owners can perform this action.",
+    "guestbookNotFound": "Guestbook not found.",
+    "entryNotFound": "Entry not found.",
+    "rateLimitExceeded": "Too many requests. Please wait a moment.",
+    "invalidEmail": "Please enter a valid email address.",
+    "passwordTooWeak": "Password does not meet security requirements.",
+    "nameRequired": "Name is required.",
+    "serverError": "A server error occurred. Please try again.",
+    "badRequest": "Invalid request.",
+    "forbidden": "You do not have permission for this action.",
+    "notFound": "The requested resource was not found."
   },
   "validation": {
     "minLength": "At least 12 characters",

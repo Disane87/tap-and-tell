@@ -3,8 +3,13 @@
  * Step 4: Message - Message (required), How We Met, Best Memory (optional).
  *
  * Uses the shared form state from useGuestForm composable.
+ * Error values are i18n keys that are translated for display.
  */
+const { t } = useI18n()
 const { formState, errors } = useGuestForm()
+
+/** Translate error key if present. */
+const messageError = computed(() => errors.message ? t(errors.message) : undefined)
 </script>
 
 <template>
@@ -30,8 +35,8 @@ const { formState, errors } = useGuestForm()
         maxlength="1000"
       />
       <div class="flex justify-between">
-        <p v-if="errors.message" class="text-sm text-destructive">
-          {{ errors.message }}
+        <p v-if="messageError" class="text-sm text-destructive">
+          {{ messageError }}
         </p>
         <p class="ml-auto text-xs text-muted-foreground">
           {{ formState.message.length }} / 1000

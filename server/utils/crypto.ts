@@ -171,3 +171,33 @@ function decryptLegacy(encryptedData: Buffer, tenantKey: Buffer): Buffer {
 
   return Buffer.concat([decipher.update(ciphertext), decipher.final()])
 }
+
+/**
+ * Retrieves and derives the encryption key for a tenant.
+ * Uses the tenant's salt from the database combined with the master key.
+ *
+ * This function is exported for use by storage and upload utilities.
+ * Uses the non-RLS db since we need tenant data regardless of context.
+ *
+ * @param tenantId - The tenant ID.
+ * @returns The derived 32-byte tenant encryption key.
+ * @throws Error if the tenant has no encryption salt configured.
+ */
+export async function getTenantEncryptionKey(tenantId: string): Promise<Buffer> {
+  // Dynamic import to avoid circular dependency
+  const { useDrizzle } = await import('~~/server/utils/drizzle')
+  const { tenants } = await import('~~/server/database/schema')
+  const { eq } = await import('drizzle-orm')
+
+  const db = useDrizzle()
+  const rows = await db.select({ encryptionSalt: tenants.encryptionSalt })
+    .from(tenants)
+    .where(eq(tenants.id, tenantId))
+  const tenant = rows[0]
+
+  if (!tenant?.encryptionSalt) {
+    throw new Error(`Tenant ${tenantId} has no encryption salt configured`)
+  }
+
+  return deriveTenantKey(tenant.encryptionSalt)
+}

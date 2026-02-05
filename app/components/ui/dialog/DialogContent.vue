@@ -4,7 +4,11 @@ import type { DialogContentEmits, DialogContentProps } from 'reka-ui'
 import { DialogClose, DialogContent, DialogOverlay, DialogPortal, useForwardPropsEmits } from 'reka-ui'
 import { cn } from '~/lib/utils'
 
-const props = defineProps<DialogContentProps & { class?: string }>()
+const props = defineProps<DialogContentProps & {
+  class?: string
+  /** Hide the close button (for dialogs that require explicit action) */
+  hideCloseButton?: boolean
+}>()
 const emits = defineEmits<DialogContentEmits>()
 
 const forwarded = useForwardPropsEmits(props, emits)
@@ -26,6 +30,7 @@ const forwarded = useForwardPropsEmits(props, emits)
     >
       <slot />
       <DialogClose
+        v-if="!props.hideCloseButton"
         class="absolute right-4 top-4 rounded-full h-8 w-8 flex items-center justify-center opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-muted/50 focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:ring-offset-0 disabled:pointer-events-none"
       >
         <X class="h-4 w-4" />

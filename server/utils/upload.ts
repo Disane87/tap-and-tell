@@ -1,9 +1,7 @@
 import { join } from 'path'
 import { getStorageDriver } from '~~/server/utils/storage-driver'
-import { encryptData, deriveTenantKey } from '~~/server/utils/crypto'
+import { encryptData, getTenantEncryptionKey } from '~~/server/utils/crypto'
 import { validatePhotoMimeType } from '~~/server/utils/sanitize'
-import { eq } from 'drizzle-orm'
-import { tenants } from '~~/server/database/schema'
 
 const DATA_DIR = process.env.DATA_DIR || '.data'
 
@@ -125,26 +123,6 @@ function validateUpload(data: Buffer, options: UploadOptions): string {
  */
 function getExtension(mimeType: string): string {
   return MIME_TO_EXT[mimeType] || 'bin'
-}
-
-/**
- * Retrieves the tenant's encryption key by looking up their salt from the DB.
- *
- * @param tenantId - The tenant ID
- * @returns The derived 32-byte tenant encryption key
- */
-async function getTenantEncryptionKey(tenantId: string): Promise<Buffer> {
-  const db = useDrizzle()
-  const rows = await db.select({ encryptionSalt: tenants.encryptionSalt })
-    .from(tenants)
-    .where(eq(tenants.id, tenantId))
-  const tenant = rows[0]
-
-  if (!tenant?.encryptionSalt) {
-    throw new Error(`Tenant ${tenantId} has no encryption salt configured`)
-  }
-
-  return deriveTenantKey(tenant.encryptionSalt)
 }
 
 /**

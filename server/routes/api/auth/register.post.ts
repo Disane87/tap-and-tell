@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { users, tenants, tenantMembers } from '~~/server/database/schema'
 import { hashPassword } from '~~/server/utils/password'
-import { createSession } from '~~/server/utils/session'
+import { createSession, setAuthCookies } from '~~/server/utils/session'
 import { isBetaModeEnabled, getBetaMode } from '~~/server/utils/beta-config'
 import { validateBetaInvite, acceptBetaInvite } from '~~/server/utils/beta'
 
@@ -130,23 +130,8 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const { accessToken, refreshToken } = await createSession(id, email)
-
-  setCookie(event, 'auth_token', accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 15 * 60, // 15 minutes
-    path: '/'
-  })
-
-  setCookie(event, 'refresh_token', refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-    path: '/'
-  })
+  const tokens = await createSession(id, email)
+  setAuthCookies(event, tokens)
 
   await recordAuditLog(event, 'auth.register', {
     userId: id,

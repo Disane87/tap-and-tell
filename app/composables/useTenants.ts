@@ -31,8 +31,10 @@ export function useTenants() {
       } else {
         error.value = 'Failed to fetch tenants'
       }
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to fetch tenants'
+    } catch (e: unknown) {
+      // Extract error message from $fetch error (FetchError has data.message)
+      const fetchError = e as { data?: { message?: string }; statusCode?: number; message?: string }
+      error.value = fetchError.data?.message || fetchError.message || 'Failed to fetch tenants'
     } finally {
       loading.value = false
     }
@@ -59,8 +61,10 @@ export function useTenants() {
       }
       error.value = 'Failed to create tenant'
       return null
-    } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to create tenant'
+    } catch (e: unknown) {
+      // Extract error message from $fetch error (FetchError has data.message)
+      const fetchError = e as { data?: { message?: string }; statusCode?: number; message?: string }
+      error.value = fetchError.data?.message || fetchError.message || 'Failed to create tenant'
       return null
     } finally {
       loading.value = false

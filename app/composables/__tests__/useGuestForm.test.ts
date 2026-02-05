@@ -52,21 +52,21 @@ describe('useGuestForm', () => {
       const { formState, validateCurrentStep, errors } = useGuestForm()
       formState.name = ''
       expect(validateCurrentStep()).toBe(false)
-      expect(errors.name).toBe('Name is required')
+      expect(errors.name).toBe('errors.nameRequired')
     })
 
     it('fails when name is only whitespace', () => {
       const { formState, validateCurrentStep, errors } = useGuestForm()
       formState.name = '   '
       expect(validateCurrentStep()).toBe(false)
-      expect(errors.name).toBe('Name is required')
+      expect(errors.name).toBe('errors.nameRequired')
     })
 
     it('fails when name exceeds 100 characters', () => {
       const { formState, validateCurrentStep, errors } = useGuestForm()
       formState.name = 'a'.repeat(101)
       expect(validateCurrentStep()).toBe(false)
-      expect(errors.name).toBe('Name must be 100 characters or less')
+      expect(errors.name).toBe('errors.nameTooLong')
     })
 
     it('fails when photo exceeds size limit', () => {
@@ -74,7 +74,7 @@ describe('useGuestForm', () => {
       formState.name = 'Test User'
       formState.photo = 'a'.repeat(7_000_001) // > 7MB base64
       expect(validateCurrentStep()).toBe(false)
-      expect(errors.photo).toBe('Photo must be 5MB or less')
+      expect(errors.photo).toBe('errors.photoTooLarge')
     })
 
     it('passes with valid name', () => {
@@ -96,7 +96,7 @@ describe('useGuestForm', () => {
 
       formState.message = ''
       expect(validateCurrentStep()).toBe(false)
-      expect(errors.message).toBe('Message is required')
+      expect(errors.message).toBe('errors.messageRequired')
     })
 
     it('fails when message exceeds 1000 characters', () => {
@@ -108,7 +108,7 @@ describe('useGuestForm', () => {
 
       formState.message = 'a'.repeat(1001)
       expect(validateCurrentStep()).toBe(false)
-      expect(errors.message).toBe('Message must be 1000 characters or less')
+      expect(errors.message).toBe('errors.messageTooLong')
     })
 
     it('passes with valid message', () => {
@@ -130,8 +130,8 @@ describe('useGuestForm', () => {
       formState.message = ''
 
       expect(validate()).toBe(false)
-      expect(errors.name).toBe('Name is required')
-      expect(errors.message).toBe('Message is required')
+      expect(errors.name).toBe('errors.nameRequired')
+      expect(errors.message).toBe('errors.messageRequired')
     })
 
     it('passes with all required fields filled', () => {

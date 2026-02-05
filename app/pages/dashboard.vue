@@ -11,7 +11,7 @@ import type { Guestbook, CreateGuestbookInput } from '~/types/guestbook'
 const { t } = useI18n()
 const router = useRouter()
 const { user, isAuthenticated } = useAuth()
-const { tenants, loading: tenantsLoading, fetchTenants } = useTenants()
+const { tenants, loading: tenantsLoading, error: tenantsError, fetchTenants } = useTenants()
 
 // Current tenant (first one the user has access to)
 const currentTenant = computed(() => tenants.value[0] ?? null)
@@ -145,6 +145,13 @@ watch(currentTenant, async (tenant) => {
     await loadTenantData()
   }
 }, { immediate: false })
+
+// Show toast when there's an error fetching tenants (translated)
+watch(tenantsError, (err) => {
+  if (err) {
+    toast.error(translateApiError(err, t))
+  }
+})
 
 onMounted(async () => {
   if (!isAuthenticated.value) {

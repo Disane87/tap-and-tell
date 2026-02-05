@@ -1,5 +1,6 @@
 import { eq, and, gt } from 'drizzle-orm'
-import { sessions, users } from '~~/server/database/schema'
+import { setCookie } from 'h3'
+import { sessions, users, userTwoFactor } from '~~/server/database/schema'
 import { createAccessToken, createRefreshToken, verifyJwt } from '~~/server/utils/jwt'
 
 /**
@@ -42,7 +43,7 @@ export async function createSession(userId: string, email: string): Promise<Sess
  * This is a stateless check - no database lookup is performed.
  *
  * @param token - The access token JWT to validate.
- * @returns The user info (id, email, name) or null if invalid/expired.
+ * @returns The user info (id, email, name, twoFactorEnabled) or null if invalid/expired.
  */
 export async function validateAccessToken(token: string) {
   const payload = await verifyJwt(token, 'access')
@@ -54,12 +55,24 @@ export async function validateAccessToken(token: string) {
     email: users.email,
     name: users.name,
     avatarUrl: users.avatarUrl,
-    isAdmin: users.isAdmin
+    isAdmin: users.isAdmin,
+    twoFactorEnabled: userTwoFactor.enabled
   })
     .from(users)
+    .leftJoin(userTwoFactor, eq(users.id, userTwoFactor.userId))
     .where(eq(users.id, payload.sub))
 
-  return userRows[0] || null
+  const row = userRows[0]
+  if (!row) return null
+
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    avatarUrl: row.avatarUrl,
+    isAdmin: row.isAdmin,
+    twoFactorEnabled: row.twoFactorEnabled === 'true'
+  }
 }
 
 /**
@@ -99,12 +112,24 @@ export async function validateSession(token: string) {
     email: users.email,
     name: users.name,
     avatarUrl: users.avatarUrl,
-    isAdmin: users.isAdmin
+    isAdmin: users.isAdmin,
+    twoFactorEnabled: userTwoFactor.enabled
   })
     .from(users)
+    .leftJoin(userTwoFactor, eq(users.id, userTwoFactor.userId))
     .where(eq(users.id, session.userId))
 
-  return userRows[0] || null
+  const row = userRows[0]
+  if (!row) return null
+
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    avatarUrl: row.avatarUrl,
+    isAdmin: row.isAdmin,
+    twoFactorEnabled: row.twoFactorEnabled === 'true'
+  }
 }
 
 /**
@@ -169,4 +194,59 @@ export async function deleteSession(refreshTokenStr: string): Promise<void> {
 export async function deleteAllUserSessions(userId: string): Promise<void> {
   const db = useDrizzle()
   await db.delete(sessions).where(eq(sessions.userId, userId))
+}
+
+/**
+ * Cookie configuration for auth tokens.
+ */
+interface AuthCookieOptions {
+  httpOnly: boolean
+  secure: boolean
+  sameSite: 'strict' | 'lax' | 'none'
+  maxAge: number
+  path: string
+}
+
+/**
+ * Returns the standard cookie options for access tokens.
+ *
+ * @returns Cookie options for the access token.
+ */
+export function getAccessTokenCookieOptions(): AuthCookieOptions {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 15 * 60, // 15 minutes
+    path: '/'
+  }
+}
+
+/**
+ * Returns the standard cookie options for refresh tokens.
+ *
+ * @returns Cookie options for the refresh token.
+ */
+export function getRefreshTokenCookieOptions(): AuthCookieOptions {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    path: '/'
+  }
+}
+
+/**
+ * Sets both auth_token and refresh_token cookies on the event.
+ *
+ * @param event - The H3 event.
+ * @param tokens - The session tokens to set.
+ */
+export function setAuthCookies(
+  event: Parameters<typeof setCookie>[0],
+  tokens: SessionTokens
+): void {
+  setCookie(event, 'auth_token', tokens.accessToken, getAccessTokenCookieOptions())
+  setCookie(event, 'refresh_token', tokens.refreshToken, getRefreshTokenCookieOptions())
 }
