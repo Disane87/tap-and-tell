@@ -59,7 +59,13 @@ export async function validateAccessToken(token: string) {
     twoFactorEnabled: userTwoFactor.enabled
   })
     .from(users)
-    .leftJoin(userTwoFactor, eq(users.id, userTwoFactor.userId))
+    .leftJoin(
+      userTwoFactor,
+      and(
+        eq(users.id, userTwoFactor.userId),
+        eq(userTwoFactor.enabled, 'true')
+      )
+    )
     .where(eq(users.id, payload.sub))
 
   const row = userRows[0]
@@ -116,7 +122,13 @@ export async function validateSession(token: string) {
     twoFactorEnabled: userTwoFactor.enabled
   })
     .from(users)
-    .leftJoin(userTwoFactor, eq(users.id, userTwoFactor.userId))
+    .leftJoin(
+      userTwoFactor,
+      and(
+        eq(users.id, userTwoFactor.userId),
+        eq(userTwoFactor.enabled, 'true')
+      )
+    )
     .where(eq(users.id, session.userId))
 
   const row = userRows[0]
