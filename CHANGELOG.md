@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0](https://github.com/Disane87/tap-and-tell/compare/v1.10.0...v1.11.0) (2026-02-05)
+
+
+### ✨ Features
+
+* integrate 2FA setup dialog and refresh user data after completion ([5b33947](https://github.com/Disane87/tap-and-tell/commit/5b33947678519af91b2da69bcdc1c8a9209ce096))
+
 ## [1.10.0](https://github.com/Disane87/tap-and-tell/compare/v1.9.0...v1.10.0) (2026-02-05)
 
 
