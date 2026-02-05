@@ -2,6 +2,7 @@
   "common": {
     "loading": "Lädt...",
     "saving": "Wird gespeichert...",
+    "dismiss": "Schließen",
     "entry": "Eintrag",
     "entries": "Einträge",
     "cancel": "Abbrechen",
@@ -592,7 +593,11 @@
   },
   "errors": {
     "nameRequired": "Name ist erforderlich",
-    "messageRequired": "Nachricht ist erforderlich"
+    "nameTooLong": "Name darf maximal 100 Zeichen lang sein",
+    "messageRequired": "Nachricht ist erforderlich",
+    "messageTooLong": "Nachricht darf maximal 1000 Zeichen lang sein",
+    "photoTooLarge": "Foto darf maximal 5MB gross sein",
+    "fieldRequired": "Dieses Feld ist erforderlich"
   },
   "auth": {
     "loginTitle": "Anmelden",
@@ -1042,12 +1047,48 @@
     "disableDescription": "Gib dein Passwort ein, um 2FA zu deaktivieren. Dein Konto wird weniger sicher sein.",
     "disableButton": "2FA deaktivieren",
     "disableSuccess": "Zwei-Faktor-Authentifizierung wurde deaktiviert.",
-    "disableFailed": "2FA konnte nicht deaktiviert werden. Überprüfe dein Passwort."
+    "disableFailed": "2FA konnte nicht deaktiviert werden. Überprüfe dein Passwort.",
+    "banner": {
+      "message": "Zwei-Faktor-Authentifizierung ist für vollen Zugriff erforderlich. Bitte richte 2FA ein, um dein Konto zu sichern.",
+      "setup": "2FA einrichten"
+    },
+    "required": {
+      "title": "Zwei-Faktor-Authentifizierung erforderlich",
+      "description": "Zum Schutz deines Kontos und deiner Daten musst du die Zwei-Faktor-Authentifizierung einrichten, bevor du fortfahren kannst.",
+      "whyTitle": "Warum ist das erforderlich?",
+      "why1": "Schützt deine Gästebücher und persönlichen Daten",
+      "why2": "Verhindert unbefugten Zugriff auf dein Konto",
+      "why3": "Erforderlich für alle administrativen Aktionen",
+      "setupButton": "2FA jetzt einrichten",
+      "logoutButton": "Stattdessen abmelden"
+    }
   },
   "error": {
     "notFound": "Die Seite, die du suchst, existiert nicht.",
     "serverError": "Etwas ist schiefgelaufen. Bitte versuche es später erneut.",
     "backHome": "Zur Startseite"
+  },
+  "apiErrors": {
+    "twoFactorRequired": "Zwei-Faktor-Authentifizierung ist erforderlich. Bitte richte 2FA in deinen Sicherheitseinstellungen ein.",
+    "notAuthenticated": "Du bist nicht angemeldet. Bitte melde dich an, um fortzufahren.",
+    "invalidCredentials": "Ungültige E-Mail-Adresse oder Passwort.",
+    "emailInUse": "Diese E-Mail-Adresse wird bereits verwendet.",
+    "accountNotFound": "Konto nicht gefunden.",
+    "invalidPassword": "Ungültiges Passwort.",
+    "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
+    "tenantNotFound": "Organisation nicht gefunden.",
+    "notTenantMember": "Du bist kein Mitglied dieser Organisation.",
+    "ownerOnly": "Nur Eigentümer können diese Aktion ausführen.",
+    "guestbookNotFound": "Gästebuch nicht gefunden.",
+    "entryNotFound": "Eintrag nicht gefunden.",
+    "rateLimitExceeded": "Zu viele Anfragen. Bitte warte einen Moment.",
+    "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+    "passwordTooWeak": "Das Passwort erfüllt nicht die Sicherheitsanforderungen.",
+    "nameRequired": "Name ist erforderlich.",
+    "serverError": "Ein Serverfehler ist aufgetreten. Bitte versuche es erneut.",
+    "badRequest": "Ungültige Anfrage.",
+    "forbidden": "Du hast keine Berechtigung für diese Aktion.",
+    "notFound": "Die angeforderte Ressource wurde nicht gefunden."
   },
   "validation": {
     "minLength": "Mindestens 12 Zeichen",

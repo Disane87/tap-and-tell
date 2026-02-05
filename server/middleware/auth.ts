@@ -1,5 +1,5 @@
-import { defineEventHandler, getCookie, setCookie, getHeader } from 'h3'
-import { validateAccessToken, refreshSession } from '~~/server/utils/session'
+import { defineEventHandler, getCookie, getHeader } from 'h3'
+import { validateAccessToken, refreshSession, setAuthCookies } from '~~/server/utils/session'
 import { isApiToken, validateApiToken } from '~~/server/utils/api-token'
 
 /**
@@ -55,21 +55,7 @@ export default defineEventHandler(async (event) => {
   if (!tokens) return
 
   // Set new cookies
-  setCookie(event, 'auth_token', tokens.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 15 * 60, // 15 minutes
-    path: '/'
-  })
-
-  setCookie(event, 'refresh_token', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-    path: '/'
-  })
+  setAuthCookies(event, tokens)
 
   // Validate the new access token to get user info
   const user = await validateAccessToken(tokens.accessToken)

@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { users } from '~~/server/database/schema'
 import { verifyPassword, hashPassword } from '~~/server/utils/password'
 import { validatePasswordPolicy } from '~~/server/utils/password-policy'
-import { deleteAllUserSessions, createSession } from '~~/server/utils/session'
+import { deleteAllUserSessions, createSession, setAuthCookies } from '~~/server/utils/session'
 import { recordAuditLog } from '~~/server/utils/audit'
 
 /**
@@ -61,22 +61,7 @@ export default defineEventHandler(async (event) => {
 
   // Create a new session so the user stays logged in
   const tokens = await createSession(user.id, dbUser.email)
-
-  setCookie(event, 'auth_token', tokens.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 15 * 60,
-    path: '/'
-  })
-
-  setCookie(event, 'refresh_token', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60,
-    path: '/'
-  })
+  setAuthCookies(event, tokens)
 
   recordAuditLog(event, 'auth.password_change', {
     userId: user.id,

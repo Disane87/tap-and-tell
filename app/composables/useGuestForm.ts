@@ -156,6 +156,8 @@ export function useGuestForm() {
    * Step 1: name required, photo size limit.
    * Step 4: message required.
    *
+   * Error values are i18n keys that should be translated by the component.
+   *
    * @returns True if current step is valid.
    */
   function validateCurrentStep(): boolean {
@@ -168,27 +170,27 @@ export function useGuestForm() {
 
     if (currentStep.value === 1) {
       if (!formState.name.trim()) {
-        errors.name = 'Name is required'
+        errors.name = 'errors.nameRequired'
         return false
       }
       if (formState.name.length > 100) {
-        errors.name = 'Name must be 100 characters or less'
+        errors.name = 'errors.nameTooLong'
         return false
       }
       // Photo size validation (5MB = ~6.67MB base64)
       if (formState.photo && formState.photo.length > 7_000_000) {
-        errors.photo = 'Photo must be 5MB or less'
+        errors.photo = 'errors.photoTooLarge'
         return false
       }
     }
 
     if (currentStep.value === 4) {
       if (!formState.message.trim()) {
-        errors.message = 'Message is required'
+        errors.message = 'errors.messageRequired'
         return false
       }
       if (formState.message.length > 1000) {
-        errors.message = 'Message must be 1000 characters or less'
+        errors.message = 'errors.messageTooLong'
         return false
       }
     }
@@ -198,7 +200,7 @@ export function useGuestForm() {
       const customErrors: Record<string, string> = {}
       for (const q of customQuestions.value) {
         if (q.required && !formState.customAnswers[q.id]?.trim()) {
-          customErrors[q.id] = 'This field is required'
+          customErrors[q.id] = 'errors.fieldRequired'
         }
       }
       if (Object.keys(customErrors).length > 0) {
@@ -213,6 +215,8 @@ export function useGuestForm() {
   /**
    * Validates the entire form (all required fields).
    *
+   * Error values are i18n keys that should be translated by the component.
+   *
    * @returns True if form is valid for submission.
    */
   function validate(): boolean {
@@ -224,23 +228,23 @@ export function useGuestForm() {
     let valid = true
 
     if (!formState.name.trim()) {
-      errors.name = 'Name is required'
+      errors.name = 'errors.nameRequired'
       valid = false
     } else if (formState.name.length > 100) {
-      errors.name = 'Name must be 100 characters or less'
+      errors.name = 'errors.nameTooLong'
       valid = false
     }
 
     if (formState.photo && formState.photo.length > 7_000_000) {
-      errors.photo = 'Photo must be 5MB or less'
+      errors.photo = 'errors.photoTooLarge'
       valid = false
     }
 
     if (!formState.message.trim()) {
-      errors.message = 'Message is required'
+      errors.message = 'errors.messageRequired'
       valid = false
     } else if (formState.message.length > 1000) {
-      errors.message = 'Message must be 1000 characters or less'
+      errors.message = 'errors.messageTooLong'
       valid = false
     }
 

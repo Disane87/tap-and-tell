@@ -7,8 +7,14 @@ import { useDrizzle } from '#imports'
  * Middleware that enforces 2FA setup for authenticated users accessing admin routes.
  * Users without 2FA are blocked from tenant management and admin endpoints.
  * Allows access to auth routes (login, register, 2FA setup) and public routes.
+ *
+ * In development mode (NODE_ENV !== 'production'), 2FA enforcement is skipped
+ * to simplify local development workflow.
  */
 export default defineEventHandler(async (event) => {
+  // Skip 2FA enforcement in development mode
+  if (process.env.NODE_ENV !== 'production') return
+
   const user = event.context.user
   if (!user) return // Not authenticated, let other middleware handle it
 

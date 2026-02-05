@@ -1,6 +1,6 @@
 import { eq, and, gt } from 'drizzle-orm'
 import { userTwoFactor, twoFactorTokens, users } from '~~/server/database/schema'
-import { createSession } from '~~/server/utils/session'
+import { createSession, setAuthCookies } from '~~/server/utils/session'
 
 /**
  * POST /api/auth/2fa/verify
@@ -78,22 +78,7 @@ export default defineEventHandler(async (event) => {
 
   // Create full session
   const tokens = await createSession(user.id, user.email)
-
-  setCookie(event, 'auth_token', tokens.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 15 * 60,
-    path: '/'
-  })
-
-  setCookie(event, 'refresh_token', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60,
-    path: '/'
-  })
+  setAuthCookies(event, tokens)
 
   await recordAuditLog(event, 'auth.2fa_verify', {
     userId: user.id,

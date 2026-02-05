@@ -6,6 +6,8 @@ export interface AuthUser {
   email: string
   name: string
   avatarUrl?: string | null
+  /** Whether the user has two-factor authentication enabled. */
+  twoFactorEnabled?: boolean
 }
 
 /**

@@ -1,8 +1,8 @@
 import { existsSync } from 'fs'
 import { join } from 'path'
 import { eq, desc, and, inArray } from 'drizzle-orm'
-import { entries, tenants } from '~~/server/database/schema'
-import { decryptData, deriveTenantKey } from '~~/server/utils/crypto'
+import { entries } from '~~/server/database/schema'
+import { decryptData, getTenantEncryptionKey } from '~~/server/utils/crypto'
 import { getStorageDriver } from '~~/server/utils/storage-driver'
 import { processBase64Upload } from '~~/server/utils/upload'
 import type { EntryStatus, GuestEntry } from '~~/server/types/guest'
@@ -312,27 +312,6 @@ export function getPhotoMimeType(filename: string): string {
     default:
       return 'application/octet-stream'
   }
-}
-
-/**
- * Retrieves the tenant's encryption key by looking up their salt from the DB.
- * Uses the non-RLS db since we need tenant data regardless of context.
- *
- * @param tenantId - The tenant ID.
- * @returns The derived 32-byte tenant encryption key.
- */
-async function getTenantEncryptionKey(tenantId: string): Promise<Buffer> {
-  const db = useDrizzle()
-  const rows = await db.select({ encryptionSalt: tenants.encryptionSalt })
-    .from(tenants)
-    .where(eq(tenants.id, tenantId))
-  const tenant = rows[0]
-
-  if (!tenant?.encryptionSalt) {
-    throw new Error(`Tenant ${tenantId} has no encryption salt configured`)
-  }
-
-  return deriveTenantKey(tenant.encryptionSalt)
 }
 
 /**

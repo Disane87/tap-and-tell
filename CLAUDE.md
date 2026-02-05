@@ -18,7 +18,7 @@ Tap & Tell is an NFC-enabled digital guestbook application built with Nuxt 3. Gu
 | Database | PostgreSQL 16+ with Row-Level Security (RLS) |
 | ORM | Drizzle ORM (`drizzle-orm/node-postgres`) |
 | Auth | JWT via jose (HTTP-only cookies, access + refresh tokens) |
-| 2FA | TOTP (RFC 6238) + Email OTP, mandatory for admin access |
+| 2FA | TOTP (RFC 6238) + Email OTP, mandatory for admin access (skipped in dev mode) |
 | Encryption | AES-256-GCM per-tenant photo encryption (HKDF-SHA256) |
 | i18n | @nuxtjs/i18n v10 |
 | PWA | @vite-pwa/nuxt |

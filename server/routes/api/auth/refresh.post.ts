@@ -1,4 +1,4 @@
-import { refreshSession } from '~~/server/utils/session'
+import { refreshSession, setAuthCookies } from '~~/server/utils/session'
 
 /**
  * POST /api/auth/refresh
@@ -19,21 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Invalid or expired refresh token' })
   }
 
-  setCookie(event, 'auth_token', tokens.accessToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 15 * 60, // 15 minutes
-    path: '/'
-  })
-
-  setCookie(event, 'refresh_token', tokens.refreshToken, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-    path: '/'
-  })
+  setAuthCookies(event, tokens)
 
   return { success: true }
 })

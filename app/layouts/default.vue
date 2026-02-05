@@ -71,6 +71,11 @@ function isActive(path: string): boolean {
       </div>
     </header>
 
+    <!-- 2FA Required Dialog (blocks user until 2FA is set up) -->
+    <ClientOnly>
+      <TwoFactorRequiredDialog />
+    </ClientOnly>
+
     <!-- Main content -->
     <main>
       <slot />
