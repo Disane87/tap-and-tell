@@ -85,9 +85,9 @@ describe('useAuth', () => {
 
     it('returns 2fa when 2FA is required', async () => {
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-123',
-        twoFactorMethod: 'totp'
+        data: { token: 'temp-token-123', method: 'totp' }
       })
 
       const { login } = useAuth()
@@ -98,9 +98,9 @@ describe('useAuth', () => {
 
     it('sets 2FA state when required', async () => {
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-123',
-        twoFactorMethod: 'totp'
+        data: { token: 'temp-token-123', method: 'totp' }
       })
 
       const { login, twoFactorToken, twoFactorMethod } = useAuth()
@@ -199,9 +199,9 @@ describe('useAuth', () => {
     it('calls verify endpoint with token and code', async () => {
       // Set up 2FA state first
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-abc',
-        twoFactorMethod: 'totp'
+        data: { token: 'temp-token-abc', method: 'totp' }
       })
       const { login, verify2fa } = useAuth()
       await login({ email: 'test@example.com', password: 'password123' })
@@ -219,9 +219,9 @@ describe('useAuth', () => {
     it('returns true and sets user when verification succeeds', async () => {
       // Set up 2FA state first
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-abc',
-        twoFactorMethod: 'totp'
+        data: { token: 'temp-token-abc', method: 'totp' }
       })
       const { login, verify2fa, user, twoFactorToken, twoFactorMethod } = useAuth()
       await login({ email: 'test@example.com', password: 'password123' })
@@ -240,9 +240,9 @@ describe('useAuth', () => {
     it('returns false when API returns success: false', async () => {
       // Set up 2FA state first
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-abc',
-        twoFactorMethod: 'totp'
+        data: { token: 'temp-token-abc', method: 'totp' }
       })
       const { login, verify2fa } = useAuth()
       await login({ email: 'test@example.com', password: 'password123' })
@@ -257,9 +257,9 @@ describe('useAuth', () => {
     it('returns false on network error', async () => {
       // Set up 2FA state first
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-abc',
-        twoFactorMethod: 'totp'
+        data: { token: 'temp-token-abc', method: 'totp' }
       })
       const { login, verify2fa } = useAuth()
       await login({ email: 'test@example.com', password: 'password123' })
@@ -276,9 +276,9 @@ describe('useAuth', () => {
     it('clears 2FA state', async () => {
       // Set up 2FA state
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-xyz',
-        twoFactorMethod: 'email'
+        data: { token: 'temp-token-xyz', method: 'email' }
       })
       const { login, clear2fa, twoFactorToken, twoFactorMethod } = useAuth()
       await login({ email: 'test@example.com', password: 'password123' })
@@ -634,9 +634,9 @@ describe('useAuth', () => {
     it('calls resend endpoint and returns true on success', async () => {
       // Set up 2FA state first
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-abc',
-        twoFactorMethod: 'email'
+        data: { token: 'temp-token-abc', method: 'email' }
       })
       const { login, resend2faCode } = useAuth()
       await login({ email: 'test@example.com', password: 'password123' })
@@ -655,9 +655,9 @@ describe('useAuth', () => {
     it('returns false on network error', async () => {
       // Set up 2FA state first
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-abc',
-        twoFactorMethod: 'email'
+        data: { token: 'temp-token-abc', method: 'email' }
       })
       const { login, resend2faCode } = useAuth()
       await login({ email: 'test@example.com', password: 'password123' })
@@ -673,9 +673,10 @@ describe('useAuth', () => {
   describe('login - 2FA method defaults', () => {
     it('defaults twoFactorMethod to totp when not provided', async () => {
       mockFetch.mockResolvedValueOnce({
+        success: true,
         requires2fa: true,
-        twoFactorToken: 'temp-token-123'
-        // Note: twoFactorMethod is intentionally not provided
+        data: { token: 'temp-token-123' }
+        // Note: method is intentionally not provided in data
       })
 
       const { login, twoFactorMethod } = useAuth()
