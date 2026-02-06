@@ -8,7 +8,7 @@ import { recordAuditLog } from '~~/server/utils/audit'
  * Updates the current user's name and/or email.
  *
  * @body {{ name?: string, email?: string }}
- * @returns {{ success: boolean, data: { id, email, name, avatarUrl } }}
+ * @returns {{ success: boolean, data: { id, email, name, avatarUrl, twoFactorEnabled } }}
  */
 export default defineEventHandler(async (event) => {
   const user = event.context.user
@@ -72,5 +72,11 @@ export default defineEventHandler(async (event) => {
     details: { fields: Object.keys(updates).filter(k => k !== 'updatedAt') }
   })
 
-  return { success: true, data: updated[0] }
+  return {
+    success: true,
+    data: {
+      ...updated[0],
+      twoFactorEnabled: user.twoFactorEnabled ?? false
+    }
+  }
 })

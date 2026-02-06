@@ -147,6 +147,7 @@ export default defineEventHandler(async (event) => {
       id,
       email,
       name,
+      twoFactorEnabled: false,
       betaParticipant: !!betaInvite,
       isFounder: betaInvite?.isFounder || false
     }
