@@ -122,7 +122,14 @@
       },
       "cta": "Auf die Warteliste",
       "hasInvite": "Hast du einen Einladungscode?",
-      "signIn": "Anmelden"
+      "signIn": "Anmelden",
+      "private": {
+        "badge": "Geschlossene Beta",
+        "title": "Wir sind aktuell in der geschlossenen Beta",
+        "description": "Tap & Tell befindet sich in einer Invite-Only Beta-Phase. Wenn du eine Einladung erhalten hast, melde dich an.",
+        "cta": "Mit Einladung anmelden",
+        "noInvite": "Noch keine Einladung? Bleib dran — wir öffnen bald."
+      }
     },
     "memories": {
       "badge": "Warum es wichtig ist",

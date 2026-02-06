@@ -1,56 +1,27 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-    <title>Tap &amp; Tell</title>
-    <desc>BIMI Logo - Digital Guestbook for meaningful moments</desc>
-
-    <defs>
-        <linearGradient id="emerald" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#10b981" />
-            <stop offset="100%" style="stop-color:#059669" />
-        </linearGradient>
-    </defs>
-
-    <!-- Background with soft rounding -->
-    <rect width="512" height="512" rx="96" fill="#171717" />
-
-    <!-- Outer glow circle -->
-    <circle cx="256" cy="256" r="200" fill="url(#emerald)" opacity="0.08" />
-    <circle cx="256" cy="256" r="200" fill="none" stroke="url(#emerald)" stroke-width="3" opacity="0.2" />
-
-    <!-- NFC waves (larger, more prominent) -->
-    <path d="M 330 140 Q 380 140 380 230" stroke="url(#emerald)" stroke-width="16" fill="none" stroke-linecap="round"
-        opacity="0.7" />
-    <path d="M 360 110 Q 430 110 430 230" stroke="url(#emerald)" stroke-width="14" fill="none" stroke-linecap="round"
-        opacity="0.5" />
-    <path d="M 390 80 Q 480 80 480 230" stroke="url(#emerald)" stroke-width="12" fill="none" stroke-linecap="round"
-        opacity="0.3" />
-
-    <!-- Hand/Touch gesture (main icon) -->
-    <g>
-        <!-- Touch point -->
-        <circle cx="170" cy="230" r="28" fill="url(#emerald)" />
-        <circle cx="170" cy="230" r="22" fill="#059669" />
-
-        <!-- Fingers -->
-        <rect x="130" y="190" width="80" height="110" rx="40" fill="url(#emerald)" />
-        <rect x="185" y="210" width="60" height="130" rx="30" fill="#059669" opacity="0.9" />
-        <rect x="225" y="225" width="55" height="115" rx="27.5" fill="#047857" opacity="0.7" />
-
-        <!-- Palm -->
-        <path d="M 170 300 L 170 360 Q 170 385 190 385 L 250 385 Q 270 385 270 360 L 270 300" fill="url(#emerald)"
-            stroke="url(#emerald)" stroke-width="12" stroke-linejoin="round" />
-    </g>
-
-    <!-- Decorative sparkles/hearts -->
-    <path d="M 90 150 L 100 170 L 120 180 L 100 190 L 90 210 L 80 190 L 60 180 L 80 170 Z" fill="#10b981"
-        opacity="0.6" />
-    <path d="M 360 320 L 370 340 L 390 350 L 370 360 L 360 380 L 350 360 L 330 350 L 350 340 Z" fill="#10b981"
-        opacity="0.5" />
-    <circle cx="120" cy="340" r="14" fill="#10b981" opacity="0.4" />
-    <circle cx="380" cy="180" r="12" fill="#10b981" opacity="0.35" />
-
-    <!-- Subtle heart for emotional connection -->
-    <path
-        d="M 256 420 C 256 420 210 395 210 365 C 210 345 225 335 240 335 C 248 335 256 340 256 340 C 256 340 264 335 272 335 C 287 335 302 345 302 365 C 302 395 256 420 256 420 Z"
-        fill="#10b981" opacity="0.25" />
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<svg version="1.2" baseProfile="tiny-ps" viewBox="0 0 512 512" width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <title>bimi-svg-tiny-12-ps</title>
+  <desc>BIMI Logo - Digital Guestbook for meaningful moments</desc>
+  <defs>
+    <linearGradient id="emerald" x1="0%" y1="0%" x2="100%" y2="100%"/>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="#171717"/>
+  <circle cx="256" cy="256" r="200" fill="url(#emerald)"/>
+  <circle cx="256" cy="256" r="200" fill="none" stroke="url(#emerald)" stroke-width="3"/>
+  <circle cx="120" cy="340" r="14" fill="#10b981"/>
+  <circle cx="380" cy="180" r="12" fill="#10b981"/>
+  <path d="M 330 140 Q 380 140 380 230" stroke="url(#emerald)" stroke-width="16" fill="none" stroke-linecap="round"/>
+  <path d="M 360 110 Q 430 110 430 230" stroke="url(#emerald)" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <path d="M 390 80 Q 480 80 480 230" stroke="url(#emerald)" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <path d="M 90 150 L 100 170 L 120 180 L 100 190 L 90 210 L 80 190 L 60 180 L 80 170 Z" fill="#10b981"/>
+  <path d="M 360 320 L 370 340 L 390 350 L 370 360 L 360 380 L 350 360 L 330 350 L 350 340 Z" fill="#10b981"/>
+  <path d="M 256 420 C 256 420 210 395 210 365 C 210 345 225 335 240 335 C 248 335 256 340 256 340 C 256 340 264 335 272 335 C 287 335 302 345 302 365 C 302 395 256 420 256 420 Z" fill="#10b981"/>
+  <g>
+    <circle cx="170" cy="230" r="28" fill="url(#emerald)"/>
+    <circle cx="170" cy="230" r="22" fill="#059669"/>
+    <rect x="130" y="190" width="80" height="110" rx="40" fill="url(#emerald)"/>
+    <rect x="185" y="210" width="60" height="130" rx="30" fill="#059669"/>
+    <rect x="225" y="225" width="55" height="115" rx="27.5" fill="#047857"/>
+    <path d="M 170 300 L 170 360 Q 170 385 190 385 L 250 385 Q 270 385 270 360 L 270 300" fill="url(#emerald)" stroke="url(#emerald)" stroke-width="12" stroke-linejoin="round"/>
+  </g>
 </svg>
