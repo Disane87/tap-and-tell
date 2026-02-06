@@ -263,15 +263,19 @@ function setTab(tab: SettingsTab): void {
               :key="index"
               class="flex items-center gap-2"
             >
-              <select
-                :value="link.platform"
-                class="h-9 rounded-lg border border-input bg-background px-2 text-sm"
-                @change="localSettings.socialLinks![index].platform = ($event.target as HTMLSelectElement).value as SocialLink['platform']"
+              <Select
+                :model-value="link.platform"
+                @update:model-value="(val: string) => localSettings.socialLinks![index].platform = val as SocialLink['platform']"
               >
-                <option v-for="p in socialPlatforms" :key="p.value" :value="p.value">
-                  {{ p.label }}
-                </option>
-              </select>
+                <SelectTrigger class="h-9 w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="p in socialPlatforms" :key="p.value" :value="p.value">
+                    {{ p.label }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
               <Input
                 :model-value="link.url"
                 :placeholder="t('settings.footer.urlPlaceholder')"
@@ -393,13 +397,13 @@ function setTab(tab: SettingsTab): void {
           <Label class="text-sm font-medium">{{ t('settings.cardOpacity.label') }}</Label>
           <p class="text-xs text-muted-foreground">{{ t('settings.cardOpacity.description') }}</p>
           <div class="flex items-center gap-3">
-            <input
-              type="range"
-              min="0"
-              max="100"
-              :value="localSettings.cardOpacity ?? 70"
-              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
-              @input="(e: Event) => localSettings.cardOpacity = Number((e.target as HTMLInputElement).value)"
+            <Slider
+              :model-value="[localSettings.cardOpacity ?? 70]"
+              :min="0"
+              :max="100"
+              :step="1"
+              class="w-full"
+              @update:model-value="(val: number[]) => localSettings.cardOpacity = val[0]"
             />
             <span class="w-10 text-right text-sm text-muted-foreground">{{ localSettings.cardOpacity ?? 70 }}%</span>
           </div>
@@ -408,13 +412,13 @@ function setTab(tab: SettingsTab): void {
           <Label class="text-sm font-medium">{{ t('settings.cardBlur.label') }}</Label>
           <p class="text-xs text-muted-foreground">{{ t('settings.cardBlur.description') }}</p>
           <div class="flex items-center gap-3">
-            <input
-              type="range"
-              min="0"
-              max="30"
-              :value="localSettings.cardBlur ?? 20"
-              class="h-2 w-full cursor-pointer appearance-none rounded-lg bg-muted accent-primary"
-              @input="(e: Event) => localSettings.cardBlur = Number((e.target as HTMLInputElement).value)"
+            <Slider
+              :model-value="[localSettings.cardBlur ?? 20]"
+              :min="0"
+              :max="30"
+              :step="1"
+              class="w-full"
+              @update:model-value="(val: number[]) => localSettings.cardBlur = val[0]"
             />
             <span class="w-10 text-right text-sm text-muted-foreground">{{ localSettings.cardBlur ?? 20 }}px</span>
           </div>
