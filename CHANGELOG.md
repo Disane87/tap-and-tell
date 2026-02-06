@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.0](https://github.com/Disane87/tap-and-tell/compare/v1.17.0...v1.18.0) (2026-02-06)
+
+
+### ✨ Features
+
+* implement site title template and enhance beta mode handling ([7562780](https://github.com/Disane87/tap-and-tell/commit/7562780da55d72059b308ca51c6599cb712e1883))
+
 ## [1.17.0](https://github.com/Disane87/tap-and-tell/compare/v1.16.0...v1.17.0) (2026-02-06)
 
 
