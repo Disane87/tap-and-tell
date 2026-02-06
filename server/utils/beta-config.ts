@@ -1,17 +1,38 @@
 import type { BetaMode } from '~~/server/database/schema'
 
 /**
- * Returns the current beta mode from environment configuration.
- * Defaults to 'private' in production if not set.
+ * In-memory runtime override for beta mode.
+ * Set by the SaaS layer on startup (from saas_config table)
+ * and when the admin changes the config via the UI.
+ * Falls back to process.env.BETA_MODE if not set.
+ */
+let runtimeBetaMode: BetaMode | null = null
+
+/**
+ * Sets the in-memory beta mode override.
+ * Called by SaaS layer startup plugin and admin config PUT handler.
+ */
+export function setBetaMode(mode: BetaMode): void {
+  runtimeBetaMode = mode
+}
+
+/**
+ * Returns the current beta mode.
+ * Priority: runtime override (from DB) > environment variable > default.
  */
 export function getBetaMode(): BetaMode {
-  const mode = process.env.BETA_MODE as BetaMode | undefined
+  // 1. Runtime override (set from saas_config table)
+  if (runtimeBetaMode) {
+    return runtimeBetaMode
+  }
 
+  // 2. Environment variable
+  const mode = process.env.BETA_MODE as BetaMode | undefined
   if (mode && ['private', 'waitlist', 'open'].includes(mode)) {
     return mode
   }
 
-  // Default to 'private' in production, 'open' in development
+  // 3. Default: 'private' in production, 'open' in development
   return process.env.NODE_ENV === 'production' ? 'private' : 'open'
 }
 
