@@ -97,23 +97,23 @@ export function useAuth() {
     try {
       const response = await $fetch<{
         success: boolean
-        data?: AuthUser
+        data?: AuthUser | { token: string, method: 'totp' | 'email' }
         requires2fa?: boolean
-        twoFactorToken?: string
-        twoFactorMethod?: 'totp' | 'email'
       }>('/api/auth/login', {
         method: 'POST',
         body: credentials
       })
 
-      if (response.requires2fa && response.twoFactorToken) {
-        twoFactorToken.value = response.twoFactorToken
-        twoFactorMethod.value = response.twoFactorMethod ?? 'totp'
+      if (response.requires2fa && response.data && 'token' in response.data) {
+        twoFactorToken.value = response.data.token
+        twoFactorMethod.value = response.data.method ?? 'totp'
         return '2fa'
       }
 
       if (response.success && response.data) {
         user.value = response.data
+        // Refresh to get full user data (avatarUrl, twoFactorEnabled, etc.)
+        await refreshUser()
         return 'success'
       }
       return 'error'
@@ -145,6 +145,8 @@ export function useAuth() {
         user.value = response.data
         twoFactorToken.value = null
         twoFactorMethod.value = null
+        // Refresh to get full user data (avatarUrl, twoFactorEnabled, etc.)
+        await refreshUser()
         return true
       }
       return false

@@ -90,7 +90,8 @@ export default defineEventHandler(async (event) => {
     data: {
       id: user.id,
       email: user.email,
-      name: user.name
+      name: user.name,
+      twoFactorEnabled: true
     }
   }
 })
