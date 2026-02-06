@@ -1,7 +1,6 @@
 import { eq, desc, and } from 'drizzle-orm'
 import { waitlist } from '~~/server/database/schema'
 import { createBetaInvite } from '~~/server/utils/beta'
-import { sendBetaInviteEmail } from '~~/server/utils/email'
 
 interface InviteFromWaitlistBody {
   /** Number of top entries to invite (by priority). */
@@ -118,15 +117,29 @@ export default defineEventHandler(async (event) => {
         waitlistId: entry.id
       })
 
-      // Send email unless disabled
+      // Send email unless disabled — use stored locale from waitlist entry
       if (body.sendEmails !== false) {
         try {
-          await sendBetaInviteEmail({
-            to: entry.email,
-            token: invite.token,
-            expiresAt: invite.expiresAt,
-            isFounder: invite.isFounder
-          })
+          const entryLocale = entry.locale || 'en'
+          const dateLocale = entryLocale === 'de' ? 'de-DE' : 'en-US'
+          const siteUrl = process.env.PUBLIC_URL || 'https://tap-and-tell.app'
+          const inviteUrl = `${siteUrl}/register?token=${invite.token}`
+
+          await sendTemplateEmail(
+            'beta_invite',
+            entry.email,
+            {
+              inviteUrl,
+              plan: (body.grantedPlan || 'pro').toUpperCase(),
+              expiresAt: invite.expiresAt.toLocaleDateString(dateLocale),
+              appName: 'Tap & Tell'
+            },
+            {
+              locale: entryLocale,
+              category: 'invite',
+              metadata: { waitlistId: entry.id }
+            }
+          )
           results.emailsSent++
         } catch {
           results.emailsFailed++

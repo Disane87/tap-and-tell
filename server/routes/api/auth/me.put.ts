@@ -7,8 +7,8 @@ import { recordAuditLog } from '~~/server/utils/audit'
  * PUT /api/auth/me
  * Updates the current user's name and/or email.
  *
- * @body {{ name?: string, email?: string }}
- * @returns {{ success: boolean, data: { id, email, name, avatarUrl, twoFactorEnabled } }}
+ * @body {{ name?: string, email?: string, locale?: string }}
+ * @returns {{ success: boolean, data: { id, email, name, avatarUrl, locale, twoFactorEnabled } }}
  */
 export default defineEventHandler(async (event) => {
   const user = event.context.user
@@ -16,9 +16,9 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Not authenticated' })
   }
 
-  const body = await readBody<{ name?: string; email?: string }>(event)
-  if (!body || (!body.name && !body.email)) {
-    throw createError({ statusCode: 400, message: 'Name or email required' })
+  const body = await readBody<{ name?: string; email?: string; locale?: string }>(event)
+  if (!body || (!body.name && !body.email && !body.locale)) {
+    throw createError({ statusCode: 400, message: 'Name, email or locale required' })
   }
 
   const updates: Record<string, unknown> = {
@@ -50,6 +50,14 @@ export default defineEventHandler(async (event) => {
     updates.email = email
   }
 
+  if (body.locale !== undefined) {
+    const locale = body.locale.trim().toLowerCase()
+    if (!['en', 'de'].includes(locale)) {
+      throw createError({ statusCode: 400, message: 'Locale must be "en" or "de"' })
+    }
+    updates.locale = locale
+  }
+
   const db = useDrizzle()
   const updated = await db.update(users)
     .set(updates)
@@ -58,7 +66,8 @@ export default defineEventHandler(async (event) => {
       id: users.id,
       email: users.email,
       name: users.name,
-      avatarUrl: users.avatarUrl
+      avatarUrl: users.avatarUrl,
+      locale: users.locale
     })
 
   if (!updated.length) {

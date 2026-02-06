@@ -291,7 +291,7 @@ onMounted(async () => {
 <template>
   <div class="mx-auto max-w-4xl px-4 py-8">
     <!-- Header -->
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="font-display text-2xl font-semibold text-foreground">
           {{ guestbookInfo?.name || $t('admin.title') }}
@@ -300,48 +300,49 @@ onMounted(async () => {
           {{ entries.length }} {{ entries.length === 1 ? $t('common.entry') : $t('common.entries') }}
         </p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <NuxtLink :to="`/g/${guestbookId}`" target="_blank">
           <Button
             variant="outline"
             size="sm"
-            class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
+            class="gap-1.5 rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
           >
-            <Eye class="mr-2 h-4 w-4" />
-            {{ $t('dashboard.viewGuestbook') }}
+            <Eye class="h-4 w-4" />
+            <span class="hidden sm:inline">{{ $t('dashboard.viewGuestbook') }}</span>
           </Button>
         </NuxtLink>
         <Button
           variant="outline"
           size="sm"
-          class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
+          class="gap-1.5 rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
           @click="showSettings = true"
         >
-          <Settings class="mr-2 h-4 w-4" />
-          {{ $t('settings.title') }}
+          <Settings class="h-4 w-4" />
+          <span class="hidden sm:inline">{{ $t('settings.title') }}</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
-          class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
+          class="gap-1.5 rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
           @click="showQrCode = true"
         >
-          <QrCode class="mr-2 h-4 w-4" />
-          {{ $t('admin.qr.title') }}
+          <QrCode class="h-4 w-4" />
+          <span class="hidden sm:inline">{{ $t('admin.qr.title') }}</span>
         </Button>
         <NuxtLink :to="`/g/${guestbookId}/analytics`">
           <Button
             variant="outline"
             size="sm"
-            class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
+            class="gap-1.5 rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50"
           >
-            <BarChart3 class="mr-2 h-4 w-4" />
-            {{ $t('analytics.title') }}
+            <BarChart3 class="h-4 w-4" />
+            <span class="hidden sm:inline">{{ $t('analytics.title') }}</span>
           </Button>
         </NuxtLink>
         <NuxtLink to="/dashboard">
-          <Button variant="outline" size="sm" class="rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50">
-            {{ $t('common.back') }}
+          <Button variant="outline" size="sm" class="gap-1.5 rounded-xl border-border/20 backdrop-blur-md hover:bg-muted/50">
+            <span class="hidden sm:inline">{{ $t('common.back') }}</span>
+            <span class="sm:hidden">←</span>
           </Button>
         </NuxtLink>
       </div>

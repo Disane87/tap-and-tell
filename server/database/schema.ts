@@ -22,6 +22,8 @@ export const users = pgTable('users', {
   betaParticipant: boolean('beta_participant').notNull().default(false),
   /** Whether this user has admin privileges. */
   isAdmin: boolean('is_admin').notNull().default(false),
+  /** Preferred locale (e.g. 'en', 'de'). Detected at registration or set by user. */
+  locale: varchar('locale', { length: 5 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow()
 })
@@ -294,6 +296,8 @@ export const betaInvites = pgTable('beta_invites', {
   revokedReason: text('revoked_reason'),
   /** Admin user ID who created this invite. */
   createdBy: varchar('created_by', { length: 24 }),
+  /** Preferred locale for invite emails (e.g. 'en', 'de'). */
+  locale: varchar('locale', { length: 5 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => [
   index('idx_beta_invites_token').on(table.token),
@@ -324,6 +328,8 @@ export const waitlist = pgTable('waitlist', {
   priority: integer('priority').notNull().default(0),
   /** Current status: waiting, invited, registered, unsubscribed. */
   status: text('status').notNull().default('waiting'),
+  /** Browser locale detected at signup (e.g. 'en', 'de'). */
+  locale: varchar('locale', { length: 5 }),
   /** When this entry was invited (beta invite created). */
   invitedAt: timestamp('invited_at', { withTimezone: true }),
   /** When this entry completed registration. */

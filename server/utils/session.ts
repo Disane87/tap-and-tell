@@ -56,6 +56,7 @@ export async function validateAccessToken(token: string) {
     name: users.name,
     avatarUrl: users.avatarUrl,
     isAdmin: users.isAdmin,
+    locale: users.locale,
     twoFactorEnabled: userTwoFactor.enabled
   })
     .from(users)
@@ -77,6 +78,7 @@ export async function validateAccessToken(token: string) {
     name: row.name,
     avatarUrl: row.avatarUrl,
     isAdmin: row.isAdmin,
+    locale: row.locale,
     twoFactorEnabled: row.twoFactorEnabled === 'true'
   }
 }
@@ -119,6 +121,7 @@ export async function validateSession(token: string) {
     name: users.name,
     avatarUrl: users.avatarUrl,
     isAdmin: users.isAdmin,
+    locale: users.locale,
     twoFactorEnabled: userTwoFactor.enabled
   })
     .from(users)
@@ -140,6 +143,7 @@ export async function validateSession(token: string) {
     name: row.name,
     avatarUrl: row.avatarUrl,
     isAdmin: row.isAdmin,
+    locale: row.locale,
     twoFactorEnabled: row.twoFactorEnabled === 'true'
   }
 }

@@ -76,18 +76,21 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  // Detect locale from browser Accept-Language header
+  const locale = detectLocaleFromHeader(event)
+
   const result = await joinWaitlist({
     email,
     name: body.name,
     useCase: body.useCase,
     source: body.source || 'organic',
-    referralCode: body.referralCode
+    referralCode: body.referralCode,
+    locale
   })
 
   // Send confirmation email (non-blocking, only for new signups)
   if (!result.alreadyExists) {
     try {
-      const locale = detectLocaleFromHeader(event)
       const siteUrl = process.env.PUBLIC_URL || useRuntimeConfig().public?.siteUrl || 'https://localhost:3000'
       const referralLink = `${siteUrl}/?ref=${result.referralCode}`
 

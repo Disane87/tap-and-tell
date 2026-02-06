@@ -27,6 +27,8 @@ export interface RegisterData {
   name: string
   /** Beta invite token for invite-only registration. */
   betaToken?: string
+  /** User's preferred locale (e.g. 'en', 'de'). */
+  locale?: string
 }
 
 /**

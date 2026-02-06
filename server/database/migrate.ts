@@ -64,6 +64,9 @@ export async function runMigrations(connectionString: string): Promise<void> {
       ALTER TABLE users ADD COLUMN IF NOT EXISTS beta_participant BOOLEAN NOT NULL DEFAULT false;
       ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT false;
 
+      -- Locale tracking
+      ALTER TABLE users ADD COLUMN IF NOT EXISTS locale VARCHAR(5);
+
       -- Beta access: tenant plan management
       ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plan_expires_at TIMESTAMPTZ;
       ALTER TABLE tenants ADD COLUMN IF NOT EXISTS plan_granted_reason TEXT;
@@ -217,6 +220,7 @@ export async function runMigrations(connectionString: string): Promise<void> {
       ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ;
       ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS revoked_reason TEXT;
       ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS created_by VARCHAR(24);
+      ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS locale VARCHAR(5);
 
       -- Waitlist for public beta signup
       CREATE TABLE IF NOT EXISTS waitlist (
@@ -239,6 +243,7 @@ export async function runMigrations(connectionString: string): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_waitlist_referral_code ON waitlist(referral_code);
       CREATE INDEX IF NOT EXISTS idx_waitlist_status ON waitlist(status);
       CREATE INDEX IF NOT EXISTS idx_waitlist_priority ON waitlist(priority);
+      ALTER TABLE waitlist ADD COLUMN IF NOT EXISTS locale VARCHAR(5);
 
       -- ══════════════════════════════════════════════════════════════════════════
       -- ANALYTICS TABLES

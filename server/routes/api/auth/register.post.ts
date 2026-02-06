@@ -10,6 +10,7 @@ interface RegisterBody {
   password: string
   name: string
   betaToken?: string
+  locale?: string
 }
 
 /**
@@ -94,12 +95,17 @@ export default defineEventHandler(async (event) => {
   const id = generateId()
   const passwordHash = await hashPassword(body.password)
 
+  // Determine locale: invite locale > body locale > detected from header
+  const detectedLocale = detectLocaleFromHeader(event)
+  const userLocale = betaInvite?.locale || body.locale || detectedLocale || 'en'
+
   // Create user with beta flags if applicable
   await db.insert(users).values({
     id,
     email,
     passwordHash,
     name,
+    locale: userLocale,
     betaInviteId: betaInvite?.id || null,
     betaParticipant: !!betaInvite,
     isFounder: betaInvite?.isFounder || false
