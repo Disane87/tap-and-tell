@@ -1,14 +1,40 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
-  <!-- Apple Touch Icon - 180x180 -->
-  <rect width="180" height="180" rx="22" fill="#18181b"/>
-  <g fill="#ffffff" transform="translate(0, 0) scale(0.35)">
-    <!-- T letter -->
-    <rect x="96" y="128" width="140" height="24" rx="4"/>
-    <rect x="152" y="128" width="28" height="160" rx="4"/>
-    <!-- & symbol -->
-    <path d="M280 240c-20-20-20-52 0-72s52-20 72 0c10 10 15 22 15 36h-24c0-8-3-16-9-22-12-12-32-12-44 0s-12 32 0 44l52 52c12-12 18-28 18-44h24c0 22-10 44-28 62l28 28-17 17-28-28c-20 20-52 20-72 0s-20-52 0-72l33-33zm17 17l-33 33c-12 12-12 32 0 44s32 12 44 0l-11-11z"/>
-    <!-- T letter small -->
-    <rect x="376" y="192" width="80" height="20" rx="4"/>
-    <rect x="404" y="192" width="24" height="96" rx="4"/>
+  <defs>
+    <linearGradient id="emeraldApple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981" />
+      <stop offset="100%" style="stop-color:#059669" />
+    </linearGradient>
+    <filter id="appleShadow">
+      <feGaussianBlur stdDeviation="3" />
+      <feOffset dx="0" dy="2" result="offsetblur" />
+      <feMerge>
+        <feMergeNode />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- iOS requires no transparency, solid background -->
+  <rect width="180" height="180" fill="#171717" />
+
+  <!-- Content centered -->
+  <g transform="translate(90, 90)" filter="url(#appleShadow)">
+    <!-- NFC waves -->
+    <path d="M 30 -40 Q 55 -40 55 0" stroke="url(#emeraldApple)" stroke-width="7" fill="none" stroke-linecap="round"
+      opacity="0.75" />
+    <path d="M 45 -55 Q 75 -55 75 0" stroke="url(#emeraldApple)" stroke-width="6" fill="none" stroke-linecap="round"
+      opacity="0.5" />
+
+    <!-- Hand -->
+    <circle cx="-30" cy="0" r="10" fill="url(#emeraldApple)" />
+    <rect x="-48" y="-18" width="36" height="54" rx="18" fill="url(#emeraldApple)" />
+    <rect x="-22" y="-10" width="27" height="63" rx="13.5" fill="#059669" opacity="0.85" />
+    <rect x="-5" y="-5" width="23" height="57" rx="11.5" fill="#047857" opacity="0.65" />
+    <path d="M -30 36 L -30 56 Q -30 64 -22 64 L 0 64 Q 8 64 8 56 L 8 36" fill="url(#emeraldApple)"
+      stroke="url(#emeraldApple)" stroke-width="5" />
+
+    <!-- Sparkles -->
+    <circle cx="-50" cy="40" r="5" fill="#10b981" opacity="0.5" />
+    <circle cx="50" cy="25" r="4" fill="#10b981" opacity="0.4" />
   </g>
 </svg>

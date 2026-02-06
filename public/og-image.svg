@@ -1,44 +1,77 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
-  <!-- OpenGraph Image for Social Media Sharing - 1200x630 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
   <defs>
-    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#18181b"/>
-      <stop offset="100%" style="stop-color:#27272a"/>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0a" />
+      <stop offset="100%" style="stop-color:#171717" />
     </linearGradient>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+    <linearGradient id="emeraldOg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981" />
+      <stop offset="100%" style="stop-color:#059669" />
+    </linearGradient>
+    <filter id="ogGlow">
+      <feGaussianBlur stdDeviation="12" result="coloredBlur" />
       <feMerge>
-        <feMergeNode in="coloredBlur"/>
-        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="SourceGraphic" />
       </feMerge>
     </filter>
   </defs>
 
   <!-- Background -->
-  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+  <rect width="1200" height="630" fill="url(#bgGrad)" />
 
-  <!-- Decorative circles -->
-  <circle cx="100" cy="100" r="200" fill="#6366f1" opacity="0.1"/>
-  <circle cx="1100" cy="530" r="250" fill="#8b5cf6" opacity="0.1"/>
+  <!-- Decorative elements -->
+  <circle cx="200" cy="150" r="120" fill="#10b981" opacity="0.03" />
+  <circle cx="1000" cy="480" r="150" fill="#10b981" opacity="0.05" />
 
-  <!-- Logo centered -->
-  <g transform="translate(450, 165)">
-    <rect width="300" height="300" rx="40" fill="#18181b" stroke="#3f3f46" stroke-width="2"/>
-    <g fill="#ffffff" transform="translate(30, 30) scale(0.47)">
-      <!-- T letter -->
-      <rect x="96" y="128" width="140" height="24" rx="4"/>
-      <rect x="152" y="128" width="28" height="160" rx="4"/>
-      <!-- & symbol -->
-      <path d="M280 240c-20-20-20-52 0-72s52-20 72 0c10 10 15 22 15 36h-24c0-8-3-16-9-22-12-12-32-12-44 0s-12 32 0 44l52 52c12-12 18-28 18-44h24c0 22-10 44-28 62l28 28-17 17-28-28c-20 20-52 20-72 0s-20-52 0-72l33-33zm17 17l-33 33c-12 12-12 32 0 44s32 12 44 0l-11-11z"/>
-      <!-- T letter small -->
-      <rect x="376" y="192" width="80" height="20" rx="4"/>
-      <rect x="404" y="192" width="24" height="96" rx="4"/>
-    </g>
+  <!-- Main icon (left side) -->
+  <g transform="translate(150, 165)" filter="url(#ogGlow)">
+    <!-- NFC waves -->
+    <path d="M 120 -30 Q 190 -30 190 80" stroke="url(#emeraldOg)" stroke-width="18" fill="none" stroke-linecap="round"
+      opacity="0.8" />
+    <path d="M 160 -65 Q 245 -65 245 80" stroke="url(#emeraldOg)" stroke-width="15" fill="none" stroke-linecap="round"
+      opacity="0.6" />
+    <path d="M 200 -100 Q 300 -100 300 80" stroke="url(#emeraldOg)" stroke-width="12" fill="none" stroke-linecap="round"
+      opacity="0.4" />
+
+    <!-- Hand -->
+    <circle cx="-30" cy="80" r="32" fill="url(#emeraldOg)" />
+    <rect x="-80" y="25" width="100" height="140" rx="50" fill="url(#emeraldOg)" />
+    <rect x="-5" y="50" width="75" height="160" rx="37.5" fill="#059669" opacity="0.85" />
+    <rect x="50" y="70" width="65" height="145" rx="32.5" fill="#047857" opacity="0.65" />
+    <path d="M -30 165 L -30 235 Q -30 265 -5 265 L 75 265 Q 100 265 100 235 L 100 165" fill="url(#emeraldOg)"
+      stroke="url(#emeraldOg)" stroke-width="14" stroke-linejoin="round" />
+
+    <!-- Sparkles -->
+    <path d="M -120 40 L -105 70 L -75 85 L -105 100 L -120 130 L -135 100 L -165 85 L -135 70 Z" fill="#10b981"
+      opacity="0.6" />
+    <circle cx="-100" cy="240" r="16" fill="#10b981" opacity="0.5" />
   </g>
 
-  <!-- App name -->
-  <text x="600" y="520" font-family="Inter, system-ui, sans-serif" font-size="48" font-weight="700" fill="#ffffff" text-anchor="middle" filter="url(#glow)">Tap &amp; Tell</text>
+  <!-- Text content (right side) -->
+  <g transform="translate(550, 0)">
+    <!-- Main title -->
+    <text x="0" y="220" font-family="DM Sans, sans-serif" font-size="96" font-weight="700" fill="#fafafa">
+      Tap <tspan fill="#a3a3a3">&amp;</tspan> Tell
+    </text>
 
-  <!-- Tagline -->
-  <text x="600" y="570" font-family="Inter, system-ui, sans-serif" font-size="24" font-weight="400" fill="#a1a1aa" text-anchor="middle">Digital Guestbook with NFC</text>
+    <!-- Subtitle -->
+    <text x="0" y="300" font-family="Caveat, cursive" font-size="52" fill="#10b981">
+      Share your story
+    </text>
+
+    <!-- Description -->
+    <text x="0" y="370" font-family="Inter, sans-serif" font-size="32" fill="#a3a3a3">
+      The digital guestbook for
+    </text>
+    <text x="0" y="420" font-family="Inter, sans-serif" font-size="32" fill="#a3a3a3">
+      meaningful moments
+    </text>
+  </g>
+
+  <!-- Bottom decorative sparkles -->
+  <circle cx="950" cy="550" r="10" fill="#10b981" opacity="0.4" />
+  <circle cx="1050" cy="520" r="8" fill="#10b981" opacity="0.35" />
+  <path d="M 850 560 L 855 570 L 865 575 L 855 580 L 850 590 L 845 580 L 835 575 L 845 570 Z" fill="#10b981"
+    opacity="0.45" />
 </svg>

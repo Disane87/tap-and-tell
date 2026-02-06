@@ -1,14 +1,38 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Maskable icon with safe zone padding (10% on each side = 80% safe zone) -->
-  <rect width="512" height="512" fill="#18181b"/>
-  <g fill="#ffffff" transform="translate(51.2, 51.2) scale(0.8)">
-    <!-- T letter -->
-    <rect x="96" y="128" width="140" height="24" rx="4"/>
-    <rect x="152" y="128" width="28" height="160" rx="4"/>
-    <!-- & symbol -->
-    <path d="M280 240c-20-20-20-52 0-72s52-20 72 0c10 10 15 22 15 36h-24c0-8-3-16-9-22-12-12-32-12-44 0s-12 32 0 44l52 52c12-12 18-28 18-44h24c0 22-10 44-28 62l28 28-17 17-28-28c-20 20-52 20-72 0s-20-52 0-72l33-33zm17 17l-33 33c-12 12-12 32 0 44s32 12 44 0l-11-11z"/>
-    <!-- T letter small -->
-    <rect x="376" y="192" width="80" height="20" rx="4"/>
-    <rect x="404" y="192" width="24" height="96" rx="4"/>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669" />
+      <stop offset="100%" style="stop-color:#047857" />
+    </linearGradient>
+    <linearGradient id="icon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff" />
+      <stop offset="100%" style="stop-color:#d1fae5" />
+    </linearGradient>
+  </defs>
+
+  <!-- Full bleed background for safe zone -->
+  <rect width="512" height="512" fill="url(#bg)" />
+
+  <!-- Central content (within safe zone) -->
+  <g transform="translate(256, 256)">
+    <!-- NFC waves -->
+    <path d="M 60 -100 Q 110 -100 110 -10" stroke="url(#icon)" stroke-width="12" fill="none" stroke-linecap="round"
+      opacity="0.8" />
+    <path d="M 90 -130 Q 150 -130 150 -10" stroke="url(#icon)" stroke-width="10" fill="none" stroke-linecap="round"
+      opacity="0.6" />
+    <path d="M 120 -160 Q 190 -160 190 -10" stroke="url(#icon)" stroke-width="8" fill="none" stroke-linecap="round"
+      opacity="0.4" />
+
+    <!-- Hand -->
+    <circle cx="-80" cy="-10" r="20" fill="url(#icon)" />
+    <rect x="-110" y="-45" width="60" height="90" rx="30" fill="url(#icon)" />
+    <rect x="-65" y="-28" width="48" height="105" rx="24" fill="url(#icon)" opacity="0.85" />
+    <rect x="-30" y="-15" width="40" height="95" rx="20" fill="url(#icon)" opacity="0.65" />
+    <path d="M -80 75 L -80 125 Q -80 145 -60 145 L -5 145 Q 15 145 15 125 L 15 75" fill="url(#icon)"
+      stroke="url(#icon)" stroke-width="8" />
+
+    <!-- Sparkles -->
+    <circle cx="-120" cy="80" r="8" fill="#ffffff" opacity="0.6" />
+    <circle cx="100" cy="60" r="6" fill="#ffffff" opacity="0.5" />
   </g>
 </svg>
