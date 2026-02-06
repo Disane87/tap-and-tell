@@ -87,7 +87,6 @@ export default defineEventHandler(async (event) => {
   // Send confirmation email (non-blocking, only for new signups)
   if (!result.alreadyExists) {
     try {
-      const { sendTemplateEmail, detectLocaleFromHeader } = await import('~~/layers/saas/server/utils/email-service')
       const locale = detectLocaleFromHeader(event)
       const siteUrl = process.env.PUBLIC_URL || useRuntimeConfig().public?.siteUrl || 'https://localhost:3000'
       const referralLink = `${siteUrl}/?ref=${result.referralCode}`
