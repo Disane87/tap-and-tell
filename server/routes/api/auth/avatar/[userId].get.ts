@@ -1,6 +1,5 @@
-import { readFile } from 'fs/promises'
 import { join } from 'path'
-import { existsSync, readdirSync } from 'fs'
+import { getStorageDriver } from '~~/server/utils/storage-driver'
 
 /** MIME types by file extension. */
 const MIME_TYPES: Record<string, string> = {
@@ -10,9 +9,13 @@ const MIME_TYPES: Record<string, string> = {
   webp: 'image/webp'
 }
 
+const DATA_DIR = process.env.DATA_DIR || '.data'
+const AVATAR_DIR = join(DATA_DIR, 'avatars')
+
 /**
  * GET /api/auth/avatar/[userId]
  * Serves a user's avatar image. Public endpoint (no auth required).
+ * Supports both local filesystem and cloud storage (Vercel Blob).
  *
  * @returns Binary image data with appropriate Content-Type header.
  */
@@ -22,24 +25,25 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'User ID required' })
   }
 
-  const dataDir = process.env.DATA_DIR || '.data'
-  const avatarDir = join(dataDir, 'avatars')
+  if (userId.includes('..') || userId.includes('/') || userId.includes('\\')) {
+    throw createError({ statusCode: 400, message: 'Invalid user ID' })
+  }
 
-  if (!existsSync(avatarDir)) {
+  const driver = getStorageDriver()
+  const avatarFiles = await driver.list(join(AVATAR_DIR, `${userId}.`))
+
+  if (!avatarFiles.length) {
     throw createError({ statusCode: 404, message: 'Avatar not found' })
   }
 
-  // Find the avatar file for this user (any extension)
-  const files = readdirSync(avatarDir)
-  const avatarFile = files.find(f => f.startsWith(`${userId}.`))
-  if (!avatarFile) {
-    throw createError({ statusCode: 404, message: 'Avatar not found' })
-  }
-
-  const ext = avatarFile.split('.').pop()?.toLowerCase() || ''
+  const avatarPath = avatarFiles[0]
+  const ext = avatarPath.split('.').pop()?.toLowerCase() || ''
   const mimeType = MIME_TYPES[ext] || 'application/octet-stream'
-  const filepath = join(avatarDir, avatarFile)
-  const data = await readFile(filepath)
+
+  const data = await driver.read(avatarPath)
+  if (!data) {
+    throw createError({ statusCode: 404, message: 'Avatar not found' })
+  }
 
   setHeader(event, 'Content-Type', mimeType)
   setHeader(event, 'Cache-Control', 'public, max-age=3600, must-revalidate')
