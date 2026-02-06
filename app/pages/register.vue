@@ -7,7 +7,7 @@ import { UserPlus, Gift, Star, Clock, AlertCircle } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import type { BetaInviteValidation } from '~/types/auth'
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const { register, loading } = useAuth()
@@ -111,7 +111,8 @@ async function handleRegister() {
     name: name.value,
     email: email.value,
     password: password.value,
-    betaToken: betaToken.value || undefined
+    betaToken: betaToken.value || undefined,
+    locale: locale.value
   })
 
   if (success) {

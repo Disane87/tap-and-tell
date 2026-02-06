@@ -25,6 +25,7 @@ export interface BetaInvite {
   grantedPlan: string
   isFounder: boolean
   note: string | null
+  locale: string | null
   expiresAt: Date
   acceptedAt: Date | null
   acceptedByUserId: string | null
@@ -188,6 +189,7 @@ export interface JoinWaitlistInput {
   useCase?: string
   source?: string
   referralCode?: string
+  locale?: string
 }
 
 /**
@@ -277,7 +279,8 @@ export async function joinWaitlist(input: JoinWaitlistInput): Promise<WaitlistEn
     referredByUserId,
     referralCode,
     priority,
-    status: 'waiting' as const
+    status: 'waiting' as const,
+    locale: input.locale || null
   }
 
   await db.insert(waitlist).values(entry)
