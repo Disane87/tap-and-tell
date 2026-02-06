@@ -311,6 +311,7 @@ async function handleRevokeToken(appId: string, tokenId: string): Promise<void> 
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{{ $t('apiApps.editTitle') }}</DialogTitle>
+          <DialogDescription class="sr-only">{{ $t('apiApps.editTitle') }}</DialogDescription>
         </DialogHeader>
         <div class="space-y-4 py-4">
           <div class="space-y-2">
