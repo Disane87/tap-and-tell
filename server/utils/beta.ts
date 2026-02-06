@@ -282,15 +282,28 @@ export async function joinWaitlist(input: JoinWaitlistInput): Promise<WaitlistEn
 
   await db.insert(waitlist).values(entry)
 
-  // Get the inserted entry with position
+  // Get the inserted entry with position (SERIAL value)
   const inserted = await db
     .select()
     .from(waitlist)
     .where(eq(waitlist.id, id))
     .limit(1)
 
+  // Calculate actual queue position (not the SERIAL auto-increment value)
+  // Count waiting entries with higher priority or same priority + earlier position
+  const waitingEntries = await db
+    .select({ priority: waitlist.priority, position: waitlist.position })
+    .from(waitlist)
+    .where(eq(waitlist.status, 'waiting'))
+
+  const actualPosition = waitingEntries.filter(e =>
+    e.priority > inserted[0]!.priority ||
+    (e.priority === inserted[0]!.priority && e.position < inserted[0]!.position)
+  ).length + 1
+
   return {
     ...inserted[0]!,
+    position: actualPosition,
     status: inserted[0]!.status as WaitlistStatus,
     alreadyExists: false
   } as WaitlistEntry & { alreadyExists: boolean }

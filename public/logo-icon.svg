@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+    <defs>
+        <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+        </linearGradient>
+        <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="coloredBlur" />
+            <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- Background circle with glassmorphism -->
+    <circle cx="32" cy="32" r="28" fill="url(#emeraldGradient)" opacity="0.1" />
+    <circle cx="32" cy="32" r="28" fill="none" stroke="url(#emeraldGradient)" stroke-width="2" opacity="0.3" />
+
+    <!-- NFC waves -->
+    <path d="M 42 18 Q 50 18 50 30" stroke="url(#emeraldGradient)" stroke-width="3" fill="none" stroke-linecap="round"
+        opacity="0.7" />
+    <path d="M 46 14 Q 56 14 56 30" stroke="url(#emeraldGradient)" stroke-width="3" fill="none" stroke-linecap="round"
+        opacity="0.5" />
+    <path d="M 50 10 Q 62 10 62 30" stroke="url(#emeraldGradient)" stroke-width="2.5" fill="none" stroke-linecap="round"
+        opacity="0.3" />
+
+    <!-- Hand/Touch gesture -->
+    <g filter="url(#glow)">
+        <circle cx="22" cy="32" r="4" fill="url(#emeraldGradient)" />
+        <path d="M 22 36 L 22 48 Q 22 52 26 52 L 34 52 Q 38 52 38 48 L 38 36" fill="url(#emeraldGradient)"
+            stroke="url(#emeraldGradient)" stroke-width="2" stroke-linejoin="round" />
+        <rect x="16" y="26" width="12" height="16" rx="6" fill="url(#emeraldGradient)" />
+        <rect x="24" y="28" width="9" height="18" rx="4.5" fill="#059669" opacity="0.8" />
+        <rect x="30" y="30" width="8" height="16" rx="4" fill="#047857" opacity="0.6" />
+    </g>
+
+    <!-- Sparkle hearts -->
+    <path d="M 12 20 L 13.5 23 L 16.5 24.5 L 13.5 26 L 12 29 L 10.5 26 L 7.5 24.5 L 10.5 23 Z" fill="#10b981"
+        opacity="0.6" />
+    <path d="M 46 40 L 47.5 43 L 50.5 44.5 L 47.5 46 L 46 49 L 44.5 46 L 41.5 44.5 L 44.5 43 Z" fill="#10b981"
+        opacity="0.5" />
+    <circle cx="16" cy="45" r="2" fill="#10b981" opacity="0.4" />
+</svg>

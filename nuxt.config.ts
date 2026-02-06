@@ -282,7 +282,7 @@ export default defineNuxtConfig({
         { property: 'og:url', content: siteConfig.url },
         { property: 'og:title', content: siteConfig.name },
         { property: 'og:description', content: siteConfig.description },
-        { property: 'og:image', content: `${siteConfig.url}/public/og-image.svg` },
+        { property: 'og:image', content: `${siteConfig.url}/og-image.svg` },
         { property: 'og:image:width', content: '1200' },
         { property: 'og:image:height', content: '630' },
         { property: 'og:image:alt', content: 'Tap & Tell - Digital Guestbook' },
@@ -296,7 +296,7 @@ export default defineNuxtConfig({
         { name: 'twitter:creator', content: siteConfig.twitterHandle },
         { name: 'twitter:title', content: siteConfig.name },
         { name: 'twitter:description', content: siteConfig.description },
-        { name: 'twitter:image', content: `${siteConfig.url}/public/og-image.svg` },
+        { name: 'twitter:image', content: `${siteConfig.url}/og-image.svg` },
         { name: 'twitter:image:alt', content: 'Tap & Tell - Digital Guestbook' },
 
         // Robots/Indexing

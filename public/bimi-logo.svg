@@ -1,23 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg version="1.2" baseProfile="tiny" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-    <title>Tap &amp; Tell Logo</title>
-    <desc>BIMI Logo for Tap &amp; Tell</desc>
+    <title>Tap &amp; Tell</title>
+    <desc>BIMI Logo - Digital Guestbook for meaningful moments</desc>
 
-    <!-- Background -->
-    <rect width="512" height="512" rx="64" fill="#18181b" />
+    <defs>
+        <linearGradient id="emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#10b981" />
+            <stop offset="100%" style="stop-color:#059669" />
+        </linearGradient>
+    </defs>
 
-    <!-- Logo centered with padding -->
-    <g fill="#ffffff" transform="translate(128, 128)">
-        <!-- T letter -->
-        <rect x="24" y="32" width="84" height="14.4" rx="2.4" />
-        <rect x="50.4" y="32" width="16.8" height="96" rx="2.4" />
+    <!-- Background with soft rounding -->
+    <rect width="512" height="512" rx="96" fill="#171717" />
 
-        <!-- & symbol -->
-        <path
-            d="M168 144c-12-12-12-31.2 0-43.2s31.2-12 43.2 0c6 6 9 13.2 9 21.6h-14.4c0-4.8-1.8-9.6-5.4-13.2-7.2-7.2-19.2-7.2-26.4 0s-7.2 19.2 0 26.4l31.2 31.2c7.2-7.2 10.8-16.8 10.8-26.4h14.4c0 13.2-6 26.4-16.8 37.2l16.8 16.8-10.2 10.2-16.8-16.8c-12 12-31.2 12-43.2 0s-12-31.2 0-43.2l19.8-19.8zm10.2 10.2l-19.8 19.8c-7.2 7.2-7.2 19.2 0 26.4s19.2 7.2 26.4 0l-6.6-6.6z" />
+    <!-- Outer glow circle -->
+    <circle cx="256" cy="256" r="200" fill="url(#emerald)" opacity="0.08" />
+    <circle cx="256" cy="256" r="200" fill="none" stroke="url(#emerald)" stroke-width="3" opacity="0.2" />
 
-        <!-- T letter small -->
-        <rect x="225.6" y="115.2" width="48" height="12" rx="2.4" />
-        <rect x="238.8" y="115.2" width="14.4" height="57.6" rx="2.4" />
+    <!-- NFC waves (larger, more prominent) -->
+    <path d="M 330 140 Q 380 140 380 230" stroke="url(#emerald)" stroke-width="16" fill="none" stroke-linecap="round"
+        opacity="0.7" />
+    <path d="M 360 110 Q 430 110 430 230" stroke="url(#emerald)" stroke-width="14" fill="none" stroke-linecap="round"
+        opacity="0.5" />
+    <path d="M 390 80 Q 480 80 480 230" stroke="url(#emerald)" stroke-width="12" fill="none" stroke-linecap="round"
+        opacity="0.3" />
+
+    <!-- Hand/Touch gesture (main icon) -->
+    <g>
+        <!-- Touch point -->
+        <circle cx="170" cy="230" r="28" fill="url(#emerald)" />
+        <circle cx="170" cy="230" r="22" fill="#059669" />
+
+        <!-- Fingers -->
+        <rect x="130" y="190" width="80" height="110" rx="40" fill="url(#emerald)" />
+        <rect x="185" y="210" width="60" height="130" rx="30" fill="#059669" opacity="0.9" />
+        <rect x="225" y="225" width="55" height="115" rx="27.5" fill="#047857" opacity="0.7" />
+
+        <!-- Palm -->
+        <path d="M 170 300 L 170 360 Q 170 385 190 385 L 250 385 Q 270 385 270 360 L 270 300" fill="url(#emerald)"
+            stroke="url(#emerald)" stroke-width="12" stroke-linejoin="round" />
     </g>
+
+    <!-- Decorative sparkles/hearts -->
+    <path d="M 90 150 L 100 170 L 120 180 L 100 190 L 90 210 L 80 190 L 60 180 L 80 170 Z" fill="#10b981"
+        opacity="0.6" />
+    <path d="M 360 320 L 370 340 L 390 350 L 370 360 L 360 380 L 350 360 L 330 350 L 350 340 Z" fill="#10b981"
+        opacity="0.5" />
+    <circle cx="120" cy="340" r="14" fill="#10b981" opacity="0.4" />
+    <circle cx="380" cy="180" r="12" fill="#10b981" opacity="0.35" />
+
+    <!-- Subtle heart for emotional connection -->
+    <path
+        d="M 256 420 C 256 420 210 395 210 365 C 210 345 225 335 240 335 C 248 335 256 340 256 340 C 256 340 264 335 272 335 C 287 335 302 345 302 365 C 302 395 256 420 256 420 Z"
+        fill="#10b981" opacity="0.25" />
 </svg>

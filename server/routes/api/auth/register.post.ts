@@ -128,6 +128,56 @@ export default defineEventHandler(async (event) => {
       userId: id,
       role: 'owner'
     })
+
+    // Send invite_accepted notification to the admin who created the invite (non-blocking)
+    try {
+      const { sendTemplateEmail, detectLocaleFromHeader } = await import('~~/layers/saas/server/utils/email-service')
+      const { betaInvites: betaInvitesTable } = await import('~~/layers/saas/server/database/schema-saas')
+      const locale = detectLocaleFromHeader(event)
+
+      // Look up the invite to get createdBy
+      const [inviteRecord] = await db
+        .select()
+        .from(betaInvitesTable)
+        .where(eq(betaInvitesTable.token, body.betaToken!))
+        .limit(1)
+
+      if (inviteRecord?.createdBy) {
+        // Look up admin user
+        const [adminUser] = await db
+          .select({ id: users.id, email: users.email, name: users.name })
+          .from(users)
+          .where(eq(users.id, inviteRecord.createdBy))
+          .limit(1)
+
+        if (adminUser) {
+          const baseUrl = process.env.PUBLIC_URL || 'https://tap-and-tell.app'
+          const dateLocale = locale === 'de' ? 'de-DE' : 'en-US'
+          sendTemplateEmail(
+            'invite_accepted',
+            adminUser.email,
+            {
+              adminName: adminUser.name || adminUser.email.split('@')[0],
+              inviteeEmail: email,
+              inviteeName: name,
+              plan: betaInvite.grantedPlan.toUpperCase(),
+              acceptedAt: new Date().toLocaleDateString(dateLocale, { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+              appName: 'Tap & Tell',
+              dashboardUrl: `${baseUrl}/_admin/customers`
+            },
+            {
+              locale,
+              category: 'notification',
+              metadata: { inviteId: betaInvite.id, registeredUserId: id }
+            }
+          ).catch(() => {
+            // Silently ignore — notification failure must not break registration
+          })
+        }
+      }
+    } catch {
+      // Import or query failure must not break registration
+    }
   }
 
   const tokens = await createSession(id, email)

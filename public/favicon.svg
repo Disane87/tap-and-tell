@@ -1,14 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <!-- Favicon 32x32 -->
-  <rect width="32" height="32" rx="4" fill="#18181b"/>
-  <g fill="#ffffff" transform="translate(2, 2) scale(0.055)">
-    <!-- T letter -->
-    <rect x="96" y="128" width="140" height="24" rx="4"/>
-    <rect x="152" y="128" width="28" height="160" rx="4"/>
-    <!-- & symbol -->
-    <path d="M280 240c-20-20-20-52 0-72s52-20 72 0c10 10 15 22 15 36h-24c0-8-3-16-9-22-12-12-32-12-44 0s-12 32 0 44l52 52c12-12 18-28 18-44h24c0 22-10 44-28 62l28 28-17 17-28-28c-20 20-52 20-72 0s-20-52 0-72l33-33zm17 17l-33 33c-12 12-12 32 0 44s32 12 44 0l-11-11z"/>
-    <!-- T letter small -->
-    <rect x="376" y="192" width="80" height="20" rx="4"/>
-    <rect x="404" y="192" width="24" height="96" rx="4"/>
-  </g>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10b981" />
+      <stop offset="100%" style="stop-color:#059669" />
+    </linearGradient>
+  </defs>
+
+  <!-- Dark background with soft rounding -->
+  <rect width="32" height="32" rx="6" fill="#171717" />
+
+  <!-- NFC waves (simplified for small size) -->
+  <path d="M 20 8 Q 24 8 24 14" stroke="#10b981" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6" />
+  <path d="M 23 6 Q 28 6 28 14" stroke="#10b981" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.4" />
+
+  <!-- Hand gesture (simplified) -->
+  <circle cx="10" cy="14" r="2" fill="url(#grad)" />
+  <rect x="7" y="11" width="6" height="8" rx="3" fill="url(#grad)" />
+  <rect x="11" y="13" width="4" height="9" rx="2" fill="#059669" opacity="0.8" />
+  <rect x="14" y="14" width="3" height="8" rx="1.5" fill="#047857" opacity="0.6" />
+  <path d="M 10 19 L 10 22 Q 10 24 12 24 L 15 24 Q 17 24 17 22 L 17 18" fill="url(#grad)" stroke="url(#grad)"
+    stroke-width="1.5" />
+
+  <!-- Sparkle -->
+  <path d="M 6 8 L 6.5 9.5 L 8 10 L 6.5 10.5 L 6 12 L 5.5 10.5 L 4 10 L 5.5 9.5 Z" fill="#10b981" opacity="0.5" />
+  <circle cx="22" cy="22" r="1.5" fill="#10b981" opacity="0.4" />
 </svg>
