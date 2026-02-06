@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0](https://github.com/Disane87/tap-and-tell/compare/v1.14.0...v1.15.0) (2026-02-06)
+
+
+### ✨ Features
+
+* **auth:** enhance 2FA handling and user data retrieval ([9880c8a](https://github.com/Disane87/tap-and-tell/commit/9880c8accd910002d21d9b5b6961a91571716650))
+
+
+### 🐛 Bug Fixes
+
+* **auth:** update 2FA response handling and remove unnecessary user data refresh ([b71390b](https://github.com/Disane87/tap-and-tell/commit/b71390bde950f0e1e4a29bcf0ab42e0daf57d578))
+
 ## [1.14.0](https://github.com/Disane87/tap-and-tell/compare/v1.13.0...v1.14.0) (2026-02-06)
 
 
