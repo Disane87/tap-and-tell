@@ -84,6 +84,34 @@ export default defineEventHandler(async (event) => {
     referralCode: body.referralCode
   })
 
+  // Send confirmation email (non-blocking, only for new signups)
+  if (!result.alreadyExists) {
+    try {
+      const { sendTemplateEmail } = await import('~~/layers/saas/server/utils/email-service')
+      const siteUrl = process.env.PUBLIC_URL || useRuntimeConfig().public?.siteUrl || 'https://localhost:3000'
+      const referralLink = `${siteUrl}/?ref=${result.referralCode}`
+
+      await sendTemplateEmail(
+        'waitlist_confirmation',
+        email,
+        {
+          name: body.name || email.split('@')[0],
+          position: String(result.position),
+          referralCode: result.referralCode,
+          referralLink,
+          appName: 'Tap & Tell'
+        },
+        {
+          category: 'waitlist',
+          metadata: { position: result.position }
+        }
+      )
+    } catch (emailError) {
+      // Email failure should NOT block the waitlist join response
+      console.warn('[Waitlist] Failed to send confirmation email:', emailError)
+    }
+  }
+
   return {
     success: true,
     data: {
