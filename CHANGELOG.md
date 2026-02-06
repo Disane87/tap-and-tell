@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.0](https://github.com/Disane87/tap-and-tell/compare/v1.15.1...v1.16.0) (2026-02-06)
+
+
+### ✨ Features
+
+* remove PRD, PROJECT_MEMORY, and PROMPT documents from the repository ([b148d11](https://github.com/Disane87/tap-and-tell/commit/b148d115171ac041219a290ae62b24b3e5db536c))
+
 ## [1.15.1](https://github.com/Disane87/tap-and-tell/compare/v1.15.0...v1.15.1) (2026-02-06)
 
 
