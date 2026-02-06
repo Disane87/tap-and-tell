@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0](https://github.com/Disane87/tap-and-tell/compare/v1.18.0...v1.19.0) (2026-02-06)
+
+
+### ✨ Features
+
+* add admin tracking columns to beta invites and implement email service with template rendering ([7765fbb](https://github.com/Disane87/tap-and-tell/commit/7765fbbecab3790d755d719dc94b220083036d4e))
+* add BIMI logo SVG for branding ([2faee1f](https://github.com/Disane87/tap-and-tell/commit/2faee1f580683f04ada007ed4c49638bdc7507ac))
+* add non-blocking confirmation email for new waitlist signups ([a20e110](https://github.com/Disane87/tap-and-tell/commit/a20e110524d836bc33809e24df6eb0b85bd13eb9))
+* update OpenGraph and favicon images, enhance logo SVGs, and improve registration and waitlist email notifications ([49cdba5](https://github.com/Disane87/tap-and-tell/commit/49cdba5e59862c0dfdd7921c124cca235723b42a))
+
+
+### 🐛 Bug Fixes
+
+* format SVG for consistency and readability ([3974260](https://github.com/Disane87/tap-and-tell/commit/39742602633309cd72a577af88cef48aa9835194))
+
 ## [1.18.0](https://github.com/Disane87/tap-and-tell/compare/v1.17.0...v1.18.0) (2026-02-06)
 
 
