@@ -4,6 +4,15 @@
  * Provides NuxtPage routing and global toast notifications.
  */
 import { Toaster } from '~/components/ui/sonner'
+
+const siteName = 'Tap & Tell'
+
+useHead({
+  titleTemplate: (title) => {
+    if (!title || title === siteName) return siteName
+    return `${title} | ${siteName}`
+  }
+})
 </script>
 
 <template>

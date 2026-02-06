@@ -252,7 +252,6 @@ export default defineNuxtConfig({
         lang: 'en'
       },
       title: siteConfig.name,
-      titleTemplate: '%s | Tap & Tell',
       meta: [
         // Basic SEO
         { charset: 'utf-8' },
