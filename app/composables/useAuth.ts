@@ -112,8 +112,6 @@ export function useAuth() {
 
       if (response.success && response.data) {
         user.value = response.data
-        // Refresh to get full user data (avatarUrl, twoFactorEnabled, etc.)
-        await refreshUser()
         return 'success'
       }
       return 'error'
@@ -145,8 +143,6 @@ export function useAuth() {
         user.value = response.data
         twoFactorToken.value = null
         twoFactorMethod.value = null
-        // Refresh to get full user data (avatarUrl, twoFactorEnabled, etc.)
-        await refreshUser()
         return true
       }
       return false
