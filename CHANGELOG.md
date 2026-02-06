@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0](https://github.com/Disane87/tap-and-tell/compare/v1.16.0...v1.17.0) (2026-02-06)
+
+
+### ✨ Features
+
+* **ci:** add notify SaaS repo step on push to main branch ([21b32bd](https://github.com/Disane87/tap-and-tell/commit/21b32bd55587a9d0ba68f8231b8d6b7da563ffaa))
+
 ## [1.16.0](https://github.com/Disane87/tap-and-tell/compare/v1.15.1...v1.16.0) (2026-02-06)
 
 
