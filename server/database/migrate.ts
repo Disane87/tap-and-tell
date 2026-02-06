@@ -213,6 +213,11 @@ export async function runMigrations(connectionString: string): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_beta_invites_token ON beta_invites(token);
       CREATE INDEX IF NOT EXISTS idx_beta_invites_email ON beta_invites(email);
 
+      -- Beta invites: additional columns for admin tracking
+      ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ;
+      ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS revoked_reason TEXT;
+      ALTER TABLE beta_invites ADD COLUMN IF NOT EXISTS created_by VARCHAR(24);
+
       -- Waitlist for public beta signup
       CREATE TABLE IF NOT EXISTS waitlist (
         id VARCHAR(24) PRIMARY KEY,

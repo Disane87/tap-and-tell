@@ -1,5 +1,5 @@
 import { eq } from 'drizzle-orm'
-import { users, tenants, tenantMembers } from '~~/server/database/schema'
+import { users, tenants, tenantMembers, betaInvites } from '~~/server/database/schema'
 import { hashPassword } from '~~/server/utils/password'
 import { createSession, setAuthCookies } from '~~/server/utils/session'
 import { isBetaModeEnabled, getBetaMode } from '~~/server/utils/beta-config'
@@ -131,15 +131,13 @@ export default defineEventHandler(async (event) => {
 
     // Send invite_accepted notification to the admin who created the invite (non-blocking)
     try {
-      const { sendTemplateEmail, detectLocaleFromHeader } = await import('~~/layers/saas/server/utils/email-service')
-      const { betaInvites: betaInvitesTable } = await import('~~/layers/saas/server/database/schema-saas')
       const locale = detectLocaleFromHeader(event)
 
       // Look up the invite to get createdBy
       const [inviteRecord] = await db
         .select()
-        .from(betaInvitesTable)
-        .where(eq(betaInvitesTable.token, body.betaToken!))
+        .from(betaInvites)
+        .where(eq(betaInvites.token, body.betaToken!))
         .limit(1)
 
       if (inviteRecord?.createdBy) {
@@ -176,7 +174,7 @@ export default defineEventHandler(async (event) => {
         }
       }
     } catch {
-      // Import or query failure must not break registration
+      // Query failure must not break registration
     }
   }
 

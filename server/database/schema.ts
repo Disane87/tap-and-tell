@@ -288,6 +288,12 @@ export const betaInvites = pgTable('beta_invites', {
   acceptedAt: timestamp('accepted_at', { withTimezone: true }),
   /** User ID of who accepted this invite. */
   acceptedByUserId: varchar('accepted_by_user_id', { length: 24 }).references(() => users.id),
+  /** When the invite was revoked. */
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  /** Reason for revoking the invite. */
+  revokedReason: text('revoked_reason'),
+  /** Admin user ID who created this invite. */
+  createdBy: varchar('created_by', { length: 24 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => [
   index('idx_beta_invites_token').on(table.token),
