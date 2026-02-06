@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.20.0](https://github.com/Disane87/tap-and-tell/compare/v1.19.1...v1.20.0) (2026-02-06)
+
+
+### ✨ Features
+
+* add private beta messaging to sign-in and update BIMI logo SVG ([79cea14](https://github.com/Disane87/tap-and-tell/commit/79cea14aaf817a486d98e8aca25b7e9c702069bb))
+
+
+### 🐛 Bug Fixes
+
+* improve avatar retrieval by using storage driver and handling errors ([0899dd6](https://github.com/Disane87/tap-and-tell/commit/0899dd62965c61848fb6a909275fe66e2980e4c5))
+
 ## [1.19.1](https://github.com/Disane87/tap-and-tell/compare/v1.19.0...v1.19.1) (2026-02-06)
 
 
