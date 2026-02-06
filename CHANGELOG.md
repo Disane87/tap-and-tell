@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.1](https://github.com/Disane87/tap-and-tell/compare/v1.19.0...v1.19.1) (2026-02-06)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** use env vars instead of secrets in step if-conditions ([3cec84e](https://github.com/Disane87/tap-and-tell/commit/3cec84e5ca70bca2b3d40a70a12581a7cdcde29b))
+
 ## [1.19.0](https://github.com/Disane87/tap-and-tell/compare/v1.18.0...v1.19.0) (2026-02-06)
 
 
