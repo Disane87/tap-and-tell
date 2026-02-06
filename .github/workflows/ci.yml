@@ -226,3 +226,29 @@ jobs:
       - name: Run security audit
         run: pnpm audit --audit-level=high
         continue-on-error: true  # Don't fail on audit warnings
+
+  # =============================================================================
+  # Stage 6: Notify SaaS Repo (only on push to main)
+  # =============================================================================
+  notify-saas:
+    name: Notify SaaS Repo
+    needs: [build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger SaaS submodule update
+        if: ${{ secrets.SAAS_REPO_PAT != '' }}
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.SAAS_REPO_PAT }}" \
+            https://api.github.com/repos/${{ secrets.SAAS_REPO }}/dispatches \
+            -d '{"event_type":"base-updated","client_payload":{"sha":"${{ github.sha }}","ref":"${{ github.ref }}"}}'
+          echo "::notice::Triggered SaaS repo submodule update"
+        continue-on-error: true  # Don't fail CI if SaaS notification fails
+
+      - name: Skip notification
+        if: ${{ secrets.SAAS_REPO_PAT == '' }}
+        run: |
+          echo "::warning::SAAS_REPO_PAT secret not set — SaaS repo will not be notified automatically."
+          echo "The SaaS repo has a scheduled check every 6 hours as fallback."
