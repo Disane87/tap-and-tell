@@ -230,7 +230,11 @@ export default defineNuxtConfig({
     public: {
       siteUrl: siteConfig.url,
       siteName: siteConfig.name,
-      betaMode: process.env.BETA_MODE || 'private'
+      betaMode: process.env.BETA_MODE || 'private',
+      sentryDsn: '',
+      sentryTunnel: '',
+      sentryEnvironment: '',
+      sentryTracesSampleRate: '0',
     }
   },
 
