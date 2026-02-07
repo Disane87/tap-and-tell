@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.23.1](https://github.com/Disane87/tap-and-tell/compare/v1.23.0...v1.23.1) (2026-02-07)
+
+
+### 🐛 Bug Fixes
+
+* add advisory lock to prevent concurrent migration race conditions ([af237a3](https://github.com/Disane87/tap-and-tell/commit/af237a3636f8fa986c85a74302c91eef612bdf9c))
+
+
+### ♻️ Code Refactoring
+
+* clean up FeedbackWidget imports and formatting ([d0a9466](https://github.com/Disane87/tap-and-tell/commit/d0a946603ae5cba4403a63efdaf9c24960aeb8f6))
+
 ## [1.23.0](https://github.com/Disane87/tap-and-tell/compare/v1.22.1...v1.23.0) (2026-02-07)
 
 
