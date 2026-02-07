@@ -6,28 +6,8 @@
  * a Sheet with a feedback form (type, subject, description). System metadata
  * (URL, user-agent, viewport, user ID) is collected automatically.
  */
-import { ref, computed } from 'vue'
 import { MessageSquarePlus } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetDescription,
-  SheetFooter,
-} from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 
 const { t } = useI18n()
 
@@ -70,17 +50,14 @@ async function submit() {
     toast.success(t('feedback.success'))
     resetForm()
     open.value = false
-  }
-  catch (error: unknown) {
+  } catch (error: unknown) {
     const fetchError = error as { statusCode?: number }
     if (fetchError.statusCode === 429) {
       toast.error(t('feedback.rateLimit'))
-    }
-    else {
+    } else {
       toast.error(t('feedback.error'))
     }
-  }
-  finally {
+  } finally {
     sending.value = false
   }
 }
