@@ -22,6 +22,11 @@ export async function runMigrations(connectionString: string): Promise<void> {
   log.debug('Connection established')
 
   try {
+    // Acquire advisory lock to prevent concurrent migrations (e.g., multiple Vercel cold starts)
+    await client.query('SELECT pg_advisory_lock(73741)')
+    log.debug('Migration lock acquired')
+
+    try {
     // ── Create tables ──────────────────────────────────────────────
 
     await client.query(`
@@ -480,6 +485,10 @@ export async function runMigrations(connectionString: string): Promise<void> {
     )
 
     log.success('RLS policies configured for tenant isolation')
+    } finally {
+      await client.query('SELECT pg_advisory_unlock(73741)')
+      log.debug('Migration lock released')
+    }
   } finally {
     client.release()
     await pool.end()
