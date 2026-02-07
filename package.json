@@ -39,7 +39,6 @@
     "nuxt": "^4.3.0",
     "pg": "^8.18.0",
     "qrcode": "^1.5.4",
-    "radix-vue": "^1.9.17",
     "reka-ui": "^2.8.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "4",
