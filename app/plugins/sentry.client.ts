@@ -17,7 +17,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   Sentry.init({
     app: nuxtApp.vueApp,
     dsn,
-    tunnel: (config.public.sentryTunnel as string) || undefined,
     environment: (config.public.sentryEnvironment as string) || (import.meta.dev ? 'development' : 'production'),
     tracesSampleRate: Number(config.public.sentryTracesSampleRate) || 0,
     integrations: [
