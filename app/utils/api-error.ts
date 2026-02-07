@@ -83,7 +83,7 @@ export function translateApiError(message: string, t: TranslateFunction): string
 export function extractApiError(
   error: unknown,
   t: TranslateFunction,
-  fallback = 'An error occurred'
+  fallback = t('apiErrors.unknownError')
 ): string {
   const fetchError = error as {
     data?: { message?: string }
