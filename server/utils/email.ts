@@ -30,7 +30,7 @@ const RESEND_API_URL = 'https://api.resend.com/emails'
  */
 export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
   const apiKey = process.env.RESEND_API_KEY
-  const from = process.env.RESEND_FROM || 'Tap & Tell <noreply@tap-and-tell.app>'
+  const from = process.env.RESEND_FROM || 'Tap & Tell <noreply@tap-and-tell.com>'
 
   if (!apiKey) {
     // Development fallback: log to console
@@ -87,7 +87,7 @@ interface BetaInviteEmailOptions {
  * @returns True if the email was sent successfully.
  */
 export async function sendBetaInviteEmail(options: BetaInviteEmailOptions): Promise<boolean> {
-  const baseUrl = process.env.NUXT_PUBLIC_BASE_URL || 'https://tap-and-tell.app'
+  const baseUrl = process.env.NUXT_PUBLIC_BASE_URL || 'https://tap-and-tell.com'
   const registrationUrl = `${baseUrl}/register?token=${options.token}`
   const expiresDate = options.expiresAt.toLocaleDateString('en-US', {
     weekday: 'long',

@@ -155,7 +155,7 @@ export default defineEventHandler(async (event) => {
           .limit(1)
 
         if (adminUser) {
-          const baseUrl = process.env.PUBLIC_URL || 'https://tap-and-tell.app'
+          const baseUrl = process.env.PUBLIC_URL || 'https://tap-and-tell.com'
           const dateLocale = locale === 'de' ? 'de-DE' : 'en-US'
           sendTemplateEmail(
             'invite_accepted',

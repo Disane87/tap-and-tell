@@ -36,7 +36,7 @@ function getDevServerHttps() {
 function getSiteUrl(): string {
   if (process.env.NUXT_PUBLIC_SITE_URL) return process.env.NUXT_PUBLIC_SITE_URL
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return isDev ? 'https://localhost:3000' : 'https://tap-and-tell.app'
+  return isDev ? 'https://localhost:3000' : 'https://tap-and-tell.com'
 }
 
 const siteConfig = {

@@ -1,5 +1,5 @@
 # Tap & Tell - Robots.txt
-# https://tap-and-tell.app
+# https://tap-and-tell.com
 
 User-agent: *
 Allow: /
@@ -15,7 +15,7 @@ Disallow: /__nuxt_error
 Allow: /g/
 
 # Sitemap (if generated)
-Sitemap: https://tap-and-tell.app/sitemap.xml
+Sitemap: https://tap-and-tell.com/sitemap.xml
 
 # Crawl-delay for politeness (optional)
 Crawl-delay: 1

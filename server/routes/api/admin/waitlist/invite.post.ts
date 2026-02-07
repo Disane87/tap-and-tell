@@ -122,7 +122,7 @@ export default defineEventHandler(async (event) => {
         try {
           const entryLocale = entry.locale || 'en'
           const dateLocale = entryLocale === 'de' ? 'de-DE' : 'en-US'
-          const siteUrl = process.env.PUBLIC_URL || 'https://tap-and-tell.app'
+          const siteUrl = process.env.PUBLIC_URL || 'https://tap-and-tell.com'
           const inviteUrl = `${siteUrl}/register?token=${invite.token}`
 
           await sendTemplateEmail(
