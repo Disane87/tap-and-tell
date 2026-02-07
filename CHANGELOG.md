@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.23.0](https://github.com/Disane87/tap-and-tell/compare/v1.22.1...v1.23.0) (2026-02-07)
+
+
+### ✨ Features
+
+* add feedback widget and integrate into layout; update error handling messages ([6ecf9bf](https://github.com/Disane87/tap-and-tell/commit/6ecf9bf18458b58a336ced11e8b447ee7ce69af7))
+
 ## [1.22.1](https://github.com/Disane87/tap-and-tell/compare/v1.22.0...v1.22.1) (2026-02-07)
 
 
