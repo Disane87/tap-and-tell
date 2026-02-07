@@ -156,7 +156,7 @@ async function sendFallbackEmail(
 
   const html = wrapEmailLayout({
     content: rawHtml,
-    baseUrl: process.env.PUBLIC_URL || 'https://tap-and-tell.app',
+    baseUrl: process.env.PUBLIC_URL || 'https://tap-and-tell.com',
     locale: locale as 'en' | 'de'
   })
 

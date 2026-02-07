@@ -36,7 +36,7 @@ export function wrapEmailLayout(options: EmailLayoutOptions): string {
   const {
     content,
     logId,
-    baseUrl = 'https://tap-and-tell.app',
+    baseUrl = 'https://tap-and-tell.com',
     locale = 'en',
     unsubscribeUrl
   } = options
