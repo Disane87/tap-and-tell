@@ -1095,7 +1095,8 @@
     "serverError": "Ein Serverfehler ist aufgetreten. Bitte versuche es erneut.",
     "badRequest": "Ungültige Anfrage.",
     "forbidden": "Du hast keine Berechtigung für diese Aktion.",
-    "notFound": "Die angeforderte Ressource wurde nicht gefunden."
+    "notFound": "Die angeforderte Ressource wurde nicht gefunden.",
+    "unknownError": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
   },
   "validation": {
     "minLength": "Mindestens 12 Zeichen",
@@ -1254,5 +1255,29 @@
     },
     "alwaysActive": "Immer aktiv",
     "managePreferences": "Cookie-Einstellungen verwalten"
+  },
+  "feedback": {
+    "tab": "Feedback",
+    "title": "Feedback senden",
+    "subtitle": "Hilf uns, Tap & Tell zu verbessern",
+    "type": {
+      "label": "Typ",
+      "bug": "Fehlerbericht",
+      "feedback": "Feedback",
+      "question": "Frage"
+    },
+    "subject": {
+      "label": "Betreff",
+      "placeholder": "Kurze Zusammenfassung..."
+    },
+    "description": {
+      "label": "Beschreibung",
+      "placeholder": "Beschreibe es im Detail..."
+    },
+    "submit": "Feedback senden",
+    "sending": "Wird gesendet...",
+    "success": "Vielen Dank! Dein Feedback wurde gesendet.",
+    "error": "Feedback konnte nicht gesendet werden. Bitte versuche es erneut.",
+    "rateLimit": "Zu viele Einsendungen. Bitte warte einen Moment."
   }
 }

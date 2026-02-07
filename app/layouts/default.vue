@@ -85,5 +85,10 @@ function isActive(path: string): boolean {
     <ClientOnly>
       <CookieBanner />
     </ClientOnly>
+
+    <!-- Feedback Widget -->
+    <ClientOnly>
+      <FeedbackWidget />
+    </ClientOnly>
   </div>
 </template>

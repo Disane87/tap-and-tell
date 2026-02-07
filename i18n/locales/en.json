@@ -1095,7 +1095,8 @@
     "serverError": "A server error occurred. Please try again.",
     "badRequest": "Invalid request.",
     "forbidden": "You do not have permission for this action.",
-    "notFound": "The requested resource was not found."
+    "notFound": "The requested resource was not found.",
+    "unknownError": "An error occurred. Please try again."
   },
   "validation": {
     "minLength": "At least 12 characters",
@@ -1254,5 +1255,29 @@
     },
     "alwaysActive": "Always Active",
     "managePreferences": "Manage Cookie Preferences"
+  },
+  "feedback": {
+    "tab": "Feedback",
+    "title": "Send Feedback",
+    "subtitle": "Help us improve Tap & Tell",
+    "type": {
+      "label": "Type",
+      "bug": "Bug Report",
+      "feedback": "Feedback",
+      "question": "Question"
+    },
+    "subject": {
+      "label": "Subject",
+      "placeholder": "Brief summary..."
+    },
+    "description": {
+      "label": "Description",
+      "placeholder": "Describe in detail..."
+    },
+    "submit": "Send Feedback",
+    "sending": "Sending...",
+    "success": "Thank you! Your feedback has been submitted.",
+    "error": "Could not send feedback. Please try again.",
+    "rateLimit": "Too many submissions. Please wait a moment."
   }
 }
