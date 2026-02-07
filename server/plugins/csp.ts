@@ -1,28 +1,18 @@
 /**
  * Nitro plugin to set Content Security Policy headers for development.
  * This allows external resources like Google Fonts and Iconify to load properly.
- * Dynamically includes Sentry/GlitchTip domains when DSN or tunnel is configured.
+ * Dynamically includes Sentry/GlitchTip domain when DSN is configured.
  */
 export default defineNitroPlugin((nitroApp) => {
-  // Extract Sentry/GlitchTip hosts from env vars for CSP connect-src
-  const sentryHosts: string[] = []
+  // Extract Sentry/GlitchTip host from DSN for CSP connect-src
+  let sentryConnectSrc = ''
   const dsn = process.env.NUXT_PUBLIC_SENTRY_DSN
-  const tunnel = process.env.NUXT_PUBLIC_SENTRY_TUNNEL
 
   if (dsn) {
     try {
-      const host = new URL(dsn).origin
-      sentryHosts.push(host)
+      sentryConnectSrc = ' ' + new URL(dsn).origin
     } catch { /* invalid DSN, skip */ }
   }
-  if (tunnel) {
-    try {
-      const host = new URL(tunnel).origin
-      if (!sentryHosts.includes(host)) sentryHosts.push(host)
-    } catch { /* invalid tunnel URL, skip */ }
-  }
-
-  const sentryConnectSrc = sentryHosts.length ? ' ' + sentryHosts.join(' ') : ''
 
   nitroApp.hooks.hook('render:response', (response, { event }) => {
     const csp = [
