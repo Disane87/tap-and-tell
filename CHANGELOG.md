@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.22.1](https://github.com/Disane87/tap-and-tell/compare/v1.22.0...v1.22.1) (2026-02-07)
+
+
+### 🐛 Bug Fixes
+
+* remove unused tunnel configuration from Sentry plugin and update CSP documentation ([68fe2d2](https://github.com/Disane87/tap-and-tell/commit/68fe2d2cf1788822c5cb37fac13d573bd05b17c5))
+
 ## [1.22.0](https://github.com/Disane87/tap-and-tell/compare/v1.21.0...v1.22.0) (2026-02-07)
 
 
