@@ -222,7 +222,11 @@ export default defineNuxtConfig({
   },
 
   vite: {
-    plugins: [tailwindcss(), getBasicSslPlugin()].filter(Boolean) as Plugin[]
+    plugins: [tailwindcss(), getBasicSslPlugin()].filter(Boolean) as Plugin[],
+    build: {
+      // Enable source maps for production debugging (remove after debugging!)
+      sourcemap: true
+    }
   },
 
   runtimeConfig: {
@@ -236,6 +240,8 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: process.env.VERCEL ? 'vercel' : 'node-server',
+    // Enable source maps for production debugging (remove after debugging!)
+    sourceMap: true,
     externals: {
       inline: [],
     },
