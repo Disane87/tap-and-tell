@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.23.2](https://github.com/Disane87/tap-and-tell/compare/v1.23.1...v1.23.2) (2026-02-07)
+
+
+### 🐛 Bug Fixes
+
+* update domain references from tap-and-tell.app to tap-and-tell.com ([e59cdd1](https://github.com/Disane87/tap-and-tell/commit/e59cdd1edabbfcb352cb6681996a25744c64db1b))
+
 ## [1.23.1](https://github.com/Disane87/tap-and-tell/compare/v1.23.0...v1.23.1) (2026-02-07)
 
 
