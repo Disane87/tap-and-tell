@@ -45,7 +45,8 @@ export function generateEmailOtp(userId: string, email: string): string {
   sendEmail({
     to: email,
     subject: 'Your Tap & Tell verification code',
-    html: otpEmailHtml(code)
+    html: otpEmailHtml(code),
+    source: 'otp'
   }).catch((err) => {
     console.error('[email-otp] Failed to send email:', err)
   })

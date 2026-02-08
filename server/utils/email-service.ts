@@ -160,7 +160,7 @@ async function sendFallbackEmail(
     locale: locale as 'en' | 'de'
   })
 
-  const sent = await sendEmail({ to, subject, html })
+  const sent = await sendEmail({ to, subject, html, source: `fallback:${templateSlug}` })
 
   return {
     success: sent,
