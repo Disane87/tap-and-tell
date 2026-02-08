@@ -4,17 +4,70 @@
  * In development mode (no RESEND_API_KEY), emails are logged to the console.
  * In production, emails are sent via the Resend API.
  *
+ * Supports a send hook for external logging (e.g. SaaS email_logs).
+ * Register a hook via `registerEmailSendHook()` at server startup.
+ *
  * @module email
  */
 
 /** Options for sending an email. */
-interface SendEmailOptions {
+export interface SendEmailOptions {
   /** Recipient email address. */
   to: string
   /** Email subject line. */
   subject: string
   /** HTML body content. */
   html: string
+  /** Optional source identifier for logging (e.g. 'otp', 'beta_invite', 'fallback:waitlist_confirmation'). */
+  source?: string
+}
+
+/** Data passed to the email send hook after each send attempt. */
+export interface EmailSendHookData {
+  /** Recipient email address. */
+  to: string
+  /** Email subject line. */
+  subject: string
+  /** Whether the send was successful. */
+  success: boolean
+  /** Source identifier (e.g. 'otp', 'beta_invite'). */
+  source?: string
+  /** Error message if the send failed. */
+  error?: string
+}
+
+/** Hook function called after each email send attempt. */
+export type EmailSendHook = (data: EmailSendHookData) => void | Promise<void>
+
+// ── Send hook registry ───────────────────────────────────────────────────────
+
+let _sendHook: EmailSendHook | null = null
+
+/**
+ * Registers an email send hook.
+ * Called by Nitro plugins at server startup (e.g. SaaS email-provider plugin).
+ * Only one hook can be registered; subsequent calls overwrite the previous hook.
+ */
+export function registerEmailSendHook(hook: EmailSendHook): void {
+  _sendHook = hook
+}
+
+/**
+ * Invokes the registered send hook (fire-and-forget, never throws).
+ */
+function invokeEmailSendHook(data: EmailSendHookData): void {
+  if (!_sendHook) return
+  try {
+    const result = _sendHook(data)
+    // If the hook returns a promise, catch any rejection silently
+    if (result && typeof result.then === 'function') {
+      result.catch((err: unknown) => {
+        console.error('[email] Send hook error:', err)
+      })
+    }
+  } catch (err) {
+    console.error('[email] Send hook error:', err)
+  }
 }
 
 /** Resend API base URL. */
@@ -37,6 +90,12 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
     console.log(`[email] To: ${options.to}`)
     console.log(`[email] Subject: ${options.subject}`)
     console.log(`[email] Body:\n${options.html}`)
+    invokeEmailSendHook({
+      to: options.to,
+      subject: options.subject,
+      success: true,
+      source: options.source
+    })
     return true
   }
 
@@ -58,12 +117,32 @@ export async function sendEmail(options: SendEmailOptions): Promise<boolean> {
     if (!response.ok) {
       const errorBody = await response.text()
       console.error(`[email] Resend API error (${response.status}): ${errorBody}`)
+      invokeEmailSendHook({
+        to: options.to,
+        subject: options.subject,
+        success: false,
+        source: options.source,
+        error: `Resend API error (${response.status}): ${errorBody}`
+      })
       return false
     }
 
+    invokeEmailSendHook({
+      to: options.to,
+      subject: options.subject,
+      success: true,
+      source: options.source
+    })
     return true
   } catch (error) {
     console.error('[email] Failed to send email:', error)
+    invokeEmailSendHook({
+      to: options.to,
+      subject: options.subject,
+      success: false,
+      source: options.source,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    })
     return false
   }
 }
@@ -148,6 +227,7 @@ export async function sendBetaInviteEmail(options: BetaInviteEmailOptions): Prom
     subject: options.isFounder
       ? '🌟 Your Founder Invitation to Tap & Tell'
       : '🎉 Your Beta Invitation to Tap & Tell',
-    html
+    html,
+    source: 'beta_invite'
   })
 }
