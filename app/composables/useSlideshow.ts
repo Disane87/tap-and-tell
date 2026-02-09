@@ -31,7 +31,7 @@ export function useSlideshow(entries: Ref<GuestEntry[]>, options?: SlideshowOpti
   const transition = ref<'fade' | 'slide' | 'zoom'>(options?.transition ?? 'fade')
   const showBadges = ref(options?.showBadges ?? true)
   const showNames = ref(options?.showNames ?? true)
-  const intervalId = ref<ReturnType<typeof setInterval> | null>(null)
+  const intervalId = ref<ReturnType<typeof globalThis.setInterval> | null>(null)
 
   /**
    * Current entry being displayed.
@@ -118,7 +118,7 @@ export function useSlideshow(entries: Ref<GuestEntry[]>, options?: SlideshowOpti
   /**
    * Sets the auto-advance interval in seconds.
    */
-  function setInterval(seconds: number): void {
+  function updateInterval(seconds: number): void {
     interval.value = Math.max(3, Math.min(30, seconds))
     if (isPlaying.value) {
       play() // Restart with new interval
@@ -185,7 +185,7 @@ export function useSlideshow(entries: Ref<GuestEntry[]>, options?: SlideshowOpti
     play,
     pause,
     toggle,
-    setInterval,
+    updateInterval,
     enterFullscreen,
     exitFullscreen
   }

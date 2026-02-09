@@ -26,7 +26,7 @@ const {
   currentIndex, currentEntry, totalEntries, hasEntries,
   isPlaying, interval, transition, showBadges, showNames,
   next, prev, goTo, toggle, play, pause,
-  setInterval: setIntervalValue, enterFullscreen, exitFullscreen
+  updateInterval: setIntervalValue, enterFullscreen, exitFullscreen
 } = useSlideshow(entries, slideshowOptions.value)
 
 const slideshowEl = ref<HTMLElement | null>(null)
