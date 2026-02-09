@@ -81,7 +81,7 @@ export function useSlideshow(entries: Ref<GuestEntry[]>, options?: SlideshowOpti
   function play(): void {
     isPlaying.value = true
     stopTimer()
-    intervalId.value = setInterval(() => {
+    intervalId.value = globalThis.setInterval(() => {
       next()
     }, interval.value * 1000)
   }

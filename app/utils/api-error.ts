@@ -85,6 +85,8 @@ export function extractApiError(
   t: TranslateFunction,
   fallback = t('apiErrors.unknownError')
 ): string {
+  if (!error) return fallback
+
   const fetchError = error as {
     data?: { message?: string }
     statusCode?: number
