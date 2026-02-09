@@ -6,11 +6,16 @@ const baseRoot = resolve(__dirname)
 
 export default defineConfig({
   plugins: [vue()],
+  define: {
+    'import.meta.client': true,
+    'import.meta.server': false
+  },
   test: {
     root: baseRoot,
     include: [
       'server/utils/__tests__/**/*.test.ts',
-      'app/composables/__tests__/**/*.test.ts'
+      'app/composables/__tests__/**/*.test.ts',
+      'app/utils/__tests__/**/*.test.ts'
     ],
     exclude: [
       '**/node_modules/**',
