@@ -4,13 +4,6 @@
  * Tests slideshow navigation (next, prev, goTo), wrapping behavior,
  * play/pause/toggle state management, interval clamping, empty entries
  * handling, and index bounds on entries change.
- *
- * Note: The composable defines a local `setInterval(seconds)` function that
- * shadows the global `setInterval(callback, delay)`. This means `play()`
- * internally calls the local `setInterval` (which calls `play()` back when
- * isPlaying is true), creating infinite recursion. Timer-based auto-advance
- * tests are therefore not feasible and the composable's `setInterval` clamping
- * is tested only while paused to avoid triggering the recursion.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { ref, computed } from 'vue'
@@ -336,19 +329,13 @@ describe('useSlideshow', () => {
     })
   })
 
-  describe('setInterval (clamping)', () => {
-    /**
-     * Note: setInterval tests call pause() first to prevent the internal
-     * play() → setInterval() infinite recursion caused by the local
-     * setInterval function shadowing the global one.
-     */
-
+  describe('updateInterval (clamping)', () => {
     it('should update interval value', () => {
       const entries = ref(createEntries(3))
       const slideshow = useSlideshow(entries)
 
-      slideshow.pause() // Prevent recursion
-      slideshow.setInterval(10)
+      slideshow.pause()
+      slideshow.updateInterval(10)
       expect(slideshow.interval.value).toBe(10)
     })
 
@@ -357,7 +344,7 @@ describe('useSlideshow', () => {
       const slideshow = useSlideshow(entries)
 
       slideshow.pause()
-      slideshow.setInterval(1)
+      slideshow.updateInterval(1)
       expect(slideshow.interval.value).toBe(3)
     })
 
@@ -366,7 +353,7 @@ describe('useSlideshow', () => {
       const slideshow = useSlideshow(entries)
 
       slideshow.pause()
-      slideshow.setInterval(60)
+      slideshow.updateInterval(60)
       expect(slideshow.interval.value).toBe(30)
     })
 
@@ -375,7 +362,7 @@ describe('useSlideshow', () => {
       const slideshow = useSlideshow(entries)
 
       slideshow.pause()
-      slideshow.setInterval(0)
+      slideshow.updateInterval(0)
       expect(slideshow.interval.value).toBe(3)
     })
 
@@ -384,7 +371,7 @@ describe('useSlideshow', () => {
       const slideshow = useSlideshow(entries)
 
       slideshow.pause()
-      slideshow.setInterval(-5)
+      slideshow.updateInterval(-5)
       expect(slideshow.interval.value).toBe(3)
     })
 
@@ -393,7 +380,7 @@ describe('useSlideshow', () => {
       const slideshow = useSlideshow(entries)
 
       slideshow.pause()
-      slideshow.setInterval(3)
+      slideshow.updateInterval(3)
       expect(slideshow.interval.value).toBe(3)
     })
 
@@ -402,7 +389,7 @@ describe('useSlideshow', () => {
       const slideshow = useSlideshow(entries)
 
       slideshow.pause()
-      slideshow.setInterval(30)
+      slideshow.updateInterval(30)
       expect(slideshow.interval.value).toBe(30)
     })
 
@@ -412,13 +399,13 @@ describe('useSlideshow', () => {
 
       slideshow.pause()
 
-      slideshow.setInterval(5)
+      slideshow.updateInterval(5)
       expect(slideshow.interval.value).toBe(5)
 
-      slideshow.setInterval(15)
+      slideshow.updateInterval(15)
       expect(slideshow.interval.value).toBe(15)
 
-      slideshow.setInterval(25)
+      slideshow.updateInterval(25)
       expect(slideshow.interval.value).toBe(25)
     })
 
@@ -430,7 +417,7 @@ describe('useSlideshow', () => {
       expect(slideshow.isPlaying.value).toBe(false)
 
       // This should not throw or cause recursion since isPlaying is false
-      slideshow.setInterval(10)
+      slideshow.updateInterval(10)
       expect(slideshow.isPlaying.value).toBe(false)
     })
   })
@@ -650,7 +637,7 @@ describe('useSlideshow', () => {
       expect(result).toHaveProperty('play')
       expect(result).toHaveProperty('pause')
       expect(result).toHaveProperty('toggle')
-      expect(result).toHaveProperty('setInterval')
+      expect(result).toHaveProperty('updateInterval')
       expect(result).toHaveProperty('enterFullscreen')
       expect(result).toHaveProperty('exitFullscreen')
     })
@@ -665,7 +652,7 @@ describe('useSlideshow', () => {
       expect(typeof result.play).toBe('function')
       expect(typeof result.pause).toBe('function')
       expect(typeof result.toggle).toBe('function')
-      expect(typeof result.setInterval).toBe('function')
+      expect(typeof result.updateInterval).toBe('function')
       expect(typeof result.enterFullscreen).toBe('function')
       expect(typeof result.exitFullscreen).toBe('function')
     })
