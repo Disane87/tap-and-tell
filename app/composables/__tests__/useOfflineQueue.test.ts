@@ -82,6 +82,9 @@ function createMockIndexedDB() {
 const mockIDB = createMockIndexedDB()
 vi.stubGlobal('indexedDB', { open: mockIDB.open })
 
+// Mock navigator (not available in Node environment)
+vi.stubGlobal('navigator', { onLine: true })
+
 // Stable UUID counter so we can predict IDs
 let uuidCounter = 0
 vi.stubGlobal('crypto', {
