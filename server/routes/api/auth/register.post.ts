@@ -1,9 +1,10 @@
 import { eq } from 'drizzle-orm'
-import { users, tenants, tenantMembers, betaInvites } from '~~/server/database/schema'
+import { users, tenants, tenantMembers, tenantInvites, betaInvites } from '~~/server/database/schema'
 import { hashPassword } from '~~/server/utils/password'
 import { createSession, setAuthCookies } from '~~/server/utils/session'
 import { isBetaModeEnabled, getBetaMode } from '~~/server/utils/beta-config'
 import { validateBetaInvite, acceptBetaInvite } from '~~/server/utils/beta'
+import { addTenantMember } from '~~/server/utils/tenant'
 
 interface RegisterBody {
   email: string
@@ -11,6 +12,8 @@ interface RegisterBody {
   name: string
   betaToken?: string
   locale?: string
+  /** Team invite token — auto-accepts team invite after registration. */
+  teamInviteToken?: string
 }
 
 /**
@@ -184,6 +187,60 @@ export default defineEventHandler(async (event) => {
     }
   }
 
+  // Auto-accept team invite if teamInviteToken is provided
+  let teamInviteAccepted = false
+  if (body.teamInviteToken) {
+    try {
+      const [teamInvite] = await db
+        .select()
+        .from(tenantInvites)
+        .where(eq(tenantInvites.token, body.teamInviteToken))
+        .limit(1)
+
+      if (teamInvite && !teamInvite.acceptedAt && !teamInvite.revokedAt && new Date(teamInvite.expiresAt) > new Date()) {
+        await addTenantMember(teamInvite.tenantId, id, teamInvite.role as 'owner' | 'co_owner', teamInvite.invitedBy)
+        await db.update(tenantInvites)
+          .set({ acceptedAt: new Date() })
+          .where(eq(tenantInvites.id, teamInvite.id))
+        teamInviteAccepted = true
+
+        // Notify inviter about acceptance (fire-and-forget)
+        const locale = detectLocaleFromHeader(event)
+        const baseUrl = process.env.PUBLIC_URL || process.env.APP_URL || 'https://tap-and-tell.com'
+
+        Promise.all([
+          db.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, teamInvite.invitedBy)),
+          db.select({ name: tenants.name }).from(tenants).where(eq(tenants.id, teamInvite.tenantId))
+        ]).then(([inviterRows, tenantRows]) => {
+          const inviter = inviterRows[0]
+          const tenant = tenantRows[0]
+          if (inviter?.email) {
+            sendTemplateEmail(
+              locale === 'de' ? 'team_invite_accepted_de' : 'team_invite_accepted',
+              inviter.email,
+              {
+                appName: 'Tap & Tell',
+                inviterName: inviter.name || 'Team Owner',
+                accepteeName: name,
+                accepteeEmail: email,
+                teamName: tenant?.name || 'your team',
+                dashboardUrl: `${baseUrl}/dashboard`
+              },
+              { locale, category: 'notification', userId: teamInvite.invitedBy, tenantId: teamInvite.tenantId }
+            ).catch(() => {
+              // Silently ignore — notification failure must not break registration
+            })
+          }
+        }).catch(() => {
+          // Query failure must not break registration
+        })
+      }
+    } catch (err) {
+      // Team invite acceptance failure must never break registration
+      console.error('[register.post] Failed to auto-accept team invite:', err)
+    }
+  }
+
   const tokens = await createSession(id, email)
   setAuthCookies(event, tokens)
 
@@ -191,7 +248,8 @@ export default defineEventHandler(async (event) => {
     userId: id,
     details: {
       email,
-      betaInvite: betaInvite ? { id: betaInvite.id, plan: betaInvite.grantedPlan, isFounder: betaInvite.isFounder } : null
+      betaInvite: betaInvite ? { id: betaInvite.id, plan: betaInvite.grantedPlan, isFounder: betaInvite.isFounder } : null,
+      teamInviteAccepted
     }
   })
 

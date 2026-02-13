@@ -661,7 +661,12 @@
     "deleteTenant": "Delete guestbook?",
     "deleteConfirm": "This will permanently delete the guestbook and all its entries.",
     "deleteSuccess": "Guestbook deleted",
-    "deleteFailed": "Failed to delete guestbook"
+    "deleteFailed": "Failed to delete guestbook",
+    "switchTenant": "Switch workspace",
+    "tenantRole": {
+      "owner": "Owner",
+      "co_owner": "Co-Owner"
+    }
   },
   "members": {
     "title": "Members",
@@ -670,6 +675,7 @@
     "emailPlaceholder": "Email address",
     "invite": "Invite",
     "inviteSuccess": "Invitation sent!",
+    "inviteSuccessNewUser": "Invitation sent! A registration invite was also created since this user doesn't have an account yet.",
     "inviteFailed": "Failed to send invitation",
     "inviteLinkHint": "Share this link with the invitee:",
     "linkCopied": "Link copied!",
@@ -679,6 +685,17 @@
     "roles": {
       "owner": "Owner",
       "co_owner": "Co-Owner"
+    },
+    "pendingInvites": "Pending Invitations",
+    "noPendingInvites": "No pending invitations",
+    "invitedOn": "Invited on {date}",
+    "cancelSuccess": "Invitation cancelled",
+    "cancelFailed": "Failed to cancel invitation",
+    "inviteStatus": {
+      "pending": "Pending",
+      "accepted": "Accepted",
+      "expired": "Expired",
+      "revoked": "Revoked"
     }
   },
   "invite": {
@@ -686,6 +703,7 @@
     "noToken": "No invitation token provided.",
     "notFound": "Invitation not found.",
     "expired": "This invitation has expired.",
+    "revoked": "This invitation has been cancelled.",
     "youAreInvited": "You have been invited to join",
     "asRole": "as {role}",
     "loginRequired": "You need to sign in to accept this invitation.",

@@ -1,6 +1,9 @@
 import { eq } from 'drizzle-orm'
-import { tenantInvites, tenants } from '~~/server/database/schema'
+import { tenantInvites, tenants, users } from '~~/server/database/schema'
 import { canPerformAction } from '~~/server/utils/tenant'
+import { sendTemplateEmail, detectLocaleFromHeader } from '~~/server/utils/email-service'
+import { isBetaModeEnabled } from '~~/server/utils/beta-config'
+import { createBetaInvite, getBetaInviteByEmail } from '~~/server/utils/beta'
 
 /**
  * POST /api/tenants/:uuid/members/invite
@@ -62,16 +65,76 @@ export default defineEventHandler(async (event) => {
 
   await recordAuditLog(event, 'member.add', { tenantId: uuid, resourceType: 'invite', resourceId: id, details: { email: body.email.trim().toLowerCase() } })
 
+  const inviteeEmail = body.email.trim().toLowerCase()
+
+  // Check if the invited user already has an account
+  const existingUserRows = await db.select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, inviteeEmail))
+  const userExists = !!existingUserRows[0]
+
+  // Prepare invite email
+  const locale = detectLocaleFromHeader(event)
+  const baseUrl = process.env.PUBLIC_URL || process.env.APP_URL || 'https://tap-and-tell.com'
+
+  // Load inviter details for the email
+  const inviterRows = await db.select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, user.id))
+  const inviter = inviterRows[0]
+
+  // Determine invite URL based on user existence and beta mode
+  let inviteUrl: string
+  if (userExists) {
+    // User exists → link to accept-invite page
+    inviteUrl = `${baseUrl}/accept-invite?token=${token}`
+  } else if (isBetaModeEnabled()) {
+    // User doesn't exist + beta mode → create beta invite + link to register with both tokens
+    let betaInvite = await getBetaInviteByEmail(inviteeEmail)
+    if (!betaInvite) {
+      betaInvite = await createBetaInvite({
+        email: inviteeEmail,
+        grantedPlan: 'free',
+        isFounder: false,
+        note: `Co-owner invite for: ${tenant.name}`,
+        expiresInDays: 7,
+        source: 'manual'
+      })
+    }
+    inviteUrl = `${baseUrl}/register?token=${betaInvite.token}&teamInvite=${token}`
+  } else {
+    // User doesn't exist + no beta → link to register with teamInvite token
+    inviteUrl = `${baseUrl}/register?teamInvite=${token}`
+  }
+
+  // Send invite email (fire-and-forget)
+  sendTemplateEmail(
+    locale === 'de' ? 'team_invite_de' : 'team_invite',
+    inviteeEmail,
+    {
+      appName: 'Tap & Tell',
+      inviterName: inviter?.name || user.name || 'A team member',
+      inviterEmail: inviter?.email || '',
+      teamName: tenant.name,
+      inviteUrl,
+      expiresIn: '7 days'
+    },
+    { locale, category: 'transactional', userId: user.id, tenantId: uuid }
+  ).catch((err) => {
+    console.error('[invite.post] Failed to send invite email:', err)
+  })
+
   return {
     success: true,
     data: {
       id,
       tenantId: uuid,
-      email: body.email.trim().toLowerCase(),
+      email: inviteeEmail,
       role: 'co_owner',
       token,
       expiresAt: expiresAt.toISOString(),
       createdAt: now.toISOString()
-    }
+    },
+    userExists
   }
 })

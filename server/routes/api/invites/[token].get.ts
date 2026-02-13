@@ -20,6 +20,7 @@ export default defineEventHandler(async (event) => {
     role: tenantInvites.role,
     expiresAt: tenantInvites.expiresAt,
     acceptedAt: tenantInvites.acceptedAt,
+    revokedAt: tenantInvites.revokedAt,
     createdAt: tenantInvites.createdAt,
     tenantName: tenants.name
   })
@@ -35,6 +36,10 @@ export default defineEventHandler(async (event) => {
 
   if (invite.acceptedAt) {
     throw createError({ statusCode: 410, message: 'Invite already accepted' })
+  }
+
+  if (invite.revokedAt) {
+    throw createError({ statusCode: 410, message: 'Invite has been revoked' })
   }
 
   if (new Date(invite.expiresAt) < new Date()) {

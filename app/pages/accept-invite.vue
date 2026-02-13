@@ -40,9 +40,16 @@ async function loadInvite(): Promise<void> {
       error.value = t('invite.notFound')
     }
   } catch (e: unknown) {
-    const fetchError = e as { statusCode?: number }
+    const fetchError = e as { statusCode?: number; data?: { message?: string } }
     if (fetchError.statusCode === 410) {
-      error.value = t('invite.expired')
+      const msg = fetchError.data?.message || ''
+      if (msg.includes('revoked')) {
+        error.value = t('invite.revoked')
+      } else if (msg.includes('accepted')) {
+        error.value = t('invite.alreadyMember')
+      } else {
+        error.value = t('invite.expired')
+      }
     } else {
       error.value = t('invite.notFound')
     }

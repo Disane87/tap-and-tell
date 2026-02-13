@@ -72,7 +72,8 @@ export default defineEventHandler(async (event) => {
 
     // If email method, send OTP now
     if (tfa.method === 'email') {
-      generateEmailOtp(user.id, user.email)
+      const locale = detectLocaleFromHeader(event)
+      generateEmailOtp(user.id, user.email, locale)
     }
 
     return {

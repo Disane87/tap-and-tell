@@ -64,7 +64,7 @@ const welcomeMessage = computed(() =>
 
 /** Resolved CTA button text from settings or default. */
 const ctaButtonText = computed(() =>
-  props.settings.ctaButtonText || t('landing.cta')
+  props.settings.ctaButtonText?.trim() || t('landing.cta')
 )
 
 /** Header image URL from settings. */

@@ -29,6 +29,8 @@ export interface RegisterData {
   betaToken?: string
   /** User's preferred locale (e.g. 'en', 'de'). */
   locale?: string
+  /** Team invite token — auto-accepts team invite after registration. */
+  teamInviteToken?: string
 }
 
 /**
