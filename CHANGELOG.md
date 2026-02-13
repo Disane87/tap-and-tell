@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.25.0](https://github.com/Disane87/tap-and-tell/compare/v1.24.0...v1.25.0) (2026-02-13)
+
+
+### ✨ Features
+
+* add team invite functionality and email notifications ([ef9ab69](https://github.com/Disane87/tap-and-tell/commit/ef9ab69f7bc8350c26d1068fe02c85a928326960))
+
+
+### 🐛 Bug Fixes
+
+* **test:** mock navigator for Node CI environment ([7e56e6b](https://github.com/Disane87/tap-and-tell/commit/7e56e6bebd3e1d57c3eae60c20a9ee86239acf1b))
+
+
+### ♻️ Code Refactoring
+
+* rename setInterval to updateInterval in useSlideshow ([1f3d5a4](https://github.com/Disane87/tap-and-tell/commit/1f3d5a46ed59993fe7d3a6b48219aca627d4db5b))
+
 ## [1.24.0](https://github.com/Disane87/tap-and-tell/compare/v1.23.2...v1.24.0) (2026-02-08)
 
 
