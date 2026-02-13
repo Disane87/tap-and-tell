@@ -3,7 +3,7 @@
  * Dashboard page showing tenant admin (guestbook list, members, API apps).
  * If no tenant exists, shows a create-tenant flow.
  */
-import { Trash2, Plus, Users, UserPlus, Shield, Copy, BookOpen, Calendar, Home, Eye } from 'lucide-vue-next'
+import { Trash2, Plus, Users, UserPlus, Shield, Copy, BookOpen, Calendar, Home, Eye, Mail, Clock, XCircle, CheckCircle, ChevronsUpDown } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 import type { TenantRole } from '~/types/tenant'
 import type { Guestbook, CreateGuestbookInput } from '~/types/guestbook'
@@ -13,13 +13,34 @@ const router = useRouter()
 const { user, isAuthenticated } = useAuth()
 const { tenants, loading: tenantsLoading, error: tenantsError, fetchTenants } = useTenants()
 
-// Current tenant (first one the user has access to)
-const currentTenant = computed(() => tenants.value[0] ?? null)
+// Selected tenant ID with localStorage persistence
+const TENANT_STORAGE_KEY = 'tapandtell:selectedTenantId'
+const selectedTenantId = ref<string | null>(
+  typeof localStorage !== 'undefined' ? localStorage.getItem(TENANT_STORAGE_KEY) : null
+)
+
+// Current tenant: find by selectedTenantId or fall back to first
+const currentTenant = computed(() => {
+  if (selectedTenantId.value) {
+    const found = tenants.value.find(t => t.id === selectedTenantId.value)
+    if (found) return found
+  }
+  return tenants.value[0] ?? null
+})
 const tenantId = computed(() => currentTenant.value?.id ?? '')
+const hasMultipleTenants = computed(() => tenants.value.length > 1)
+
+/**
+ * Switches to a different tenant.
+ */
+function switchTenant(id: string): void {
+  selectedTenantId.value = id
+  localStorage.setItem(TENANT_STORAGE_KEY, id)
+}
 
 // Guestbooks for current tenant
 const { guestbooks, loading: guestbooksLoading, fetchGuestbooks, createGuestbook, deleteGuestbook } = useGuestbooks(tenantId)
-const { members, fetchMembers, inviteMember, removeMember } = useTenantMembers(tenantId)
+const { members, fetchMembers, inviteMember, removeMember, invites, fetchInvites, cancelInvite } = useTenantMembers(tenantId)
 
 const loading = computed(() => tenantsLoading.value || (currentTenant.value && guestbooksLoading.value))
 
@@ -78,16 +99,29 @@ async function handleDeleteGuestbook(id: string): Promise<void> {
 async function handleInvite(): Promise<void> {
   if (!inviteEmail.value) return
   inviteLoading.value = true
-  const token = await inviteMember(inviteEmail.value)
-  if (token) {
+  const result = await inviteMember(inviteEmail.value)
+  if (result) {
     const baseUrl = window.location.origin
-    lastInviteLink.value = `${baseUrl}/accept-invite?token=${token}`
+    lastInviteLink.value = `${baseUrl}/accept-invite?token=${result.token}`
     inviteEmail.value = ''
-    toast.success(t('members.inviteSuccess'))
+    toast.success(result.userExists ? t('members.inviteSuccess') : t('members.inviteSuccessNewUser'))
+    await fetchInvites()
   } else {
     toast.error(t('members.inviteFailed'))
   }
   inviteLoading.value = false
+}
+
+/**
+ * Handles cancelling a pending invitation.
+ */
+async function handleCancelInvite(inviteId: string): Promise<void> {
+  const success = await cancelInvite(inviteId)
+  if (success) {
+    toast.success(t('members.cancelSuccess'))
+  } else {
+    toast.error(t('members.cancelFailed'))
+  }
 }
 
 /**
@@ -135,7 +169,7 @@ async function loadTenantData(): Promise<void> {
   await fetchGuestbooks()
 
   if (isOwner.value) {
-    await fetchMembers()
+    await Promise.all([fetchMembers(), fetchInvites()])
   }
 }
 
@@ -196,11 +230,46 @@ onMounted(async () => {
       <!-- Header -->
       <div class="mb-6 flex items-center justify-between">
         <div>
-          <h1 class="font-display text-2xl font-semibold text-foreground">
-            {{ currentTenant.name || t('dashboard.title') }}
-          </h1>
+          <div class="flex items-center gap-3">
+            <h1 class="font-display text-2xl font-semibold text-foreground">
+              {{ currentTenant.name || t('dashboard.title') }}
+            </h1>
+            <!-- Tenant Switcher -->
+            <DropdownMenu v-if="hasMultipleTenants">
+              <DropdownMenuTrigger as-child>
+                <Button variant="outline" size="sm" class="gap-1">
+                  <ChevronsUpDown class="h-3.5 w-3.5" />
+                  <span class="sr-only">{{ t('dashboard.switchTenant') }}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" class="w-64">
+                <DropdownMenuLabel>{{ t('dashboard.switchTenant') }}</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  v-for="tenant in tenants"
+                  :key="tenant.id"
+                  class="flex items-center justify-between"
+                  :class="{ 'bg-accent': tenant.id === currentTenant?.id }"
+                  @click="switchTenant(tenant.id)"
+                >
+                  <span class="truncate">{{ tenant.name }}</span>
+                  <span
+                    class="ml-2 shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium"
+                    :class="tenant.role === 'owner'
+                      ? 'bg-primary/10 text-primary'
+                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'"
+                  >
+                    {{ t(`dashboard.tenantRole.${tenant.role || 'owner'}`) }}
+                  </span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           <p class="text-sm text-muted-foreground">
             {{ guestbooks.length }} {{ guestbooks.length === 1 ? t('guestbookAdmin.guestbook') : t('guestbookAdmin.guestbooks') }}
+            <span v-if="userRole && userRole !== 'owner'" class="ml-1">
+              · {{ t(`dashboard.tenantRole.${userRole}`) }}
+            </span>
           </p>
         </div>
         <div class="flex items-center gap-2">
@@ -407,6 +476,56 @@ onMounted(async () => {
               </div>
             </CardContent>
           </Card>
+
+          <!-- Pending Invitations -->
+          <div v-if="invites.length > 0">
+            <h3 class="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+              <Mail class="h-4 w-4" />
+              {{ t('members.pendingInvites') }}
+            </h3>
+            <div class="space-y-2">
+              <Card v-for="inv in invites" :key="inv.id">
+                <CardContent class="flex items-center justify-between p-4">
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      <Mail class="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p class="text-sm font-medium text-foreground">{{ inv.email }}</p>
+                      <p class="text-xs text-muted-foreground">
+                        {{ t('members.invitedOn', { date: new Date(inv.createdAt).toLocaleDateString() }) }}
+                        <span v-if="inv.inviterName"> &middot; {{ inv.inviterName }}</span>
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+                      :class="{
+                        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400': inv.status === 'pending',
+                        'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400': inv.status === 'accepted',
+                        'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400': inv.status === 'expired' || inv.status === 'revoked'
+                      }"
+                    >
+                      <Clock v-if="inv.status === 'pending'" class="h-3 w-3" />
+                      <CheckCircle v-else-if="inv.status === 'accepted'" class="h-3 w-3" />
+                      <XCircle v-else class="h-3 w-3" />
+                      {{ t(`members.inviteStatus.${inv.status}`) }}
+                    </span>
+                    <Button
+                      v-if="inv.status === 'pending'"
+                      variant="ghost"
+                      size="icon"
+                      class="text-muted-foreground hover:text-destructive"
+                      @click="handleCancelInvite(inv.id)"
+                    >
+                      <Trash2 class="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
 
           <!-- Members List -->
           <Card v-for="member in members" :key="member.id">

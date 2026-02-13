@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
-import { tenantInvites } from '~~/server/database/schema'
+import { tenantInvites, users, tenants } from '~~/server/database/schema'
 import { addTenantMember, getUserTenantRole } from '~~/server/utils/tenant'
+import { sendTemplateEmail, detectLocaleFromHeader } from '~~/server/utils/email-service'
 import type { TenantRole } from '~~/server/database/schema'
 
 /**
@@ -33,6 +34,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 410, message: 'Invite already accepted' })
   }
 
+  if (invite.revokedAt) {
+    throw createError({ statusCode: 410, message: 'Invite has been revoked' })
+  }
+
   if (new Date(invite.expiresAt) < new Date()) {
     throw createError({ statusCode: 410, message: 'Invite has expired' })
   }
@@ -50,6 +55,37 @@ export default defineEventHandler(async (event) => {
   await db.update(tenantInvites)
     .set({ acceptedAt: new Date() })
     .where(eq(tenantInvites.id, invite.id))
+
+  // Notify the inviter that the invitation was accepted (fire-and-forget)
+  const locale = detectLocaleFromHeader(event)
+  const baseUrl = process.env.PUBLIC_URL || process.env.APP_URL || 'https://tap-and-tell.com'
+
+  Promise.all([
+    db.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, invite.invitedBy)),
+    db.select({ name: tenants.name }).from(tenants).where(eq(tenants.id, invite.tenantId))
+  ]).then(([inviterRows, tenantRows]) => {
+    const inviter = inviterRows[0]
+    const tenant = tenantRows[0]
+    if (inviter?.email) {
+      sendTemplateEmail(
+        locale === 'de' ? 'team_invite_accepted_de' : 'team_invite_accepted',
+        inviter.email,
+        {
+          appName: 'Tap & Tell',
+          inviterName: inviter.name || 'Team Owner',
+          accepteeName: user.name || 'A user',
+          accepteeEmail: user.email || '',
+          teamName: tenant?.name || 'your team',
+          dashboardUrl: `${baseUrl}/dashboard`
+        },
+        { locale, category: 'notification', userId: invite.invitedBy, tenantId: invite.tenantId }
+      ).catch((err) => {
+        console.error('[accept.post] Failed to send acceptance notification:', err)
+      })
+    }
+  }).catch((err) => {
+    console.error('[accept.post] Failed to load inviter/tenant for notification:', err)
+  })
 
   return {
     success: true,

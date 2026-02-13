@@ -132,6 +132,9 @@ export async function runMigrations(connectionString: string): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_tenant_invites_token ON tenant_invites(token);
       CREATE INDEX IF NOT EXISTS idx_tenant_invites_email ON tenant_invites(email);
 
+      -- Tenant invites: add revoked_at column for invite cancellation
+      ALTER TABLE tenant_invites ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ;
+
       CREATE TABLE IF NOT EXISTS audit_logs (
         id VARCHAR(24) PRIMARY KEY,
         tenant_id VARCHAR(24) REFERENCES tenants(id) ON DELETE SET NULL,

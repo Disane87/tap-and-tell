@@ -54,8 +54,9 @@ export default defineEventHandler(async (event) => {
     enabled: 'false'
   })
 
-  // Generate and "send" OTP
-  generateEmailOtp(user.id, user.email)
+  // Generate and "send" OTP with locale
+  const locale = detectLocaleFromHeader(event)
+  generateEmailOtp(user.id, user.email, locale)
 
   return { success: true, data: { method: 'email', message: 'Verification code sent to your email' } }
 })

@@ -22,6 +22,9 @@ const betaToken = ref<string | null>(null)
 const betaInvite = ref<BetaInviteValidation | null>(null)
 const validatingToken = ref(false)
 
+// Team invite token from query param (for co-owner auto-accept after registration)
+const teamInviteToken = computed(() => (route.query.teamInvite as string) || undefined)
+
 /**
  * Validates the beta token from URL query parameter.
  */
@@ -112,7 +115,8 @@ async function handleRegister() {
     email: email.value,
     password: password.value,
     betaToken: betaToken.value || undefined,
-    locale: locale.value
+    locale: locale.value,
+    teamInviteToken: teamInviteToken.value
   })
 
   if (success) {

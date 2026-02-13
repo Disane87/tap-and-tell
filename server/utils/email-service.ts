@@ -55,6 +55,26 @@ interface FallbackTemplate {
 }
 
 const FALLBACK_TEMPLATES: Record<string, FallbackTemplate> = {
+  otp_code: {
+    subject: {
+      en: 'Your Tap & Tell verification code',
+      de: 'Dein Tap & Tell Verifizierungscode'
+    },
+    html: {
+      en: `<div style="text-align:center;">
+<h2 style="margin:0 0 8px;color:#111;font-size:20px;">Your verification code</h2>
+<p style="margin:0 0 20px;color:#555;">Use this code to verify your identity:</p>
+<div style="display:inline-block;padding:16px 32px;background:#f4f4f5;border-radius:8px;letter-spacing:6px;font-size:32px;font-weight:700;color:#18181b;font-family:monospace;">{{code}}</div>
+<p style="margin:20px 0 0;color:#999;font-size:13px;">This code expires in 10 minutes. If you didn't request this, you can safely ignore this email.</p>
+</div>`,
+      de: `<div style="text-align:center;">
+<h2 style="margin:0 0 8px;color:#111;font-size:20px;">Dein Verifizierungscode</h2>
+<p style="margin:0 0 20px;color:#555;">Verwende diesen Code, um deine Identit\u00e4t zu best\u00e4tigen:</p>
+<div style="display:inline-block;padding:16px 32px;background:#f4f4f5;border-radius:8px;letter-spacing:6px;font-size:32px;font-weight:700;color:#18181b;font-family:monospace;">{{code}}</div>
+<p style="margin:20px 0 0;color:#999;font-size:13px;">Dieser Code l\u00e4uft in 10 Minuten ab. Wenn du dies nicht angefordert hast, kannst du diese E-Mail ignorieren.</p>
+</div>`
+    }
+  },
   waitlist_confirmation: {
     subject: {
       en: "You're on the Tap & Tell waitlist!",
@@ -73,6 +93,40 @@ const FALLBACK_TEMPLATES: Record<string, FallbackTemplate> = {
 <p style="margin:0 0 12px;color:#555;">Teile deinen Empfehlungslink, um aufzusteigen:</p>
 <p style="margin:0 0 24px;"><a href="{{referralLink}}" style="color:#6366f1;word-break:break-all;">{{referralLink}}</a></p>
 <p style="margin:0;color:#555;">Wir benachrichtigen dich, sobald ein Platz frei wird!</p>`
+    }
+  },
+  team_invite: {
+    subject: {
+      en: "You've been invited to join {{teamName}}",
+      de: 'Du wurdest zu {{teamName}} eingeladen'
+    },
+    html: {
+      en: `<h2 style="margin:0 0 16px;color:#111;">Team Invitation</h2>
+<p style="margin:0 0 12px;color:#555;"><strong>{{inviterName}}</strong> ({{inviterEmail}}) has invited you to join <strong>{{teamName}}</strong> on <strong>{{appName}}</strong>.</p>
+<p style="margin:0 0 24px;"><a href="{{inviteUrl}}" style="display:inline-block;padding:12px 24px;background-color:#6366f1;color:#fff;text-decoration:none;border-radius:6px;">Accept Invitation &rarr;</a></p>
+<p style="margin:0 0 12px;color:#999;font-size:12px;">This invitation expires in {{expiresIn}}.</p>
+<p style="margin:0;color:#999;font-size:12px;">If the button doesn't work, copy this link: {{inviteUrl}}</p>`,
+      de: `<h2 style="margin:0 0 16px;color:#111;">Team-Einladung</h2>
+<p style="margin:0 0 12px;color:#555;"><strong>{{inviterName}}</strong> ({{inviterEmail}}) hat dich eingeladen, <strong>{{teamName}}</strong> auf <strong>{{appName}}</strong> beizutreten.</p>
+<p style="margin:0 0 24px;"><a href="{{inviteUrl}}" style="display:inline-block;padding:12px 24px;background-color:#6366f1;color:#fff;text-decoration:none;border-radius:6px;">Einladung annehmen &rarr;</a></p>
+<p style="margin:0 0 12px;color:#999;font-size:12px;">Diese Einladung l\u00e4uft in {{expiresIn}} ab.</p>
+<p style="margin:0;color:#999;font-size:12px;">Falls der Button nicht funktioniert, kopiere diesen Link: {{inviteUrl}}</p>`
+    }
+  },
+  team_invite_accepted: {
+    subject: {
+      en: '{{accepteeName}} accepted your invitation',
+      de: '{{accepteeName}} hat deine Einladung angenommen'
+    },
+    html: {
+      en: `<h2 style="margin:0 0 16px;color:#111;">Invitation Accepted</h2>
+<p style="margin:0 0 12px;color:#555;">Hi {{inviterName}},</p>
+<p style="margin:0 0 12px;color:#555;"><strong>{{accepteeName}}</strong> ({{accepteeEmail}}) has accepted your invitation and joined <strong>{{teamName}}</strong>.</p>
+<p style="margin:0 0 24px;"><a href="{{dashboardUrl}}" style="display:inline-block;padding:10px 20px;background-color:#6366f1;color:#fff;text-decoration:none;border-radius:6px;">View in Dashboard</a></p>`,
+      de: `<h2 style="margin:0 0 16px;color:#111;">Einladung angenommen</h2>
+<p style="margin:0 0 12px;color:#555;">Hi {{inviterName}},</p>
+<p style="margin:0 0 12px;color:#555;"><strong>{{accepteeName}}</strong> ({{accepteeEmail}}) hat deine Einladung angenommen und ist <strong>{{teamName}}</strong> beigetreten.</p>
+<p style="margin:0 0 24px;"><a href="{{dashboardUrl}}" style="display:inline-block;padding:10px 20px;background-color:#6366f1;color:#fff;text-decoration:none;border-radius:6px;">Im Dashboard ansehen</a></p>`
     }
   },
   invite_accepted: {

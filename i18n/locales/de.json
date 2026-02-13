@@ -661,7 +661,12 @@
     "deleteTenant": "Gästebuch löschen?",
     "deleteConfirm": "Das Gästebuch und alle Einträge werden unwiderruflich gelöscht.",
     "deleteSuccess": "Gästebuch gelöscht",
-    "deleteFailed": "Gästebuch konnte nicht gelöscht werden"
+    "deleteFailed": "Gästebuch konnte nicht gelöscht werden",
+    "switchTenant": "Workspace wechseln",
+    "tenantRole": {
+      "owner": "Besitzer",
+      "co_owner": "Co-Owner"
+    }
   },
   "members": {
     "title": "Mitglieder",
@@ -670,6 +675,7 @@
     "emailPlaceholder": "E-Mail-Adresse",
     "invite": "Einladen",
     "inviteSuccess": "Einladung gesendet!",
+    "inviteSuccessNewUser": "Einladung gesendet! Da der Nutzer noch keinen Account hat, wurde auch eine Registrierungseinladung erstellt.",
     "inviteFailed": "Einladung konnte nicht gesendet werden",
     "inviteLinkHint": "Teile diesen Link mit der eingeladenen Person:",
     "linkCopied": "Link kopiert!",
@@ -679,6 +685,17 @@
     "roles": {
       "owner": "Besitzer",
       "co_owner": "Co-Owner"
+    },
+    "pendingInvites": "Ausstehende Einladungen",
+    "noPendingInvites": "Keine ausstehenden Einladungen",
+    "invitedOn": "Eingeladen am {date}",
+    "cancelSuccess": "Einladung storniert",
+    "cancelFailed": "Einladung konnte nicht storniert werden",
+    "inviteStatus": {
+      "pending": "Ausstehend",
+      "accepted": "Angenommen",
+      "expired": "Abgelaufen",
+      "revoked": "Storniert"
     }
   },
   "invite": {
@@ -686,6 +703,7 @@
     "noToken": "Kein Einladungs-Token angegeben.",
     "notFound": "Einladung nicht gefunden.",
     "expired": "Diese Einladung ist abgelaufen.",
+    "revoked": "Diese Einladung wurde storniert.",
     "youAreInvited": "Du wurdest eingeladen, beizutreten",
     "asRole": "als {role}",
     "loginRequired": "Du musst dich anmelden, um diese Einladung anzunehmen.",

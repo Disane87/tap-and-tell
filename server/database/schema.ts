@@ -132,6 +132,8 @@ export const tenantInvites = pgTable('tenant_invites', {
   token: text('token').notNull().unique(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   acceptedAt: timestamp('accepted_at', { withTimezone: true }),
+  /** When the invite was revoked/cancelled. Non-null means revoked. */
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 }, (table) => [
   index('idx_tenant_invites_token').on(table.token),

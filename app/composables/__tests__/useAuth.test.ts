@@ -860,6 +860,54 @@ describe('useAuth', () => {
     })
   })
 
+  describe('register - teamInviteToken support', () => {
+    it('passes teamInviteToken to API when provided', async () => {
+      const mockUser = { id: '1', email: 'invited@example.com', name: 'Invited User' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+
+      const { register } = useAuth()
+      await register({
+        email: 'invited@example.com',
+        password: 'SecurePass123!',
+        name: 'Invited User',
+        betaToken: 'beta-token-123',
+        teamInviteToken: 'team-invite-token-abc'
+      })
+
+      expect(mockFetch).toHaveBeenCalledWith('/api/auth/register', {
+        method: 'POST',
+        body: {
+          email: 'invited@example.com',
+          password: 'SecurePass123!',
+          name: 'Invited User',
+          betaToken: 'beta-token-123',
+          teamInviteToken: 'team-invite-token-abc'
+        }
+      })
+    })
+
+    it('does not include teamInviteToken when not provided', async () => {
+      const mockUser = { id: '1', email: 'new@example.com', name: 'New' }
+      mockFetch.mockResolvedValueOnce({ success: true, data: mockUser })
+
+      const { register } = useAuth()
+      await register({
+        email: 'new@example.com',
+        password: 'SecurePass123!',
+        name: 'New'
+      })
+
+      expect(mockFetch).toHaveBeenCalledWith('/api/auth/register', {
+        method: 'POST',
+        body: {
+          email: 'new@example.com',
+          password: 'SecurePass123!',
+          name: 'New'
+        }
+      })
+    })
+  })
+
   describe('login - sets user on success', () => {
     it('sets user state when login succeeds', async () => {
       const mockUser = { id: '123', email: 'test@example.com', name: 'Test' }

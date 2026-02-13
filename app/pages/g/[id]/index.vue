@@ -323,7 +323,7 @@ onUnmounted(() => {
               {{ welcomeMessage }}
             </p>
             <Button class="mt-6 w-full" size="lg" @click="sheetOpen = true">
-              {{ (guestbookInfo?.settings?.ctaButtonText as string) || t('landing.cta') }}
+              {{ (guestbookInfo?.settings?.ctaButtonText as string)?.trim() || t('landing.cta') }}
             </Button>
             <NuxtLink
               v-if="hasEntries"

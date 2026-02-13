@@ -106,6 +106,11 @@ watch(activeTab, (tab) => {
 
 async function handleSave(): Promise<void> {
   saving.value = true
+  // Trim ctaButtonText; convert empty/whitespace-only to undefined to use i18n default
+  if (localSettings.ctaButtonText !== undefined) {
+    const trimmed = localSettings.ctaButtonText.trim()
+    localSettings.ctaButtonText = trimmed || undefined
+  }
   const result = await updateGuestbook(props.guestbook.id, { settings: localSettings })
   saving.value = false
 

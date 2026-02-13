@@ -171,10 +171,11 @@ describe('useTenantMembers', () => {
   })
 
   describe('inviteMember', () => {
-    it('should invite member and return token on success', async () => {
+    it('should invite member and return token + userExists on success', async () => {
       mockFetch.mockResolvedValueOnce({
         success: true,
-        data: { token: 'invite-token-abc' }
+        data: { token: 'invite-token-abc' },
+        userExists: true
       })
 
       const tenantId = computed(() => 'tenant-123')
@@ -185,7 +186,35 @@ describe('useTenantMembers', () => {
         '/api/tenants/tenant-123/members/invite',
         { method: 'POST', body: { email: 'newuser@example.com' } }
       )
-      expect(result).toBe('invite-token-abc')
+      expect(result).toEqual({ token: 'invite-token-abc', userExists: true })
+    })
+
+    it('should return userExists false for unregistered users', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: true,
+        data: { token: 'invite-token-xyz' },
+        userExists: false
+      })
+
+      const tenantId = computed(() => 'tenant-123')
+      const { inviteMember } = useTenantMembers(tenantId)
+      const result = await inviteMember('unregistered@example.com')
+
+      expect(result).toEqual({ token: 'invite-token-xyz', userExists: false })
+    })
+
+    it('should default userExists to true when not provided', async () => {
+      mockFetch.mockResolvedValueOnce({
+        success: true,
+        data: { token: 'invite-token-abc' }
+        // userExists not in response
+      })
+
+      const tenantId = computed(() => 'tenant-123')
+      const { inviteMember } = useTenantMembers(tenantId)
+      const result = await inviteMember('user@example.com')
+
+      expect(result).toEqual({ token: 'invite-token-abc', userExists: true })
     })
 
     it('should return null on invite error', async () => {

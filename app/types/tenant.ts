@@ -61,6 +61,7 @@ export interface TenantInvite {
   token: string
   expiresAt: string
   acceptedAt: string | null
+  revokedAt: string | null
   createdAt: string
   tenantName?: string
 }
