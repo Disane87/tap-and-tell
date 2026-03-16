@@ -397,15 +397,6 @@ All API endpoints at a glance. Authenticated endpoints use HTTP-only JWT cookies
 | `GET` | `/api/tenants/[uuid]/analytics/devices` | Device breakdown |
 | `GET` | `/api/tenants/[uuid]/analytics/funnel` | Conversion funnel |
 
-## Beta & Waitlist
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/beta/status` | Get current beta mode |
-| `GET` | `/api/beta/validate` | Validate beta invite token |
-| `POST` | `/api/waitlist/join` | Join the waitlist |
-| `GET` | `/api/waitlist/status` | Check waitlist position |
-
 ### Quick Start Example
 
 ```bash
