@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.27.1](https://github.com/Disane87/tap-and-tell/compare/v1.27.0...v1.27.1) (2026-03-16)
+
+
+### 🐛 Bug Fixes
+
+* remove og-locale plugin causing SyntaxError on init ([2504399](https://github.com/Disane87/tap-and-tell/commit/2504399b72348d7e87b4552a2265df00d1bba673))
+
 ## [1.27.0](https://github.com/Disane87/tap-and-tell/compare/v1.26.2...v1.27.0) (2026-03-16)
 
 
