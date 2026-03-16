@@ -264,92 +264,164 @@ tap-and-tell/
 
 ## Storage Layer
 
-No database needed! Tap & Tell uses **file-based JSON storage** — simple, portable, and zero-config:
+Tap & Tell uses **PostgreSQL 16+** with Row-Level Security (RLS) for multi-tenant data isolation. Photos are stored on disk with **AES-256-GCM per-tenant encryption**.
 
 ```
-.data/
-├── entries.json          # Array of GuestEntry objects (newest-first)
-└── photos/               # Image files named {entryId}.{ext}
-    ├── abc123.jpg
-    ├── def456.png
-    └── ...
+PostgreSQL (via Drizzle ORM)
+├── users, sessions, user_two_factor     # Auth & 2FA
+├── tenants, tenant_members              # Multi-tenancy
+├── guestbooks, entries                  # Core data (RLS-protected)
+└── audit_logs, api_apps, api_tokens     # Security & API access
+
+.data/photos/
+├── [guestbookId]/[entryId].[ext]        # AES-256-GCM encrypted photos
+└── ...
 ```
 
 > [!NOTE]
-> 💡 The storage directory is configurable via the `DATA_DIR` environment variable. Default: `.data/`
+> Photo storage is configurable via `STORAGE_DRIVER` (`local`, `vercel-blob`, or `s3`) and `DATA_DIR` (default: `.data/`).
 
 ---
 
 # 🔌 API Reference
 
-All API endpoints at a glance:
+All API endpoints at a glance. Authenticated endpoints use HTTP-only JWT cookies with CSRF protection.
 
-## Public Endpoints
+## Public — Guest Endpoints (No Auth)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/entries` | Fetch all approved entries (newest-first) |
-| `POST` | `/api/entries` | Create a new entry (name, message, photo, answers) |
-| `GET` | `/api/entries/[id]` | Fetch a single entry by ID |
-| `DELETE` | `/api/entries/[id]` | Delete an entry |
-| `GET` | `/api/photos/[filename]` | Serve a photo file (1-year cache) |
+| `GET` | `/api/g/[id]/info` | Guestbook info (name, settings, type) |
+| `GET` | `/api/g/[id]/entries` | Approved entries for a guestbook |
+| `POST` | `/api/g/[id]/entries` | Create a new guest entry (rate-limited) |
+| `GET` | `/api/photos/[tenantId]/[filename]` | Serve encrypted photo |
 | `GET` | `/api/health` | Health check endpoint |
+| `GET` | `/api/og` | Locale-aware OG image (`?lang=de\|en`) |
 
-## Authentication Endpoints
+## Authentication & Profile
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/auth/login` | Authenticate with email/password, set JWT cookies |
-| `POST` | `/api/auth/register` | Register a new owner account |
+| `POST` | `/api/auth/login` | Login with email/password, set JWT cookies |
+| `POST` | `/api/auth/register` | Register a new account |
 | `POST` | `/api/auth/logout` | Clear auth cookies |
-| `GET` | `/api/auth/me` | Get current user profile |
 | `POST` | `/api/auth/refresh` | Refresh access token |
+| `GET` | `/api/auth/me` | Get current user profile |
+| `PUT` | `/api/auth/me` | Update name and/or email |
+| `DELETE` | `/api/auth/me` | Delete account (requires password) |
+| `PUT` | `/api/auth/password` | Change password |
+| `GET` | `/api/auth/csrf` | Get CSRF token |
+| `POST` | `/api/auth/avatar` | Upload avatar (multipart, max 5 MB) |
+| `DELETE` | `/api/auth/avatar` | Delete avatar |
+| `GET` | `/api/auth/avatar/[userId]` | Serve avatar image (public) |
 
-## Tenant/Guestbook Endpoints (JWT Cookie Required)
+## Two-Factor Authentication (2FA)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/auth/2fa/setup` | Start 2FA setup (returns QR code) |
+| `POST` | `/api/auth/2fa/verify-setup` | Verify TOTP code to activate 2FA |
+| `GET` | `/api/auth/2fa/status` | Check if 2FA is enabled |
+| `POST` | `/api/auth/2fa/verify` | Verify 2FA code during login |
+| `POST` | `/api/auth/2fa/disable` | Disable 2FA |
+| `POST` | `/api/auth/2fa/resend` | Resend email OTP code |
+
+## Tenant Management (JWT Required)
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `GET` | `/api/tenants` | List user's tenants |
 | `POST` | `/api/tenants` | Create a new tenant |
-| `GET` | `/api/tenants/[uuid]/guestbooks` | List guestbooks for tenant |
+| `GET` | `/api/tenants/[uuid]` | Get tenant details |
+| `PUT` | `/api/tenants/[uuid]` | Update tenant settings |
+| `DELETE` | `/api/tenants/[uuid]` | Delete tenant |
+| `POST` | `/api/tenants/[uuid]/rotate-key` | Rotate encryption key |
+
+## Guestbook Management (JWT Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/tenants/[uuid]/guestbooks` | List guestbooks with entry counts |
 | `POST` | `/api/tenants/[uuid]/guestbooks` | Create a new guestbook |
-| `GET` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries` | Fetch all entries (admin) |
+| `GET` | `/api/tenants/[uuid]/guestbooks/[gbUuid]` | Get guestbook details |
+| `PUT` | `/api/tenants/[uuid]/guestbooks/[gbUuid]` | Update guestbook settings |
+| `DELETE` | `/api/tenants/[uuid]/guestbooks/[gbUuid]` | Delete guestbook (cascades entries) |
+| `POST` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/header` | Upload header image |
+| `DELETE` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/header` | Delete header image |
+| `POST` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/background` | Upload background image |
+| `DELETE` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/background` | Delete background image |
+
+## Entry Moderation (JWT Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries` | All entries (admin view) |
 | `PATCH` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries/[id]` | Update entry status |
 | `DELETE` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries/[id]` | Delete an entry |
+| `POST` | `/api/tenants/[uuid]/guestbooks/[gbUuid]/entries/bulk` | Bulk status update |
 
-### Authentication
+## Team Members (JWT Required)
 
-Admin endpoints use HTTP-only JWT cookies with CSRF protection:
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/tenants/[uuid]/members` | List team members |
+| `POST` | `/api/tenants/[uuid]/members/invite` | Invite team member |
+| `GET` | `/api/tenants/[uuid]/members/invites` | List pending invites |
+| `DELETE` | `/api/tenants/[uuid]/members/invites/[id]` | Cancel invite |
+| `DELETE` | `/api/tenants/[uuid]/members/[userId]` | Remove team member |
+| `GET` | `/api/invites/[token]` | Get invite details (public) |
+| `POST` | `/api/invites/accept` | Accept team invite (public) |
+
+## API Apps & Tokens (JWT Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/tenants/[uuid]/apps` | List API apps |
+| `POST` | `/api/tenants/[uuid]/apps` | Create API app |
+| `GET` | `/api/tenants/[uuid]/apps/[appId]` | Get API app details |
+| `PUT` | `/api/tenants/[uuid]/apps/[appId]` | Update API app |
+| `DELETE` | `/api/tenants/[uuid]/apps/[appId]` | Delete API app |
+| `GET` | `/api/tenants/[uuid]/apps/[appId]/tokens` | List tokens |
+| `POST` | `/api/tenants/[uuid]/apps/[appId]/tokens` | Create token |
+| `DELETE` | `/api/tenants/[uuid]/apps/[appId]/tokens/[tokenId]` | Revoke token |
+| `GET` | `/api/scopes` | List available API scopes |
+
+## Analytics (JWT Required)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/analytics/events` | Track analytics event |
+| `GET` | `/api/tenants/[uuid]/analytics/overview` | Dashboard overview |
+| `GET` | `/api/tenants/[uuid]/analytics/traffic` | Traffic analytics |
+| `GET` | `/api/tenants/[uuid]/analytics/sources` | Traffic sources |
+| `GET` | `/api/tenants/[uuid]/analytics/devices` | Device breakdown |
+| `GET` | `/api/tenants/[uuid]/analytics/funnel` | Conversion funnel |
+
+## Beta & Waitlist
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/beta/status` | Get current beta mode |
+| `GET` | `/api/beta/validate` | Validate beta invite token |
+| `POST` | `/api/waitlist/join` | Join the waitlist |
+| `GET` | `/api/waitlist/status` | Check waitlist position |
+
+### Quick Start Example
 
 ```bash
 # Login
 curl -X POST /api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email": "you@example.com", "password": "your-password"}'
+# → Sets access_token and refresh_token cookies
 
-# Response: Sets access_token and refresh_token cookies
-
-# Use cookies for authenticated endpoints
-curl /api/tenants \
-  -b "access_token=...; refresh_token=..."
-```
-
-### Creating an Entry
-
-```bash
-curl -X POST /api/entries \
+# Create a guest entry (public, no auth)
+curl -X POST /api/g/your-guestbook-id/entries \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Jane Doe",
-    "message": "What an amazing event! Thanks for having me!",
-    "photo": "data:image/jpeg;base64,...",
-    "answers": {
-      "favoriteColor": "Blue",
-      "favoriteFood": "Pizza",
-      "coffeeOrTea": "coffee",
-      "beachOrMountains": "beach",
-      "howWeMet": "We met at university in 2015!"
-    }
+    "message": "What an amazing event!",
+    "photo": "data:image/jpeg;base64,..."
   }'
 ```
 
