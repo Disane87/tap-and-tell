@@ -217,6 +217,10 @@ Let's peek under the hood! Here's how Tap & Tell is built:
 | **Components** | shadcn-vue (headless UI) |
 | **Language** | TypeScript 5.9 |
 | **Icons** | Lucide Vue Next |
+| **Database** | PostgreSQL 16+ with Row-Level Security (RLS) |
+| **ORM** | Drizzle ORM |
+| **Auth** | JWT (jose) + 2FA (TOTP / Email OTP) |
+| **Encryption** | AES-256-GCM per-tenant photo encryption |
 | **i18n** | @nuxtjs/i18n (EN + DE) |
 | **PDF Generation** | jsPDF |
 | **QR Codes** | qrcode |
@@ -224,7 +228,7 @@ Let's peek under the hood! Here's how Tap & Tell is built:
 | **Toasts** | vue-sonner |
 | **PWA** | @vite-pwa/nuxt |
 | **Package Manager** | pnpm |
-| **Deployment** | Vercel / Docker |
+| **Deployment** | Docker (self-hosted) |
 
 ## Project Structure
 
@@ -244,11 +248,13 @@ tap-and-tell/
 │
 ├── server/                       # ⚙️ Nitro server
 │   ├── routes/api/               #    API endpoints
-│   │   ├── entries/              #    Public entry CRUD
-│   │   ├── admin/                #    Protected admin endpoints
-│   │   └── photos/               #    Photo serving
-│   ├── utils/                    #    Server utilities (storage, auth)
-│   └── types/                    #    Server type definitions
+│   │   ├── g/                    #    Public guest endpoints (flat routes)
+│   │   ├── auth/                 #    Authentication + 2FA
+│   │   ├── tenants/              #    Tenant/guestbook management
+│   │   └── photos/               #    Photo serving (encrypted)
+│   ├── database/                 #    Schema + migrations (Drizzle ORM)
+│   ├── utils/                    #    Server utilities (crypto, auth, storage)
+│   └── plugins/                  #    Server startup plugins
 │
 ├── i18n/                         # 🌍 Internationalization
 │   └── locales/                  #    EN + DE translation files
@@ -583,11 +589,11 @@ Entries are validated server-side with these constraints:
 
 | Property | Value |
 |----------|-------|
-| Algorithm | HMAC-SHA256 |
-| Format | `base64(expiry).signature` |
-| Expiry | 24 hours |
-| Storage | `sessionStorage` (client) |
-| Comparison | Timing-safe |
+| Algorithm | HS256 (JWT via `jose`) |
+| Access Token | 15 minutes, HTTP-only cookie |
+| Refresh Token | 7 days, HTTP-only cookie, stored in DB |
+| CSRF | Double-submit cookie pattern |
+| 2FA | TOTP (RFC 6238) + Email OTP |
 
 </details>
 
@@ -601,7 +607,7 @@ Want to contribute or customize? Here's how to get the development environment r
 
 ```bash
 pnpm install              # Install dependencies
-pnpm dev                  # Start development server (http://localhost:3000)
+pnpm dev                  # Start development server (https://localhost:3000)
 pnpm build                # Build for production
 pnpm preview              # Preview production build locally
 pnpm exec nuxi typecheck  # Run TypeScript type checking
@@ -615,8 +621,8 @@ Here are the "why"s behind the design:
 |----------|-----------|
 | **SSR Disabled** | Client-side SPA avoids hydration mismatches with localStorage, NFC APIs, and browser-only features |
 | **Module-Level State** | Composables use module-level `ref()` instead of `useState()` to prevent SSR payload conflicts |
-| **File-Based Storage** | Zero-config, portable, no database setup — perfect for event-specific deployments |
-| **HMAC Tokens** | Stateless authentication with 24hr expiry — no session store needed |
+| **PostgreSQL + RLS** | Multi-tenant isolation via Row-Level Security, per-tenant encryption for photos |
+| **JWT Cookies** | HTTP-only access (15min) + refresh (7d) tokens with CSRF protection |
 | **Client-Side Compression** | Reduces upload size and server load — images compressed before sending |
 | **IndexedDB Offline Queue** | Entries are never lost, even without internet — syncs automatically when back online |
 | **3-Layer Theme Init** | Prevents FOUC completely — no flash between page load and theme application |
