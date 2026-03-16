@@ -5,13 +5,16 @@
 [![pnpm](https://img.shields.io/badge/pnpm-package_manager-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 [![License](https://img.shields.io/github/license/Disane87/tap-and-tell)](LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/Disane87/tap-and-tell?color=red)](https://github.com/Disane87/tap-and-tell/issues)
-[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
-
 # 🎯 Tap & Tell — NFC-Enabled Digital Guestbook
 
 Hey there! 👋 **Tap & Tell** is a modern, NFC-powered digital guestbook that transforms how guests leave their mark at events. Guests tap their phone on an NFC tag (or scan a QR code), and a beautiful multi-step wizard guides them through leaving their name, photo, and a personal message. No app install required! 📱✨
 
 > Perfect for weddings 💍, birthday parties 🎂, corporate events 🏢, or any gathering where you want to capture memories digitally!
+
+> [!NOTE]
+> **🤖 AI-Aided Development (AIAD)**
+>
+> This project openly uses AI-assisted development (e.g. Claude Code) to accelerate workflows, improve code quality, and gain more development momentum. All AI-generated code is reviewed and approved by humans — this is not a vibe-coding project, but a deliberate effort to build a useful product while exploring the boundaries, benefits, and trade-offs of AI-aided development.
 
 ---
 
@@ -33,7 +36,6 @@ Glad you asked! Here's the good stuff:
 - 🔄 **Offline Support** — Entries are queued in IndexedDB when offline and synced when back online
 - 📱 **PWA Ready** — Install as a Progressive Web App on any device
 - 🐳 **Docker Support** — Ready-to-use Dockerfile and docker-compose for easy self-hosting
-- 🚀 **Vercel Deployment** — One-click deploy to Vercel with zero config
 
 </details>
 
@@ -148,78 +150,6 @@ docker run -d \
 
 > [!IMPORTANT]
 > 📂 Mount a volume to `/app/.data` to persist your guestbook entries and photos across container restarts!
-
----
-
-# ☁️ Vercel Deployment
-
-Deploy to Vercel with the following steps:
-
-## 1. Fork & Import
-
-1. Fork this repository
-2. Import the project in [Vercel](https://vercel.com/)
-
-## 2. Configure Vercel Blob Storage
-
-Since Vercel's serverless functions have ephemeral filesystems, you need Vercel Blob for persistent photo storage:
-
-1. In your Vercel project, go to **Storage** → **Create** → **Blob**
-2. Name it (e.g., `tap-and-tell-blob`)
-3. Connect it to your project
-4. The `BLOB_READ_WRITE_TOKEN` will be automatically added to your environment
-
-## 3. Configure PostgreSQL
-
-1. In your Vercel project, go to **Storage** → **Create** → **Postgres**
-2. Name it (e.g., `tap-and-tell-db`)
-3. Connect it to your project
-4. The `POSTGRES_URL` will be automatically added to your environment
-
-## 4. Set Required Environment Variables
-
-In **Settings** → **Environment Variables**, add:
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `JWT_SECRET` | ✅ | 32+ character random string for JWT signing |
-| `CSRF_SECRET` | ✅ | 32+ character random string for CSRF tokens |
-| `ENCRYPTION_MASTER_KEY` | ✅ | 64 hex characters for photo encryption |
-| `STORAGE_DRIVER` | ✅ | Set to `vercel-blob` for production |
-| `NODE_ENV` | ✅ | Set to `production` |
-
-Generate secure secrets with:
-```bash
-# JWT_SECRET / CSRF_SECRET
-openssl rand -base64 32
-
-# ENCRYPTION_MASTER_KEY (64 hex chars)
-openssl rand -hex 32
-```
-
-> [!CAUTION]
-> ⚠️ **Security**: The application will refuse to start in production if insecure default secrets are detected!
-
-## 5. Deploy
-
-Click **Deploy** and you're live! 🚀
-
-## CI/CD (Automatic)
-
-This repository includes a GitHub Actions workflow (`.github/workflows/deploy.yml`) that:
-
-- ✅ Runs all unit tests
-- ✅ Type-checks the codebase
-- ✅ Builds the application
-- ✅ Deploys to Vercel (preview for PRs, production for main)
-
-To enable CI/CD, add these secrets to your GitHub repository:
-
-| Secret | Description |
-|--------|-------------|
-| `VERCEL_TOKEN` | Your Vercel API token |
-| `VERCEL_ORG_ID` | Your Vercel organization ID |
-| `VERCEL_PROJECT_ID` | Your Vercel project ID |
 
 ---
 
@@ -666,17 +596,6 @@ style: formatting changes
 test: add or update tests
 chore: maintenance tasks
 ```
-
----
-
-# 📋 Roadmap
-
-Tap & Tell follows a structured development plan with 32+ implementation phases:
-
-- ✅ **Plans 00–15** — Core features (form wizard, guestbook, admin, theme, i18n, NFC, photos)
-- 🚧 **Plans 16–32** — Enhancements (slideshow, PDF export, offline support, PWA, QR codes, moderation)
-
-Check the `plans/` directory for detailed step-by-step implementation documents.
 
 ---
 
