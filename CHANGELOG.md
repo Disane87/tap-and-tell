@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.26.1](https://github.com/Disane87/tap-and-tell/compare/v1.26.0...v1.26.1) (2026-03-16)
+
+
+### 🐛 Bug Fixes
+
+* update OG image to match warm landing page design ([7795cd1](https://github.com/Disane87/tap-and-tell/commit/7795cd14d3ea1a15b9324ae1f3e06dcab9919898)), closes [#FAF6F1](https://github.com/Disane87/tap-and-tell/issues/FAF6F1) [#E07A5](https://github.com/Disane87/tap-and-tell/issues/E07A5)
+
 ## [1.26.0](https://github.com/Disane87/tap-and-tell/compare/v1.25.0...v1.26.0) (2026-03-16)
 
 
