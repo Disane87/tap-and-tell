@@ -374,4 +374,4 @@ jobs:
 
       - name: Skip notification
         if: env.SAAS_REPO_PAT == ''
-        run: echo "::warning::SAAS_REPO_PAT not set — SaaS repo not notified (fallback: 6h schedule)"
+        run: 'echo "::warning::SAAS_REPO_PAT not set - SaaS repo not notified (fallback: 6h schedule)"'
