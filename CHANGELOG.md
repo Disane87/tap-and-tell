@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.28.2](https://github.com/Disane87/tap-and-tell/compare/v1.28.1...v1.28.2) (2026-03-17)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** include hidden files in artifact upload (.output starts with dot) ([f859c1e](https://github.com/Disane87/tap-and-tell/commit/f859c1e9a8f327a3c8a5cf4615c80577d6300bce))
+
 ## [1.28.1](https://github.com/Disane87/tap-and-tell/compare/v1.28.0...v1.28.1) (2026-03-17)
 
 
