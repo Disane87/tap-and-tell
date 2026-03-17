@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.28.4](https://github.com/Disane87/tap-and-tell/compare/v1.28.3...v1.28.4) (2026-03-17)
+
+
+### 🐛 Bug Fixes
+
+* **docker:** add DB_SSL env var to disable SSL for container-to-container DB connections ([5fffae3](https://github.com/Disane87/tap-and-tell/commit/5fffae3bc318b438d005d7525b97f9f1e8381e9c))
+* **ci:** fix YAML syntax error in notify-saas step ([3d5105c](https://github.com/Disane87/tap-and-tell/commit/3d5105c942ddbd9daad853a73e948d910febccef))
+
 ## [1.28.3](https://github.com/Disane87/tap-and-tell/compare/v1.28.2...v1.28.3) (2026-03-17)
 
 
