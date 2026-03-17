@@ -197,6 +197,7 @@ jobs:
           name: nuxt-output
           path: .output
           retention-days: 3
+          include-hidden-files: true
 
   # =============================================================================
   # Stage 4: Security Audit (parallel, non-blocking)
