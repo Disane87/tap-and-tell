@@ -12,6 +12,7 @@ on:
 permissions:
   contents: read
   packages: write
+  actions: read
 
 env:
   REGISTRY: ghcr.io
@@ -21,7 +22,6 @@ jobs:
   build-and-push:
     name: Build & Push Docker Image
     runs-on: ubuntu-latest
-    # Only run if Release actually published a new version (or manual trigger)
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout
@@ -39,6 +39,39 @@ jobs:
           else
             echo "Building Docker image for $TAG"
           fi
+
+      # Download pre-built .output/ from the CI workflow that preceded Release
+      - name: Find CI run artifact
+        if: steps.tag.outputs.version != ''
+        id: find-artifact
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Find the most recent successful CI run on main
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'ci.yml',
+              branch: 'main',
+              status: 'success',
+              per_page: 1
+            });
+            if (runs.data.workflow_runs.length === 0) {
+              core.setFailed('No successful CI run found');
+              return;
+            }
+            const runId = runs.data.workflow_runs[0].id;
+            core.setOutput('run-id', runId);
+            console.log(`Found CI run ${runId}`);
+
+      - name: Download build artifact
+        if: steps.tag.outputs.version != '' && steps.find-artifact.outputs.run-id
+        uses: actions/download-artifact@v4
+        with:
+          name: nuxt-output
+          path: .output
+          run-id: ${{ steps.find-artifact.outputs.run-id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up QEMU
         if: steps.tag.outputs.version != ''
@@ -74,6 +107,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: Dockerfile.prebuilt
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

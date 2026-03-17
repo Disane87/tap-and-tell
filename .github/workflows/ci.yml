@@ -190,6 +190,14 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Upload build artifact
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuxt-output
+          path: .output
+          retention-days: 3
+
   # =============================================================================
   # Stage 4: Security Audit (parallel, non-blocking)
   # =============================================================================
