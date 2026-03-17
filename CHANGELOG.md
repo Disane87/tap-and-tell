@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.28.3](https://github.com/Disane87/tap-and-tell/compare/v1.28.2...v1.28.3) (2026-03-17)
+
+
+### 🐛 Bug Fixes
+
+* **ci:** add dockerignore for prebuilt Dockerfile — allow .output in context ([4d818a8](https://github.com/Disane87/tap-and-tell/commit/4d818a8d25b41433ee8fad345c6cd7b31b0a80f8))
+
 ## [1.28.2](https://github.com/Disane87/tap-and-tell/compare/v1.28.1...v1.28.2) (2026-03-17)
 
 
