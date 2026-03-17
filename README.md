@@ -121,13 +121,58 @@ DATA_DIR=.data
 
 Prefer containers? We've got you covered!
 
-### Docker Compose (Recommended)
+### Docker Compose — Production (Recommended)
+
+The `docker-compose.prod.yml` is a self-contained stack (app + PostgreSQL) ready for **Portainer** or any Docker host.
+
+**1. Generate secrets**
+
+All secrets must be set before first start. Generate them with `openssl`:
 
 ```bash
-# Production
-docker compose -f docker-compose.prod.yml up -d
+# JWT signing secret (64-char hex)
+openssl rand -hex 32
 
-# Development
+# CSRF token secret (64-char hex)
+openssl rand -hex 32
+
+# Photo encryption master key (64-char hex)
+openssl rand -hex 32
+
+# PostgreSQL password (64-char hex)
+openssl rand -hex 32
+
+# API token secret (base64)
+openssl rand -base64 32
+```
+
+**2. Configure environment variables**
+
+Set the generated values in `docker-compose.prod.yml` or pass them as environment variables:
+
+| Variable | Format | Description |
+|---|---|---|
+| `POSTGRES_PASSWORD` | 64-char hex | PostgreSQL password (same in `postgres` and `app` services) |
+| `JWT_SECRET` | 64-char hex | JWT signing key for authentication |
+| `CSRF_SECRET` | 64-char hex | CSRF double-submit cookie secret |
+| `ENCRYPTION_MASTER_KEY` | 64-char hex | AES-256-GCM photo encryption key |
+| `TOKEN_SECRET` | base64 string | API token signing secret |
+
+> [!CAUTION]
+> Never commit secrets to version control. Use environment variables, Docker secrets, or Portainer's environment variable UI instead.
+
+**3. Deploy**
+
+```bash
+# Direct Docker Compose
+docker compose -f docker-compose.prod.yml up -d
+```
+
+Or in **Portainer**: Stacks → Add Stack → paste the compose file → set environment variables in the UI.
+
+### Docker Compose — Development
+
+```bash
 docker compose up -d
 ```
 
@@ -141,15 +186,16 @@ docker build -t tap-and-tell .
 docker run -d \
   -p 3000:3000 \
   -e POSTGRES_URL=postgresql://user:password@host:5432/tapandtell \
-  -e JWT_SECRET=your-secure-jwt-secret \
-  -e CSRF_SECRET=your-secure-csrf-secret \
-  -e ENCRYPTION_MASTER_KEY=your-64-char-hex-key \
-  -v ./data:/app/.data \
+  -e JWT_SECRET=$(openssl rand -hex 32) \
+  -e CSRF_SECRET=$(openssl rand -hex 32) \
+  -e ENCRYPTION_MASTER_KEY=$(openssl rand -hex 32) \
+  -e TOKEN_SECRET=$(openssl rand -base64 32) \
+  -v tap-and-tell-data:/app/data \
   tap-and-tell
 ```
 
 > [!IMPORTANT]
-> 📂 Mount a volume to `/app/.data` to persist your guestbook entries and photos across container restarts!
+> 📂 Mount a volume to `/app/data` to persist your guestbook entries and photos across container restarts!
 
 ---
 
