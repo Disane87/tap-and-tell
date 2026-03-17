@@ -52,7 +52,7 @@ function getPool(): Pool {
   if (_pool) return _pool
 
   const config = useRuntimeConfig()
-  const connectionString = config.postgresUrl
+  const connectionString = config.postgresUrl || process.env.POSTGRES_URL || process.env.DATABASE_URL
 
   if (!connectionString) {
     throw new Error(

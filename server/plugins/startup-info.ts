@@ -18,7 +18,7 @@ export default defineNitroPlugin(() => {
   log.kv('Node Version', process.version)
 
   // Database
-  const dbUrl = config.postgresUrl
+  const dbUrl = config.postgresUrl || process.env.POSTGRES_URL || process.env.DATABASE_URL
   if (dbUrl) {
     // Mask password in connection string for logging
     const maskedUrl = dbUrl.replace(/:([^:@]+)@/, ':***@')

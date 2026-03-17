@@ -1,14 +1,101 @@
-# Production docker-compose with additional security and features
-# Usage: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Production docker-compose for Portainer / self-hosted deployment
+# See README.md for setup instructions and how to generate secrets.
+#
+# ┌─────────────────────────────────────────────────────────────────┐
+# │  REQUIRED environment variables                                 │
+# │  Set via .env file, Portainer UI, or shell export               │
+# │                                                                 │
+# │  POSTGRES_PASSWORD      — openssl rand -hex 32                  │
+# │  JWT_SECRET             — openssl rand -hex 32                  │
+# │  CSRF_SECRET            — openssl rand -hex 32                  │
+# │  ENCRYPTION_MASTER_KEY  — openssl rand -hex 32                  │
+# └─────────────────────────────────────────────────────────────────┘
+
+x-defaults: &defaults
+  restart: always
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
 
 services:
+  postgres:
+    <<: *defaults
+    image: postgres:16-alpine
+    container_name: tap-and-tell-db
+    environment:
+      POSTGRES_DB: tapandtell
+      POSTGRES_USER: tapandtell
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?Run: openssl rand -hex 32}"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tapandtell']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   app:
-    restart: always
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    <<: *defaults
+    image: ghcr.io/disane87/tap-and-tell:latest
+    container_name: tap-and-tell
+    ports:
+      - '3000:3000'
+    volumes:
+      - tap-and-tell-data:/app/data
+    environment:
+      # ── Core ────────────────────────────────────────────────────
+      NODE_ENV: production
+      DATA_DIR: /app/data
+
+      # ── Database (required) ─────────────────────────────────────
+      POSTGRES_URL: "postgresql://tapandtell:${POSTGRES_PASSWORD:?Run: openssl rand -hex 32}@postgres:5432/tapandtell"
+
+      # ── Secrets (required — all MUST be overridden) ─────────────
+      JWT_SECRET: "${JWT_SECRET:?Run: openssl rand -hex 32}"
+      CSRF_SECRET: "${CSRF_SECRET:?Run: openssl rand -hex 32}"
+      ENCRYPTION_MASTER_KEY: "${ENCRYPTION_MASTER_KEY:?Run: openssl rand -hex 32}"
+
+      # ── Public URL (optional — for OG tags, canonical URLs) ─────
+      # NUXT_PUBLIC_SITE_URL: https://your-domain.com
+
+      # ── Beta access control (optional) ──────────────────────────
+      # BETA_MODE: private        # private | waitlist | open (default: private)
+      # ADMIN_EMAILS: ""          # comma-separated admin emails
+
+      # ── Admin seed user (optional — remove after first login) ───
+      # ADMIN_SEED_EMAIL: admin@example.com
+      # ADMIN_SEED_PASSWORD: <strong-password>
+      # ADMIN_SEED_NAME: Admin
+
+      # ── Email via Resend (optional — logs to console if unset) ──
+      # RESEND_API_KEY: re_...
+      # RESEND_FROM: "Tap & Tell <noreply@your-domain.com>"
+      # PUBLIC_URL: https://your-domain.com   # used in email links
+
+      # ── Error tracking (optional — disabled if unset) ───────────
+      # NUXT_PUBLIC_SENTRY_DSN: https://...@sentry.io/...
+      # NUXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE: "0"
+
+      # ── Storage driver (optional — defaults to local) ───────────
+      # STORAGE_DRIVER: local     # local | vercel-blob | s3
+      # BLOB_READ_WRITE_TOKEN: "" # required if vercel-blob
+      # S3_BUCKET: ""             # required if s3
+      # S3_REGION: ""
+      # S3_ENDPOINT: ""
+      # S3_ACCESS_KEY_ID: ""
+      # S3_SECRET_ACCESS_KEY: ""
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
     deploy:
       resources:
         limits:
@@ -16,40 +103,8 @@ services:
         reservations:
           memory: 256M
 
-  # Optional: Traefik reverse proxy
-  # Uncomment below to enable HTTPS with automatic certificates
-  # traefik:
-  #   image: traefik:v3.0
-  #   container_name: traefik
-  #   restart: always
-  #   command:
-  #     - "--api.insecure=false"
-  #     - "--providers.docker=true"
-  #     - "--providers.docker.exposedbydefault=false"
-  #     - "--entrypoints.web.address=:80"
-  #     - "--entrypoints.websecure.address=:443"
-  #     - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
-  #     - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
-  #     - "--certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}"
-  #     - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   volumes:
-  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
-  #     - "letsencrypt:/letsencrypt"
-
-  # Optional: Watchtower for automatic updates
-  # Uncomment below to enable auto-updates
-  # watchtower:
-  #   image: containrrr/watchtower
-  #   container_name: watchtower
-  #   restart: always
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   environment:
-  #     - WATCHTOWER_CLEANUP=true
-  #     - WATCHTOWER_POLL_INTERVAL=86400  # Check every 24 hours
-
-# volumes:
-#   letsencrypt:
+volumes:
+  pgdata:
+    driver: local
+  tap-and-tell-data:
+    driver: local

@@ -13,7 +13,7 @@ const log = createLogger('database')
  */
 export default defineNitroPlugin(async () => {
   const config = useRuntimeConfig()
-  const connectionString = config.postgresUrl
+  const connectionString = config.postgresUrl || process.env.POSTGRES_URL || process.env.DATABASE_URL
 
   if (!connectionString) {
     log.error('No POSTGRES_URL or DATABASE_URL configured - database features disabled')
