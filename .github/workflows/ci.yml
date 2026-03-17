@@ -9,10 +9,21 @@ on:
     branches:
       - main
       - develop
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+  pull-requests: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   # =============================================================================
@@ -159,8 +170,31 @@ jobs:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
 
+  security:
+    name: Security Audit
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Run security audit
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
   # =============================================================================
-  # Stage 3: Build (after tests pass)
+  # Stage 3: Build (after lint + tests pass)
   # =============================================================================
   build:
     name: Build
@@ -200,15 +234,22 @@ jobs:
           include-hidden-files: true
 
   # =============================================================================
-  # Stage 4: Security Audit (parallel, non-blocking)
+  # Stage 4: Semantic Release (only on main, after build)
   # =============================================================================
-  security:
-    name: Security Audit
-    needs: install
+  release:
+    name: Release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    outputs:
+      new-release: ${{ steps.semantic.outputs.new_release_published }}
+      version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -221,16 +262,99 @@ jobs:
           node-version: '20'
           cache: 'pnpm'
 
-      - name: Run security audit
-        run: pnpm audit --audit-level=high
-        continue-on-error: true
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 23
+          extra_plugins: |
+            @semantic-release/changelog@6
+            @semantic-release/git@10
+            conventional-changelog-conventionalcommits@7
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release summary
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          RELEASE_TYPE="${{ steps.semantic.outputs.new_release_type }}"
+          case $RELEASE_TYPE in
+            major) TYPE_EMOJI="💥" ;;
+            minor) TYPE_EMOJI="✨" ;;
+            patch) TYPE_EMOJI="🐛" ;;
+            *) TYPE_EMOJI="📦" ;;
+          esac
+          echo "## 🎉 Release v${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | \`v${{ steps.semantic.outputs.new_release_version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Type** | $TYPE_EMOJI $RELEASE_TYPE |" >> $GITHUB_STEP_SUMMARY
 
   # =============================================================================
-  # Stage 5: Notify SaaS Repo (only on push to main, after build succeeds)
+  # Stage 5: Docker (only after new release, reuses build artifact)
+  # =============================================================================
+  docker:
+    name: Docker
+    needs: [build, release]
+    if: needs.release.outputs.new-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nuxt-output
+          path: .output
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}},value=v${{ needs.release.outputs.version }}
+            type=semver,pattern={{major}}.{{minor}},value=v${{ needs.release.outputs.version }}
+            type=semver,pattern={{major}},value=v${{ needs.release.outputs.version }}
+            type=sha,prefix=
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.prebuilt
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  # =============================================================================
+  # Stage 6: Notify SaaS Repo (after build, only on main)
   # =============================================================================
   notify-saas:
     name: Notify SaaS Repo
-    needs: [build]
+    needs: build
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
@@ -250,6 +374,4 @@ jobs:
 
       - name: Skip notification
         if: env.SAAS_REPO_PAT == ''
-        run: |
-          echo "::warning::SAAS_REPO_PAT secret not set. SaaS repo will not be notified automatically."
-          echo "The SaaS repo has a scheduled check every 6 hours as fallback."
+        run: echo "::warning::SAAS_REPO_PAT not set — SaaS repo not notified (fallback: 6h schedule)"
