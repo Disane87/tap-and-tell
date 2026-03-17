@@ -1,0 +1,11 @@
+# Minimal ignore for prebuilt Dockerfile — .output MUST be included
+node_modules
+.pnpm-store
+.nuxt
+.data
+.git
+.env
+.env.*
+coverage
+plans
+docs
