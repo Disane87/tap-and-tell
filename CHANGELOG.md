@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.27.2](https://github.com/Disane87/tap-and-tell/compare/v1.27.1...v1.27.2) (2026-03-17)
+
+
+### 🐛 Bug Fixes
+
+* **docker:** rewrite prod compose for Portainer and add process.env fallback for DB URL ([095e6b9](https://github.com/Disane87/tap-and-tell/commit/095e6b94feb1d57ca0ba7eb35c5b757d2a53ed37))
+
+
+### 📚 Documentation
+
+* add AIAD note, remove deploy section and roadmap from README ([31e7041](https://github.com/Disane87/tap-and-tell/commit/31e7041cfd14e7d3220b529bf95326311438d290))
+* fix outdated README sections (PostgreSQL, auth, structure) ([ae635c8](https://github.com/Disane87/tap-and-tell/commit/ae635c8c8bdd77819e860f17b4d2b83a51d21735))
+* remove SaaS-only Beta & Waitlist section from OSS README ([c855c24](https://github.com/Disane87/tap-and-tell/commit/c855c24b82cc2c8af9f6c9c57cab75fa89509e1b))
+* update API reference with all 84 endpoints ([880bc8d](https://github.com/Disane87/tap-and-tell/commit/880bc8d53da6ccf17ea2bc842851f9afd4fa87ad))
+
 ## [1.27.1](https://github.com/Disane87/tap-and-tell/compare/v1.27.0...v1.27.1) (2026-03-16)
 
 
