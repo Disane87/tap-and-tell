@@ -65,7 +65,9 @@ function getPool(): Pool {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 5000,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined
+    ssl: process.env.DB_SSL === 'false' ? false
+      : process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false }
+      : undefined
   }
 
   _pool = new Pool(poolConfig)

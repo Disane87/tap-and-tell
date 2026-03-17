@@ -157,6 +157,7 @@ Set the generated values in `docker-compose.prod.yml` or pass them as environmen
 | `CSRF_SECRET` | 64-char hex | CSRF double-submit cookie secret |
 | `ENCRYPTION_MASTER_KEY` | 64-char hex | AES-256-GCM photo encryption key |
 | `TOKEN_SECRET` | base64 string | API token signing secret |
+| `DB_SSL` | `"false"` | Set to `"false"` for Docker-to-Docker connections (no SSL). Omit for external DBs (Neon, Supabase) where SSL is required. |
 
 > [!CAUTION]
 > Never commit secrets to version control. Use environment variables, Docker secrets, or Portainer's environment variable UI instead.
@@ -186,6 +187,7 @@ docker build -t tap-and-tell .
 docker run -d \
   -p 3000:3000 \
   -e POSTGRES_URL=postgresql://user:password@host:5432/tapandtell \
+  -e DB_SSL=false \
   -e JWT_SECRET=$(openssl rand -hex 32) \
   -e CSRF_SECRET=$(openssl rand -hex 32) \
   -e ENCRYPTION_MASTER_KEY=$(openssl rand -hex 32) \

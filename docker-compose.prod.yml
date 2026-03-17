@@ -51,6 +51,7 @@ services:
 
       # ── Database (required) ─────────────────────────────────────
       POSTGRES_URL: "postgresql://tapandtell:${POSTGRES_PASSWORD:?Run: openssl rand -hex 32}@postgres:5432/tapandtell"
+      DB_SSL: "false"            # disable SSL for container-to-container connections
 
       # ── Secrets (required — all MUST be overridden) ─────────────
       JWT_SECRET: "${JWT_SECRET:?Run: openssl rand -hex 32}"

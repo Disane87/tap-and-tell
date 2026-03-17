@@ -29,6 +29,7 @@ services:
     environment:
       - NODE_ENV=production
       - POSTGRES_URL=postgresql://tapandtell:tapandtell_dev@postgres:5432/tapandtell
+      - DB_SSL=false
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - TOKEN_SECRET=${TOKEN_SECRET:-change-me-in-production}
       - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
