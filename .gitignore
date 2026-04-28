@@ -28,3 +28,6 @@ nul
 # SSL certificates
 certs/
 **/coverage/**
+# Playwright test output
+playwright-report/
+test-results/
