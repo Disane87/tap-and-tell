@@ -318,9 +318,6 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/icons/apple-touch-icon.svg' },
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/icons/apple-touch-icon.svg' },
 
-        // Manifest
-        { rel: 'manifest', href: '/manifest.webmanifest' },
-
         // Canonical URL
         { rel: 'canonical', href: siteConfig.url },
 

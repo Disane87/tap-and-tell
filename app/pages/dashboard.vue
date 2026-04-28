@@ -63,22 +63,23 @@ const createLoading = ref(false)
 async function handleCreateGuestbook(): Promise<void> {
   if (!newGuestbookName.value.trim()) return
   createLoading.value = true
-
-  const input: CreateGuestbookInput = {
-    name: newGuestbookName.value.trim(),
-    type: newGuestbookType.value
+  try {
+    const input: CreateGuestbookInput = {
+      name: newGuestbookName.value.trim(),
+      type: newGuestbookType.value
+    }
+    const gb = await createGuestbook(input)
+    if (gb) {
+      toast.success(t('guestbookAdmin.createSuccess'))
+      showCreateDialog.value = false
+      newGuestbookName.value = ''
+      newGuestbookType.value = 'permanent'
+    } else {
+      toast.error(t('guestbookAdmin.createFailed'))
+    }
+  } finally {
+    createLoading.value = false
   }
-
-  const gb = await createGuestbook(input)
-  if (gb) {
-    toast.success(t('guestbookAdmin.createSuccess'))
-    showCreateDialog.value = false
-    newGuestbookName.value = ''
-    newGuestbookType.value = 'permanent'
-  } else {
-    toast.error(t('guestbookAdmin.createFailed'))
-  }
-  createLoading.value = false
 }
 
 /**
@@ -334,7 +335,7 @@ onMounted(async () => {
                 </div>
               </div>
 
-              <div v-if="isOwner" class="opacity-0 group-hover:opacity-100 transition-opacity">
+              <div v-if="isOwner" class="opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                 <AlertDialog>
                   <AlertDialogTrigger as-child>
                     <Button variant="ghost" size="icon" class="text-muted-foreground hover:text-destructive">
@@ -369,7 +370,7 @@ onMounted(async () => {
                 </Button>
               </NuxtLink>
               <NuxtLink :to="`/g/${gb.id}`" target="_blank">
-                <Button variant="outline" size="icon-sm" class="h-8 w-8">
+                <Button variant="outline" size="icon-sm" class="h-8 w-8" :aria-label="t('dashboard.viewGuestbook')">
                   <Eye class="h-4 w-4" />
                 </Button>
               </NuxtLink>

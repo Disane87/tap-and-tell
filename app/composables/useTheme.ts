@@ -1,3 +1,6 @@
+import { ref, readonly } from 'vue'
+import { useCookieConsent } from './useCookieConsent'
+
 /**
  * Theme mode options.
  */
@@ -65,7 +68,7 @@ export function useTheme() {
     const modes: ThemeMode[] = ['light', 'dark', 'system']
     const currentIndex = modes.indexOf(theme.value)
     const nextIndex = (currentIndex + 1) % modes.length
-    setTheme(modes[nextIndex])
+    setTheme(modes[nextIndex]!)
   }
 
   /**

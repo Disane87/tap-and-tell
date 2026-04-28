@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Photo must be 5MB or less' })
   }
 
-  if (body.photo && !validatePhotoMimeType(body.photo)) {
+  if (body.photo && !validatePhotoMimeType(body.photo).valid) {
     throw createError({ statusCode: 400, message: 'Invalid photo format' })
   }
 

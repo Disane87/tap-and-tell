@@ -400,7 +400,7 @@
         "description": "Transparenter Code, den du prüfen und selbst hosten kannst."
       }
     },
-    "cta": {
+    "ctaSection": {
       "title": "Bereit zum Starten?",
       "subtitle": "Erstelle dein erstes Gästebuch in unter 2 Minuten. Für immer kostenlos für private Nutzung.",
       "button": "Gästebuch erstellen"
@@ -587,7 +587,10 @@
   "slideshow": {
     "exit": "Beenden",
     "settings": "Einstellungen",
-    "interval": "Intervall"
+    "interval": "Intervall",
+    "intervalLabel": "Folienintervall",
+    "noEntries": "Noch keine Einträge vorhanden.",
+    "backToGuestbook": "Zurück zum Gästebuch"
   },
   "photo": {
     "upload": "Foto hochladen",
@@ -977,7 +980,8 @@
       "socialLinks": "Social Links",
       "addLink": "Link hinzufügen",
       "noLinks": "Keine Social Links hinzugefügt",
-      "urlPlaceholder": "https://..."
+      "urlPlaceholder": "https://...",
+      "removeLink": "Social Link entfernen"
     },
     "customQuestions": {
       "label": "Eigene Fragen",
@@ -1023,6 +1027,8 @@
     "currentPassword": "Aktuelles Passwort",
     "newPassword": "Neues Passwort",
     "confirmPassword": "Passwort bestätigen",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
     "passwordMismatch": "Passwörter stimmen nicht überein",
     "twoFactor": "Zwei-Faktor-Authentifizierung",
     "twoFactorEnabled": "Aktiviert",
@@ -1032,6 +1038,7 @@
     "dangerZone": "Gefahrenzone",
     "deleteAccount": "Account löschen",
     "deleteAccountDescription": "Account und alle Daten unwiderruflich löschen.",
+    "deleteAccountDialogDescription": "Dabei werden dein Account, alle Gästebücher, Einträge und hochgeladenen Fotos unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteAccountConfirm": "Passwort zur Bestätigung eingeben",
     "deleteAccountButton": "Account löschen",
     "saved": "Profil aktualisiert",

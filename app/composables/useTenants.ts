@@ -1,3 +1,4 @@
+import { ref, readonly } from 'vue'
 import type { Tenant, CreateTenantInput, UpdateTenantInput } from '~/types/tenant'
 
 /**

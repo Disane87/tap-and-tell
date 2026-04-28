@@ -53,7 +53,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (body.photo && !validatePhotoMimeType(body.photo)) {
+  if (body.photo && !validatePhotoMimeType(body.photo).valid) {
     throw createError({
       statusCode: 400,
       message: 'Invalid photo format'

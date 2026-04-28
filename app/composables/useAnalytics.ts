@@ -408,8 +408,9 @@ export function useAnalytics(guestbookId?: Ref<string> | string) {
     flushEventQueue()
   }
 
-  // Flush events when page is about to unload
-  if (typeof window !== 'undefined') {
+  // Flush events when page is about to unload — registered once at module level to avoid duplicates
+  if (typeof window !== 'undefined' && !(window as Window & { __analyticsFlushRegistered?: boolean }).__analyticsFlushRegistered) {
+    ;(window as Window & { __analyticsFlushRegistered?: boolean }).__analyticsFlushRegistered = true
     window.addEventListener('beforeunload', flush)
     window.addEventListener('pagehide', flush)
   }

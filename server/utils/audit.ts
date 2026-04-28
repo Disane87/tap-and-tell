@@ -23,9 +23,13 @@ export type AuditAction =
   | 'guestbook.create'
   | 'guestbook.update'
   | 'guestbook.delete'
+  | 'guestbook.background.upload'
+  | 'guestbook.background.delete'
   | 'member.add'
   | 'member.remove'
   | 'key.rotate'
+  | 'api_token.create'
+  | 'api_token.revoke'
 
 /**
  * Records an audit log entry.

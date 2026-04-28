@@ -400,7 +400,7 @@
         "description": "Transparent code you can audit and self-host."
       }
     },
-    "cta": {
+    "ctaSection": {
       "title": "Ready to Start?",
       "subtitle": "Create your first guestbook in under 2 minutes. Free forever for personal use.",
       "button": "Create Your Guestbook"
@@ -587,7 +587,10 @@
   "slideshow": {
     "exit": "Exit",
     "settings": "Settings",
-    "interval": "Interval"
+    "interval": "Interval",
+    "intervalLabel": "Slide interval",
+    "noEntries": "No entries to display yet.",
+    "backToGuestbook": "Back to Guestbook"
   },
   "photo": {
     "upload": "Upload Photo",
@@ -977,7 +980,8 @@
       "socialLinks": "Social Links",
       "addLink": "Add Link",
       "noLinks": "No social links added",
-      "urlPlaceholder": "https://..."
+      "urlPlaceholder": "https://...",
+      "removeLink": "Remove social link"
     },
     "customQuestions": {
       "label": "Custom Questions",
@@ -1023,6 +1027,8 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "passwordMismatch": "Passwords do not match",
     "twoFactor": "Two-Factor Authentication",
     "twoFactorEnabled": "Enabled",
@@ -1032,6 +1038,7 @@
     "dangerZone": "Danger Zone",
     "deleteAccount": "Delete Account",
     "deleteAccountDescription": "Permanently delete your account and all data.",
+    "deleteAccountDialogDescription": "This will permanently delete your account, all your guestbooks, entries, and uploaded photos. This action cannot be undone.",
     "deleteAccountConfirm": "Type your password to confirm",
     "deleteAccountButton": "Delete my account",
     "saved": "Profile updated",

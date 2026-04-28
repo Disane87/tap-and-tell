@@ -1,6 +1,6 @@
 import { pgTable, text, timestamp, uniqueIndex, index, jsonb, varchar, boolean, serial, integer } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
-import type { GuestbookSettings, GuestbookType } from '~~/server/types/guestbook'
+import type { GuestbookSettings, GuestbookType } from '../types/guestbook'
 
 /**
  * Users table for owner authentication.

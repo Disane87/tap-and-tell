@@ -5,15 +5,15 @@
 import type { Ref } from 'vue'
 import type { GuestEntry, CreateGuestEntryInput } from '~/types/guest'
 
-const entries = ref<GuestEntry[]>([])
-const loading = ref(false)
-
 /**
  * Public guest operations for a guestbook.
  * @param guestbookId - Computed or ref guestbook ID
  */
 export function useGuestbook(guestbookId: Ref<string> | string) {
   const id = typeof guestbookId === 'string' ? ref(guestbookId) : guestbookId
+
+  const entries = ref<GuestEntry[]>([])
+  const loading = ref(false)
 
   /**
    * Fetches approved entries for the guestbook.

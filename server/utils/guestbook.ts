@@ -1,6 +1,7 @@
 import { eq, and, sql } from 'drizzle-orm'
 import { guestbooks, tenants, entries } from '~~/server/database/schema'
 import type { GuestbookSettings, GuestbookType } from '~~/server/types/guestbook'
+import type { DrizzleDb } from '~~/server/utils/drizzle'
 
 /**
  * Retrieves a guestbook by ID.
@@ -18,11 +19,14 @@ export async function getGuestbookById(id: string) {
  * Retrieves all guestbooks for a tenant with entry counts.
  *
  * @param tenantId - The tenant UUID.
+ * @param db - Optional Drizzle instance; when provided (e.g. inside withTenantContext) the
+ *             entry-count subquery runs with the RLS tenant context already set, so it returns
+ *             the real count instead of 0.
  * @returns Array of guestbooks with entry counts.
  */
-export async function getGuestbooksByTenant(tenantId: string) {
-  const db = useDrizzle()
-  return db.select({
+export async function getGuestbooksByTenant(tenantId: string, db?: DrizzleDb) {
+  const database = db ?? useDrizzle()
+  return database.select({
     id: guestbooks.id,
     tenantId: guestbooks.tenantId,
     name: guestbooks.name,

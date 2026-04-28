@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
-  const guestbookList = await getGuestbooksByTenant(uuid)
+  const guestbookList = await withTenantContext(uuid, (db) => getGuestbooksByTenant(uuid, db))
 
   return {
     success: true,

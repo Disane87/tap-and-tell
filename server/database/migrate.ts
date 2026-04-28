@@ -175,7 +175,7 @@ export async function runMigrations(connectionString: string): Promise<void> {
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
 
-      CREATE INDEX IF NOT EXISTS idx_two_factor_tokens_token ON two_factor_tokens(token);
+      -- idx_two_factor_tokens_token removed: UNIQUE constraint on token column already creates an index
 
       CREATE TABLE IF NOT EXISTS api_apps (
         id VARCHAR(24) PRIMARY KEY,

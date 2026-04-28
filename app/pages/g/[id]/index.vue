@@ -3,6 +3,7 @@
  * Simplified guestbook guest landing page.
  * URL: /g/[id]
  */
+import { Icon } from '@iconify/vue'
 import { useSwipe } from '@vueuse/core'
 import { ChevronLeft, ChevronRight, Settings } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
@@ -180,6 +181,18 @@ function prevSlide(): void {
   }
 }
 
+function goToSlide(index: number): void {
+  slideDirection.value = index > currentSlide.value ? 'forward' : 'backward'
+  currentSlide.value = index
+}
+
+useSwipe(swiperEl, {
+  onSwipeEnd(_e, direction) {
+    if (direction === 'left') nextSlide()
+    if (direction === 'right') prevSlide()
+  }
+})
+
 function handleKeydown(e: KeyboardEvent): void {
   if (sheetOpen.value) return
   if (e.key === 'ArrowRight') nextSlide()
@@ -209,14 +222,6 @@ async function handleSubmit(): Promise<void> {
 }
 
 onMounted(async () => {
-  // Setup swipe gestures
-  useSwipe(swiperEl, {
-    onSwipeEnd(_e, direction) {
-      if (direction === 'left') nextSlide()
-      if (direction === 'right') prevSlide()
-    }
-  })
-
   window.addEventListener('keydown', handleKeydown)
 
   try {
@@ -349,7 +354,7 @@ onUnmounted(() => {
                   :aria-label="link.platform"
                 >
                   <Icon
-                    :name="link.platform === 'instagram' ? 'lucide:instagram' : link.platform === 'twitter' ? 'lucide:twitter' : link.platform === 'youtube' ? 'lucide:youtube' : link.platform === 'tiktok' ? 'simple-icons:tiktok' : 'lucide:globe'"
+                    :icon="link.platform === 'instagram' ? 'lucide:instagram' : link.platform === 'twitter' ? 'lucide:twitter' : link.platform === 'youtube' ? 'lucide:youtube' : link.platform === 'tiktok' ? 'simple-icons:tiktok' : 'lucide:globe'"
                     class="h-5 w-5"
                   />
                 </a>
@@ -400,7 +405,7 @@ onUnmounted(() => {
         class="pagination-dot"
         :class="{ active: currentSlide === i - 1 }"
         :aria-label="t('nav.goToSlide', { number: i })"
-        @click="slideDirection = (i - 1) > currentSlide ? 'forward' : 'backward'; currentSlide = i - 1"
+        @click="goToSlide(i - 1)"
       />
     </div>
 
@@ -408,6 +413,7 @@ onUnmounted(() => {
     <div
       v-if="currentSlide > 0 && hasEntries"
       class="fixed right-4 top-4 z-20 rounded-full bg-card/80 px-3 py-1 text-xs text-muted-foreground backdrop-blur-sm"
+      aria-live="polite"
     >
       {{ currentSlide }} / {{ entries.length }}
     </div>

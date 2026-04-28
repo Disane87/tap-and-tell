@@ -43,7 +43,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Audit log before deletion (user_id will be set to null via ON DELETE SET NULL)
-  recordAuditLog(event, 'auth.account_delete', {
+  await recordAuditLog(event, 'auth.account_delete', {
     userId: user.id,
     resourceType: 'user',
     resourceId: user.id,

@@ -50,15 +50,18 @@ watch(user, (u) => {
 
 async function handleSaveProfile(): Promise<void> {
   savingProfile.value = true
-  const success = await updateProfile({
-    name: profileName.value,
-    email: profileEmail.value
-  })
-  savingProfile.value = false
-  if (success) {
-    toast.success(t('profile.saved'))
-  } else {
-    toast.error(t('profile.saveFailed'))
+  try {
+    const success = await updateProfile({
+      name: profileName.value,
+      email: profileEmail.value
+    })
+    if (success) {
+      toast.success(t('profile.saved'))
+    } else {
+      toast.error(t('profile.saveFailed'))
+    }
+  } finally {
+    savingProfile.value = false
   }
 }
 
@@ -351,6 +354,7 @@ const initials = computed(() => {
               <button
                 type="button"
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                :aria-label="showCurrentPassword ? t('profile.hidePassword') : t('profile.showPassword')"
                 @click="showCurrentPassword = !showCurrentPassword"
               >
                 <component :is="showCurrentPassword ? EyeOff : Eye" class="h-4 w-4" />
@@ -365,6 +369,7 @@ const initials = computed(() => {
               <button
                 type="button"
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                :aria-label="showNewPassword ? t('profile.hidePassword') : t('profile.showPassword')"
                 @click="showNewPassword = !showNewPassword"
               >
                 <component :is="showNewPassword ? EyeOff : Eye" class="h-4 w-4" />
@@ -450,7 +455,7 @@ const initials = computed(() => {
             <AlertDialogHeader>
               <AlertDialogTitle>{{ t('profile.deleteAccount') }}</AlertDialogTitle>
               <AlertDialogDescription>
-                {{ t('profile.deleteAccountDescription') }}
+                {{ t('profile.deleteAccountDialogDescription') }}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <div class="py-4">

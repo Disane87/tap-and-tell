@@ -13,7 +13,7 @@ const { user, isAuthenticated, logout, refreshUser } = useAuth()
 const isOpen = computed(() => {
   return isAuthenticated.value
     && user.value
-    && !user.value.twoFactorEnabled
+    && user.value.twoFactorEnabled === false
 })
 
 const showSetupDialog = ref(false)

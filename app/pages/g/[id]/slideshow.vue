@@ -125,6 +125,11 @@ onMounted(async () => {
   await fetchEntries()
   if (hasEntries.value) play()
 
+  // If entries weren't loaded yet at mount time, start playback when they arrive
+  watch(hasEntries, (has) => {
+    if (has && !isPlaying.value) play()
+  })
+
   window.addEventListener('keydown', handleKeydown)
   document.addEventListener('fullscreenchange', onFullscreenChange)
   resetHideTimer()
@@ -171,7 +176,7 @@ onUnmounted(() => {
           <!-- Top bar -->
           <div class="slideshow-top-bar">
             <div class="flex items-center gap-2">
-              <span class="text-sm font-medium text-white">
+              <span class="text-sm font-medium text-white" aria-live="polite">
                 {{ currentIndex + 1 }} / {{ totalEntries }}
               </span>
             </div>

@@ -106,19 +106,20 @@ watch(activeTab, (tab) => {
 
 async function handleSave(): Promise<void> {
   saving.value = true
-  // Trim ctaButtonText; convert empty/whitespace-only to undefined to use i18n default
-  if (localSettings.ctaButtonText !== undefined) {
-    const trimmed = localSettings.ctaButtonText.trim()
-    localSettings.ctaButtonText = trimmed || undefined
-  }
-  const result = await updateGuestbook(props.guestbook.id, { settings: localSettings })
-  saving.value = false
-
-  if (result) {
-    toast.success(t('settings.saveSuccess'))
-    emit('saved')
-  } else {
-    toast.error(t('settings.saveFailed'))
+  try {
+    if (localSettings.ctaButtonText !== undefined) {
+      const trimmed = localSettings.ctaButtonText.trim()
+      localSettings.ctaButtonText = trimmed || undefined
+    }
+    const result = await updateGuestbook(props.guestbook.id, { settings: localSettings })
+    if (result) {
+      toast.success(t('settings.saveSuccess'))
+      emit('saved')
+    } else {
+      toast.error(t('settings.saveFailed'))
+    }
+  } finally {
+    saving.value = false
   }
 }
 
@@ -140,11 +141,14 @@ function setTab(tab: SettingsTab): void {
 <template>
   <div class="space-y-4">
     <!-- Tabs -->
-    <div class="flex gap-1 rounded-xl bg-muted/50 p-1">
+    <div class="flex gap-1 rounded-xl bg-muted/50 p-1" role="tablist">
       <button
         v-for="tab in (['landing', 'cards', 'form', 'advanced'] as const)"
         :key="tab"
         type="button"
+        role="tab"
+        :aria-selected="activeTab === tab"
+        :aria-controls="`settings-tab-${tab}`"
         class="flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
         :class="activeTab === tab
           ? 'bg-background text-foreground shadow-sm'
@@ -163,7 +167,7 @@ function setTab(tab: SettingsTab): void {
         <Textarea
           v-model="localSettings.welcomeMessage"
           :placeholder="t('settings.welcomeMessage.placeholder')"
-          class="min-h-[80px] resize-none"
+          class="min-h-20 resize-none"
           rows="3"
         />
       </div>
@@ -272,7 +276,7 @@ function setTab(tab: SettingsTab): void {
                 :model-value="link.platform"
                 @update:model-value="(val: string) => localSettings.socialLinks![index].platform = val as SocialLink['platform']"
               >
-                <SelectTrigger class="h-9 w-[140px]">
+                <SelectTrigger class="h-9 w-35">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -291,6 +295,7 @@ function setTab(tab: SettingsTab): void {
                 variant="ghost"
                 size="sm"
                 class="h-9 w-9 shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                :aria-label="t('settings.footer.removeLink')"
                 @click="localSettings.socialLinks = localSettings.socialLinks!.filter((_, i) => i !== index)"
               >
                 <Trash2 class="h-4 w-4" />

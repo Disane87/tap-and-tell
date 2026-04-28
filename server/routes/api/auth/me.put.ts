@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'User not found' })
   }
 
-  recordAuditLog(event, 'auth.profile_update', {
+  await recordAuditLog(event, 'auth.profile_update', {
     userId: user.id,
     resourceType: 'user',
     resourceId: user.id,

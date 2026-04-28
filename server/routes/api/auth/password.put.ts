@@ -63,7 +63,7 @@ export default defineEventHandler(async (event) => {
   const tokens = await createSession(user.id, dbUser.email)
   setAuthCookies(event, tokens)
 
-  recordAuditLog(event, 'auth.password_change', {
+  await recordAuditLog(event, 'auth.password_change', {
     userId: user.id,
     resourceType: 'user',
     resourceId: user.id
