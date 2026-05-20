@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test'
+import { STORAGE_STATE_PATH } from './global-setup'
 
 /**
  * UI/UX Audit Tests
@@ -13,13 +14,12 @@ const DEV_PASSWORD = 'dev123'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-async function login(page: Page) {
-  await page.goto('/login')
-  await page.waitForLoadState('networkidle')
-  await page.getByLabel(/email/i).fill(DEV_EMAIL)
-  await page.getByLabel(/password|passwort/i).fill(DEV_PASSWORD)
-  await page.getByRole('button', { name: /login|anmelden|sign in/i }).click()
-  await page.waitForURL(/dashboard|_admin/, { timeout: 10000 })
+// Authenticated tests load the storage state produced by global-setup, so the
+// dev user is already signed in. Navigate to the page you want to audit
+// directly — no per-test login required.
+async function gotoAsAuthed(page: Page, path: string) {
+  await page.goto(path)
+  await page.waitForLoadState('domcontentloaded')
 }
 
 async function takeNamedScreenshot(page: Page, name: string) {
@@ -356,96 +356,94 @@ test.describe('UI/UX Audit', () => {
     if (issues.length) console.log('\nSlideshow issues:\n  ' + issues.join('\n  '))
   })
 
-  // ── 9. Dashboard (Authenticated) ───────────────────────────────────────────
-  test('Dashboard (after login)', async ({ page }) => {
-    await login(page)
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(1000)
-    await takeNamedScreenshot(page, '09-dashboard')
+  // Authenticated audits — all share the persisted dev-user session created by
+  // global-setup. No per-test login required.
+  test.describe('Authenticated', () => {
+    test.use({ storageState: STORAGE_STATE_PATH })
 
-    const issues = [
-      ...await checkScrollability(page, 'Dashboard'),
-      ...await checkImages(page, 'Dashboard'),
-      ...await checkTouchTargets(page, 'Dashboard'),
-      ...await checkTruncation(page, 'Dashboard'),
-    ]
+    // ── 9. Dashboard ──────────────────────────────────────────────────────────
+    test('Dashboard (after login)', async ({ page }) => {
+      await gotoAsAuthed(page, '/dashboard')
+      await page.waitForTimeout(1000)
+      await takeNamedScreenshot(page, '09-dashboard')
 
-    // Is the "Create Guestbook" button visible when user has guestbooks?
-    const createBtn = page.getByRole('button', { name: /erstellen|create|neu|new/i })
-    if (!await createBtn.count()) {
-      issues.push('[Dashboard] No visible "Create" action button')
-    }
+      const issues = [
+        ...await checkScrollability(page, 'Dashboard'),
+        ...await checkImages(page, 'Dashboard'),
+        ...await checkTouchTargets(page, 'Dashboard'),
+        ...await checkTruncation(page, 'Dashboard'),
+      ]
 
-    allIssues.push(...issues)
-    if (issues.length) console.log('\nDashboard issues:\n  ' + issues.join('\n  '))
-  })
-
-  // ── 10. Dashboard — Mobile ──────────────────────────────────────────────────
-  test('Dashboard — mobile', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 })
-    await login(page)
-    await page.waitForTimeout(1000)
-    await takeNamedScreenshot(page, '10-dashboard-mobile')
-
-    const issues = [
-      ...await checkScrollability(page, 'Dashboard/Mobile'),
-      ...await checkTouchTargets(page, 'Dashboard/Mobile'),
-    ]
-    allIssues.push(...issues)
-    if (issues.length) console.log('\nDashboard Mobile issues:\n  ' + issues.join('\n  '))
-  })
-
-  // ── 11. Profile Page ────────────────────────────────────────────────────────
-  test('Profile page', async ({ page }) => {
-    await login(page)
-    await page.goto('/profile')
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(1000)
-    await takeNamedScreenshot(page, '11-profile')
-
-    const issues = [
-      ...await checkScrollability(page, 'Profile'),
-      ...await checkFormLabels(page, 'Profile'),
-      ...await checkTouchTargets(page, 'Profile'),
-    ]
-
-    // Dangerous action (delete account) should have visual warning
-    const deleteBtn = page.getByRole('button', { name: /delete account|konto löschen/i })
-    if (await deleteBtn.count()) {
-      const btnClass = await deleteBtn.first().getAttribute('class')
-      if (!btnClass?.includes('destructive') && !btnClass?.includes('danger')) {
-        issues.push('[Profile] "Delete Account" button lacks destructive visual styling')
+      const createBtn = page.getByRole('button', { name: /erstellen|create|neu|new/i })
+      if (!await createBtn.count()) {
+        issues.push('[Dashboard] No visible "Create" action button')
       }
-    }
 
-    allIssues.push(...issues)
-    if (issues.length) console.log('\nProfile issues:\n  ' + issues.join('\n  '))
-  })
+      allIssues.push(...issues)
+      if (issues.length) console.log('\nDashboard issues:\n  ' + issues.join('\n  '))
+    })
 
-  // ── 12. Guestbook Admin Page ────────────────────────────────────────────────
-  test('Guestbook admin page', async ({ page }) => {
-    await login(page)
-    await page.goto(`/g/${GUESTBOOK_ID}/admin`)
-    await page.waitForLoadState('networkidle')
-    await page.waitForTimeout(1500)
-    await takeNamedScreenshot(page, '12-guestbook-admin')
+    // ── 10. Dashboard — Mobile ────────────────────────────────────────────────
+    test('Dashboard — mobile', async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 })
+      await gotoAsAuthed(page, '/dashboard')
+      await page.waitForTimeout(1000)
+      await takeNamedScreenshot(page, '10-dashboard-mobile')
 
-    const issues = [
-      ...await checkScrollability(page, 'GuestbookAdmin'),
-      ...await checkTouchTargets(page, 'GuestbookAdmin'),
-      ...await checkTruncation(page, 'GuestbookAdmin'),
-    ]
+      const issues = [
+        ...await checkScrollability(page, 'Dashboard/Mobile'),
+        ...await checkTouchTargets(page, 'Dashboard/Mobile'),
+      ]
+      allIssues.push(...issues)
+      if (issues.length) console.log('\nDashboard Mobile issues:\n  ' + issues.join('\n  '))
+    })
 
-    // Moderation actions visible?
-    const approveBtn = page.getByRole('button', { name: /approve|genehmigen|freigeben/i })
-    const rejectBtn = page.getByRole('button', { name: /reject|ablehnen/i })
-    const hasModerationControls = (await approveBtn.count()) > 0 || (await rejectBtn.count()) > 0
-    if (!hasModerationControls) {
-      issues.push('[GuestbookAdmin] No moderation action buttons visible (approve/reject)')
-    }
+    // ── 11. Profile Page ──────────────────────────────────────────────────────
+    test('Profile page', async ({ page }) => {
+      await gotoAsAuthed(page, '/profile')
+      await page.waitForTimeout(1000)
+      await takeNamedScreenshot(page, '11-profile')
 
-    allIssues.push(...issues)
-    if (issues.length) console.log('\nGuestbook Admin issues:\n  ' + issues.join('\n  '))
+      const issues = [
+        ...await checkScrollability(page, 'Profile'),
+        ...await checkFormLabels(page, 'Profile'),
+        ...await checkTouchTargets(page, 'Profile'),
+      ]
+
+      const deleteBtn = page.getByRole('button', { name: /delete account|konto löschen/i })
+      if (await deleteBtn.count()) {
+        const btnClass = await deleteBtn.first().getAttribute('class')
+        if (!btnClass?.includes('destructive') && !btnClass?.includes('danger')) {
+          issues.push('[Profile] "Delete Account" button lacks destructive visual styling')
+        }
+      }
+
+      allIssues.push(...issues)
+      if (issues.length) console.log('\nProfile issues:\n  ' + issues.join('\n  '))
+    })
+
+    // ── 12. Guestbook Admin Page ──────────────────────────────────────────────
+    test('Guestbook admin page', async ({ page }) => {
+      await gotoAsAuthed(page, `/g/${GUESTBOOK_ID}/admin`)
+      await page.waitForTimeout(1500)
+      await takeNamedScreenshot(page, '12-guestbook-admin')
+
+      const issues = [
+        ...await checkScrollability(page, 'GuestbookAdmin'),
+        ...await checkTouchTargets(page, 'GuestbookAdmin'),
+        ...await checkTruncation(page, 'GuestbookAdmin'),
+      ]
+
+      const approveBtn = page.getByRole('button', { name: /approve|genehmigen|freigeben/i })
+      const rejectBtn = page.getByRole('button', { name: /reject|ablehnen/i })
+      const hasModerationControls = (await approveBtn.count()) > 0 || (await rejectBtn.count()) > 0
+      if (!hasModerationControls) {
+        issues.push('[GuestbookAdmin] No moderation action buttons visible (approve/reject)')
+      }
+
+      allIssues.push(...issues)
+      if (issues.length) console.log('\nGuestbook Admin issues:\n  ' + issues.join('\n  '))
+    })
   })
 
   // ── 13. 404 Page ────────────────────────────────────────────────────────────

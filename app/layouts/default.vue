@@ -39,7 +39,7 @@ function isActive(path: string): boolean {
       <div class="mx-auto flex h-14 max-w-4xl items-center justify-between px-4">
         <!-- Logo -->
         <div class="flex items-center gap-2">
-          <NuxtLink to="/" class="font-handwritten text-xl text-foreground">
+          <NuxtLink to="/" class="inline-flex min-h-11 items-center font-handwritten text-xl text-foreground">
             Tap & Tell
           </NuxtLink>
           <span
@@ -56,7 +56,7 @@ function isActive(path: string): boolean {
             v-for="link in navLinks"
             :key="link.to"
             :to="link.to"
-            class="flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors"
+            class="flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-medium transition-colors"
             :class="isActive(link.to)
               ? 'bg-primary/10 text-primary'
               : 'text-muted-foreground hover:bg-muted hover:text-foreground'"

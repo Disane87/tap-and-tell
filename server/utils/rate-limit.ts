@@ -145,9 +145,14 @@ export class RateLimiter {
 // Pre-configured limiter instances
 // ---------------------------------------------------------------------------
 
-/** Rate limiter for the login endpoint — 5 attempts per 15 minutes. */
+// In non-production environments (dev, e2e) we relax auth-related limits so
+// test suites that exercise login flows multiple times do not get blocked.
+// Public-facing limits (entry creation, registration) stay tight even in dev.
+const IS_PROD = process.env.NODE_ENV === 'production'
+
+/** Rate limiter for the login endpoint — 5 attempts per 15 minutes (prod). */
 export const loginLimiter = new RateLimiter({
-  maxAttempts: 5,
+  maxAttempts: IS_PROD ? 5 : 1000,
   windowMs: 15 * 60 * 1000, // 15 minutes
 })
 
@@ -163,8 +168,8 @@ export const entryLimiter = new RateLimiter({
   windowMs: 60 * 60 * 1000, // 1 hour
 })
 
-/** Rate limiter for the legacy admin login endpoint — 5 attempts per 15 minutes. */
+/** Rate limiter for the legacy admin login endpoint — 5 attempts per 15 minutes (prod). */
 export const adminLoginLimiter = new RateLimiter({
-  maxAttempts: 5,
+  maxAttempts: IS_PROD ? 5 : 1000,
   windowMs: 15 * 60 * 1000, // 15 minutes
 })

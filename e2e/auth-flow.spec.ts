@@ -60,16 +60,28 @@ test.describe('Authentication Flow', () => {
     })
   })
 
+  // In private beta the /register form is gated behind an invite token, so we
+  // probe /api/beta/validate first and skip these tests when the form would
+  // not be rendered. Tests run normally when BETA_MODE=open.
+  async function skipIfRegistrationGated(page: import('@playwright/test').Page) {
+    const status = await page.request.get('/api/beta/validate').then((r) => r.json()).catch(() => null)
+    if (status?.betaModeEnabled && !status?.valid) {
+      test.skip(true, 'Registration is gated by private beta (BETA_MODE=private)')
+    }
+  }
+
   test('should display registration page', async ({ page }) => {
+    await skipIfRegistrationGated(page)
     await page.goto('/register')
     await expect(page).toHaveURL('/register')
 
     // Check for registration form elements
-    await expect(page.locator('input[type="email"], input[name="email"]')).toBeVisible()
-    await expect(page.locator('input[type="password"], input[name="password"]')).toBeVisible()
+    await expect(page.locator('input[type="email"], input[name="email"]').first()).toBeVisible()
+    await expect(page.locator('input[type="password"], input[name="password"]').first()).toBeVisible()
   })
 
   test('should validate registration form', async ({ page }) => {
+    await skipIfRegistrationGated(page)
     await page.goto('/register')
 
     // Try to submit empty form
@@ -81,14 +93,15 @@ test.describe('Authentication Flow', () => {
   })
 
   test('should show password strength requirements', async ({ page }) => {
+    await skipIfRegistrationGated(page)
     await page.goto('/register')
 
     // Fill in weak password
-    const passwordInput = page.locator('input[type="password"], input[name="password"]')
+    const passwordInput = page.locator('input[type="password"], input[name="password"]').first()
     await passwordInput.fill('weak')
 
     // Should show password requirements or validation
-    await page.waitForTimeout(500)
+    await expect(passwordInput).toHaveValue('weak')
   })
 })
 

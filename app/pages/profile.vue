@@ -258,6 +258,7 @@ const initials = computed(() => {
               type="file"
               accept="image/jpeg,image/png,image/webp"
               class="hidden"
+              :aria-label="t('profile.avatar.upload')"
               @change="handleAvatarUpload"
             >
             <Button

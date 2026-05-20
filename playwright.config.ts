@@ -6,6 +6,8 @@ import { defineConfig, devices } from '@playwright/test'
  */
 export default defineConfig({
   testDir: './e2e',
+  /* Sign in once and reuse the storageState in every test that needs auth. */
+  globalSetup: './e2e/global-setup.ts',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code */
@@ -58,12 +60,20 @@ export default defineConfig({
     }
   ],
 
-  /* Run local dev server before starting the tests */
+  /* Run local dev server before starting the tests.
+   * cwd points to the SaaS root because Nuxt is only installed there;
+   * `pnpm dev` from base/ would fail with "nuxt: command not found".
+   * Env overrides (BETA_MODE=open) come from `.env.test` at the SaaS root. */
   webServer: {
     command: 'pnpm dev',
+    cwd: '..',
     url: 'https://localhost:3000',
     reuseExistingServer: !process.env.CI,
     ignoreHTTPSErrors: true,
-    timeout: 120 * 1000
+    timeout: 120 * 1000,
+    env: {
+      BETA_MODE: 'open',
+      NUXT_PUBLIC_BETA_MODE: 'open',
+    },
   }
 })
