@@ -94,10 +94,15 @@ const localSettings = reactive<GuestbookSettings>(cloneSettings())
 /** Expose localSettings and activeTab so parent can use them. */
 defineExpose({ localSettings, activeTab })
 
-/** Watch prop changes and re-clone. */
-watch(() => props.guestbook.settings, () => {
+/**
+ * Re-clone settings only when the guestbook *identity* changes (i.e. a
+ * different guestbook is selected). Watching the settings object deeply would
+ * discard unsaved local edits on every parent re-fetch — and could re-introduce
+ * the image-upload save race by overwriting freshly-patched image URLs.
+ */
+watch(() => props.guestbook.id, () => {
   Object.assign(localSettings, cloneSettings())
-}, { deep: true })
+})
 
 /** Emit tab change when activeTab changes. */
 watch(activeTab, (tab) => {
@@ -128,8 +133,22 @@ function handleReset(): void {
   toast.info(t('settings.resetDone'))
 }
 
-/** Reload settings after background image upload/delete. */
-function handleBackgroundImageChanged(): void {
+/**
+ * Patch the background image URL into local settings after upload/delete.
+ * Setting it locally ensures a subsequent Save includes the new URL instead of
+ * clobbering it with a stale value (closes the save/upload race).
+ */
+function handleBackgroundImageChanged(url: string | undefined): void {
+  localSettings.backgroundImageUrl = url
+  emit('saved')
+}
+
+/**
+ * Patch the header image URL into local settings after upload/delete.
+ * See handleBackgroundImageChanged for the rationale.
+ */
+function handleHeaderImageChanged(url: string | undefined): void {
+  localSettings.headerImageUrl = url
   emit('saved')
 }
 
@@ -210,7 +229,7 @@ function setTab(tab: SettingsTab): void {
         :header-image-url="localSettings.headerImageUrl"
         :tenant-id="props.tenantId"
         :guestbook-id="props.guestbook.id"
-        @header-image-changed="handleBackgroundImageChanged"
+        @header-image-changed="handleHeaderImageChanged"
       />
 
       <!-- Color Scheme -->

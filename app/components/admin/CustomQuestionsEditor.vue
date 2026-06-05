@@ -6,7 +6,7 @@
  * @props modelValue - Array of custom questions.
  * @emits update:modelValue - When questions change.
  */
-import { Plus, Trash2, GripVertical } from 'lucide-vue-next'
+import { Plus, Trash2, ChevronUp, ChevronDown } from 'lucide-vue-next'
 import type { CustomQuestion } from '~/types/guestbook'
 
 const { t } = useI18n()
@@ -46,6 +46,21 @@ function addQuestion(): void {
 
 function removeQuestion(id: string): void {
   questions.value = questions.value.filter(q => q.id !== id)
+}
+
+/**
+ * Moves a question one position up or down in the list.
+ *
+ * @param index - Current index of the question.
+ * @param direction - -1 to move up, +1 to move down.
+ */
+function moveQuestion(index: number, direction: -1 | 1): void {
+  const target = index + direction
+  if (target < 0 || target >= questions.value.length) return
+  const next = [...questions.value]
+  const [moved] = next.splice(index, 1)
+  next.splice(target, 0, moved)
+  questions.value = next
 }
 
 function updateQuestion(id: string, updates: Partial<CustomQuestion>): void {
@@ -97,7 +112,29 @@ function getOptionsText(question: CustomQuestion): string {
         class="rounded-xl border border-border/30 p-4 space-y-3"
       >
         <div class="flex items-start gap-2">
-          <GripVertical class="mt-2 h-4 w-4 shrink-0 cursor-grab text-muted-foreground" />
+          <!-- Reorder controls -->
+          <div class="mt-1 flex flex-col">
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-6 w-6 text-muted-foreground hover:text-foreground"
+              :disabled="index === 0"
+              :aria-label="t('settings.customQuestions.moveUp')"
+              @click="moveQuestion(index, -1)"
+            >
+              <ChevronUp class="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="h-6 w-6 text-muted-foreground hover:text-foreground"
+              :disabled="index === questions.length - 1"
+              :aria-label="t('settings.customQuestions.moveDown')"
+              @click="moveQuestion(index, 1)"
+            >
+              <ChevronDown class="h-4 w-4" />
+            </Button>
+          </div>
           <div class="flex-1 space-y-3">
             <!-- Question label -->
             <div class="space-y-1">

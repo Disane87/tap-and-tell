@@ -10,6 +10,8 @@
  * @props guestbookId - Guestbook ID for API calls.
  * @emits update:backgroundColor - When background color changes.
  * @emits backgroundImageChanged - When background image is uploaded or deleted.
+ *   Carries the new image URL (or undefined when the image was deleted) so the
+ *   parent can immediately patch its local settings and avoid a save race.
  */
 import { Upload, Trash2, Loader2, ImageIcon } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
@@ -25,7 +27,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:backgroundColor': [value: string | undefined]
-  backgroundImageChanged: []
+  backgroundImageChanged: [url: string | undefined]
 }>()
 
 const uploading = ref(false)
@@ -64,13 +66,16 @@ async function handleFileChange(event: Event): Promise<void> {
     const formData = new FormData()
     formData.append('file', file)
 
-    await $fetch(`/api/tenants/${props.tenantId}/guestbooks/${props.guestbookId}/background`, {
-      method: 'POST',
-      body: formData
-    })
+    const res = await $fetch<{ backgroundImageUrl?: string }>(
+      `/api/tenants/${props.tenantId}/guestbooks/${props.guestbookId}/background`,
+      {
+        method: 'POST',
+        body: formData
+      }
+    )
 
     toast.success(t('settings.backgroundImage.uploadSuccess'))
-    emit('backgroundImageChanged')
+    emit('backgroundImageChanged', res.backgroundImageUrl)
   } catch (error) {
     console.error('Failed to upload background image:', error)
     toast.error(t('settings.backgroundImage.uploadFailed'))
@@ -88,7 +93,7 @@ async function handleDelete(): Promise<void> {
     })
 
     toast.success(t('settings.backgroundImage.removeSuccess'))
-    emit('backgroundImageChanged')
+    emit('backgroundImageChanged', undefined)
   } catch (error) {
     console.error('Failed to delete background image:', error)
     toast.error(t('settings.backgroundImage.removeFailed'))

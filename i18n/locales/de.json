@@ -800,6 +800,17 @@
       "members": "Mitglieder",
       "photos": "Fotos"
     },
+    "scopeDesc": {
+      "entries:read": "Gästebucheinträge lesen (freigegebene und alle)",
+      "entries:write": "Gästebucheinträge erstellen, bearbeiten und löschen",
+      "guestbooks:read": "Gästebuch-Details und -Einstellungen lesen",
+      "guestbooks:write": "Gästebücher erstellen, bearbeiten und löschen",
+      "tenant:read": "Tenant-Informationen lesen",
+      "tenant:write": "Tenant-Einstellungen ändern",
+      "members:read": "Mitgliederliste des Tenants lesen",
+      "members:write": "Mitglieder und Einladungen verwalten",
+      "photos:read": "Fotos lesen und entschlüsseln"
+    },
     "expiryOptions": {
       "30": "30 Tage",
       "60": "60 Tage",
@@ -997,6 +1008,8 @@
       "optionsPlaceholder": "Option (eine pro Zeile)",
       "required": "Pflichtfeld",
       "remove": "Entfernen",
+      "moveUp": "Frage nach oben verschieben",
+      "moveDown": "Frage nach unten verschieben",
       "empty": "Noch keine eigenen Fragen. Füge eine hinzu, um das Formular zu personalisieren.",
       "maxReached": "Maximale Anzahl an Fragen für dein Abo erreicht."
     },
@@ -1280,29 +1293,5 @@
     },
     "alwaysActive": "Immer aktiv",
     "managePreferences": "Cookie-Einstellungen verwalten"
-  },
-  "feedback": {
-    "tab": "Feedback",
-    "title": "Feedback senden",
-    "subtitle": "Hilf uns, Tap & Tell zu verbessern",
-    "type": {
-      "label": "Typ",
-      "bug": "Fehlerbericht",
-      "feedback": "Feedback",
-      "question": "Frage"
-    },
-    "subject": {
-      "label": "Betreff",
-      "placeholder": "Kurze Zusammenfassung..."
-    },
-    "description": {
-      "label": "Beschreibung",
-      "placeholder": "Beschreibe es im Detail..."
-    },
-    "submit": "Feedback senden",
-    "sending": "Wird gesendet...",
-    "success": "Vielen Dank! Dein Feedback wurde gesendet.",
-    "error": "Feedback konnte nicht gesendet werden. Bitte versuche es erneut.",
-    "rateLimit": "Zu viele Einsendungen. Bitte warte einen Moment."
   }
 }

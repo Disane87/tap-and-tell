@@ -9,6 +9,8 @@
  * @props guestbookId - Guestbook ID for API calls.
  * @emits update:headerImagePosition - When header image position changes.
  * @emits headerImageChanged - When header image is uploaded or deleted.
+ *   Carries the new image URL (or undefined when the image was deleted) so the
+ *   parent can immediately patch its local settings and avoid a save race.
  */
 import { Upload, Trash2, Loader2, ImageIcon } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
@@ -24,7 +26,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:headerImagePosition': [value: 'above-title' | 'below-title' | 'behind-title']
-  headerImageChanged: []
+  headerImageChanged: [url: string | undefined]
 }>()
 
 const uploading = ref(false)
@@ -63,13 +65,16 @@ async function handleFileChange(event: Event): Promise<void> {
     const formData = new FormData()
     formData.append('file', file)
 
-    await $fetch(`/api/tenants/${props.tenantId}/guestbooks/${props.guestbookId}/header`, {
-      method: 'POST',
-      body: formData
-    })
+    const res = await $fetch<{ headerImageUrl?: string }>(
+      `/api/tenants/${props.tenantId}/guestbooks/${props.guestbookId}/header`,
+      {
+        method: 'POST',
+        body: formData
+      }
+    )
 
     toast.success(t('settings.headerImage.uploadSuccess'))
-    emit('headerImageChanged')
+    emit('headerImageChanged', res.headerImageUrl)
   } catch (error) {
     console.error('Failed to upload header image:', error)
     toast.error(t('settings.headerImage.uploadFailed'))
@@ -87,7 +92,7 @@ async function handleDelete(): Promise<void> {
     })
 
     toast.success(t('settings.headerImage.removeSuccess'))
-    emit('headerImageChanged')
+    emit('headerImageChanged', undefined)
   } catch (error) {
     console.error('Failed to delete header image:', error)
     toast.error(t('settings.headerImage.removeFailed'))

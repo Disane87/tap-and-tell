@@ -15,7 +15,16 @@ const emit = defineEmits<{
   create: [payload: { name: string; scopes: string[]; expiresInDays?: number }]
 }>()
 
-const { t } = useI18n()
+const { t, te } = useI18n()
+
+/**
+ * Returns the localized description for a scope. Falls back to the raw
+ * server-provided English description if no translation key exists.
+ */
+function scopeDescription(scope: ApiScopeDefinition): string {
+  const key = `apiApps.scopeDesc.${scope.scope}`
+  return te(key) ? t(key) : scope.description
+}
 
 const tokenName = ref('')
 const selectedScopes = ref<string[]>([])
@@ -114,7 +123,7 @@ watch(() => props.open, (open) => {
                 />
                 <label :for="`scope-${scope.scope}`" class="cursor-pointer text-sm text-foreground">
                   <code class="rounded bg-muted px-1 py-0.5 text-xs">{{ scope.scope }}</code>
-                  <span class="ml-1.5 text-muted-foreground">{{ scope.description }}</span>
+                  <span class="ml-1.5 text-muted-foreground">{{ scopeDescription(scope) }}</span>
                 </label>
               </div>
             </div>

@@ -206,7 +206,7 @@ async function handleRevokeToken(appId: string, tokenId: string): Promise<void> 
                       <h3 class="font-medium text-foreground">{{ app.name }}</h3>
                       <p v-if="app.description" class="text-xs text-muted-foreground">{{ app.description }}</p>
                       <p class="text-xs text-muted-foreground">
-                        {{ app.tokenCount }} {{ app.tokenCount === 1 ? 'token' : 'tokens' }}
+                        {{ t('apiApps.tokenCount', { count: app.tokenCount }, app.tokenCount) }}
                       </p>
                     </div>
                   </div>
