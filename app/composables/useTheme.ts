@@ -10,7 +10,7 @@ export type ThemeMode = 'light' | 'dark' | 'system'
  * Module-level state for theme.
  * Uses plain ref to avoid SSR hydration issues with useState.
  */
-const theme = ref<ThemeMode>('system')
+const theme = ref<ThemeMode>('dark')
 const isDark = ref(false)
 
 /**

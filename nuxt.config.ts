@@ -47,7 +47,7 @@ const siteConfig = {
   url: getSiteUrl(),
   author: 'Tap & Tell Team',
   twitterHandle: '@tapandtell',
-  themeColor: '#18181b',
+  themeColor: '#0E0E12',
   backgroundColor: '#ffffff',
   locale: 'en_US',
   localeAlternate: 'de_DE'
@@ -332,7 +332,7 @@ export default defineNuxtConfig({
         { rel: 'dns-prefetch', href: 'https://api.iconify.design' },
 
         // Fonts
-        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap' },
 
         // Apple splash screens (for PWA on iOS)
         { rel: 'apple-touch-startup-image', href: '/splash/apple-splash-2048-2732.png', media: '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' },
@@ -344,7 +344,7 @@ export default defineNuxtConfig({
       script: [
         // Theme initialization (FOUC prevention)
         {
-          innerHTML: `(function(){try{var t=localStorage.getItem('theme');var d=t==='dark'||(t!=='light'&&window.matchMedia('(prefers-color-scheme:dark)').matches);if(d)document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark')}catch(e){}})()`,
+          innerHTML: `(function(){try{var t=localStorage.getItem('theme');var d=t!=='light';if(d)document.documentElement.classList.add('dark');else document.documentElement.classList.remove('dark')}catch(e){}})()`,
           type: 'text/javascript'
         }
       ]

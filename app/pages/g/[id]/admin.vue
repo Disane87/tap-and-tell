@@ -413,7 +413,7 @@ onMounted(async () => {
             <div class="flex items-center gap-2">
               <code class="flex-1 rounded-lg bg-muted px-3 py-2 text-xs break-all">{{ qrFullUrl }}</code>
               <Button variant="outline" size="icon" class="shrink-0" @click="copyQrUrl">
-                <Check v-if="qrCopied" class="h-4 w-4 text-emerald-500" />
+                <Check v-if="qrCopied" class="h-4 w-4 text-success" />
                 <Copy v-else class="h-4 w-4" />
               </Button>
             </div>

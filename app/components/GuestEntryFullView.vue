@@ -141,9 +141,9 @@ const youtubeEmbed = computed(() => {
       >
       <div
         v-else
-        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-400 to-emerald-600"
+        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary/70"
       >
-        <span class="font-handwritten text-6xl text-white/80">{{ entry.name.charAt(0) }}</span>
+        <span class="font-handwritten text-6xl text-[#0E0E12]/70">{{ entry.name.charAt(0) }}</span>
       </div>
     </section>
 

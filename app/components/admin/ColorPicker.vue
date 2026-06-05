@@ -15,7 +15,7 @@ defineEmits<{
 }>()
 
 const themePresets = [
-  '#10b981', '#6366f1', '#f59e0b', '#f43f5e',
+  '#C8FF3D', '#6366f1', '#f59e0b', '#f43f5e',
   '#0ea5e9', '#8b5cf6', '#f97316', '#64748b'
 ]
 </script>

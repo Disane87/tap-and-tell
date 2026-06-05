@@ -5,81 +5,81 @@
    "Warm Memories" Design System
    ============================================ */
 @theme {
-  /* Font families */
+  /* Font families — Editorial Noir */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Playfair Display', ui-serif, Georgia, serif;
-  --font-handwritten: 'Caveat', cursive;
+  --font-display: 'Space Grotesk', ui-sans-serif, sans-serif;
 
-  /* Brand colors - Warm Memories Palette */
-  --color-primary: #E07A5F;           /* Warm Coral - inviting, joyful */
-  --color-primary-foreground: #ffffff;
+  /* Brand — Editorial Noir "Spotlight" */
+  --color-primary: #C8FF3D;            /* Electric Lime */
+  --color-primary-foreground: #0E0E12;
 
-  /* Extended brand colors */
-  --color-coral: #E07A5F;
-  --color-cream: #F4F1DE;
-  --color-navy: #3D405B;
-  --color-gold: #E9C46A;
-  --color-sage: #81B29A;
-  --color-terracotta: #D4A373;
+  /* Extended brand tokens */
+  --color-lime: #C8FF3D;
+  --color-magenta: #FF3D8B;
+  --color-ink: #0E0E12;
 
-  /* Neutral palette - Warm tones */
-  --color-background: #FFFBF7;        /* Warm off-white */
-  --color-foreground: #2D2A26;        /* Warm dark brown */
-  --color-muted: #F5F0E8;             /* Warm light beige */
-  --color-muted-foreground: #6B6560;  /* Warm gray */
-  --color-border: #E8E0D5;            /* Warm border */
-  --color-card: #FFFDFB;              /* Slightly warm white */
-  --color-card-foreground: #2D2A26;
+  /* Neutral palette (Light / daylight) */
+  --color-background: #F6F6F4;         /* Paper */
+  --color-foreground: #14141A;         /* Ink */
+  --color-muted: #EDEDEA;
+  --color-muted-foreground: #6B6B72;
+  --color-border: #E6E6E2;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #14141A;
 
   /* Secondary (muted UI surfaces) */
-  --color-secondary: #F4F1DE;         /* Cream */
-  --color-secondary-foreground: #3D405B;
+  --color-secondary: #EDEDEA;
+  --color-secondary-foreground: #14141A;
 
   /* Popover / Dropdown */
-  --color-popover: #FFFDFB;
-  --color-popover-foreground: #2D2A26;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #14141A;
 
-  /* Accent (hover highlights in menus) */
-  --color-accent: #FEF3E2;            /* Soft peach */
-  --color-accent-foreground: #2D2A26;
+  /* Accent = subtle hover surface (NOT brand magenta) */
+  --color-accent: #EFF6D9;             /* Faint lime tint */
+  --color-accent-foreground: #14141A;
 
-  /* Ring (focus ring) */
-  --color-ring: #E07A5F;
+  /* Ring (focus) — olive lime, text-safe on light */
+  --color-ring: #5B7A00;
 
   /* Input border */
-  --color-input: #E8E0D5;
+  --color-input: #E6E6E2;
 
   /* Semantic colors */
-  --color-destructive: #C1666B;       /* Muted red - less aggressive */
+  --color-destructive: #E5484D;
   --color-destructive-foreground: #ffffff;
-  --color-success: #81B29A;           /* Sage green */
-  --color-warning: #E9C46A;           /* Gold */
+  --color-success: #177A4A;
+  --color-warning: #9A6B00;
 
-  /* Spacing & radius */
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
+  /* Spacing & radius — sharper, architectural */
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
 }
 
 /* ============================================
    Dark Mode Overrides - Warm & Cozy
    ============================================ */
 .dark {
-  --color-background: #1A1816;        /* Warm dark */
-  --color-foreground: #F5F0E8;        /* Warm off-white */
-  --color-muted: #2D2A26;             /* Warm dark muted */
-  --color-muted-foreground: #A39E96;  /* Warm gray */
-  --color-border: #3D3835;            /* Warm dark border */
-  --color-card: #242120;              /* Warm dark card */
-  --color-card-foreground: #F5F0E8;
-  --color-secondary: #2D2A26;
-  --color-secondary-foreground: #F5F0E8;
-  --color-popover: #242120;
-  --color-popover-foreground: #F5F0E8;
-  --color-accent: #3D3835;
-  --color-accent-foreground: #F5F0E8;
-  --color-ring: #E07A5F;
-  --color-input: #3D3835;
+  --color-background: #0E0E12;         /* Ink */
+  --color-foreground: #F4F4F5;
+  --color-muted: #1C1C26;
+  --color-muted-foreground: #A1A1AA;
+  --color-border: #2A2A36;
+  --color-card: #1C1C26;
+  --color-card-foreground: #F4F4F5;
+  --color-secondary: #16161D;
+  --color-secondary-foreground: #F4F4F5;
+  --color-popover: #1C1C26;
+  --color-popover-foreground: #F4F4F5;
+  --color-accent: #232330;            /* Subtle hover surface */
+  --color-accent-foreground: #F4F4F5;
+  --color-ring: #C8FF3D;
+  --color-input: #2A2A36;
+  --color-primary-foreground: #0E0E12;
+  --color-destructive: #FF6B6B;
+  --color-success: #5CF2A0;
+  --color-warning: #FFB72B;
 }
 
 /* ============================================
@@ -150,7 +150,7 @@ body {
    Typography Utilities
    ============================================ */
 .font-handwritten {
-  font-family: var(--font-handwritten);
+  font-family: var(--font-display);
 }
 
 .font-display {
@@ -438,11 +438,11 @@ body {
    Landing Gradient
    ============================================ */
 .landing-gradient {
-  background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+  background: linear-gradient(135deg, #0E0E12 0%, #16161D 55%, #1C1C26 100%);
 }
 
 .dark .landing-gradient {
-  background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+  background: linear-gradient(135deg, #0E0E12 0%, #16161D 55%, #1C1C26 100%);
 }
 
 /* ============================================
@@ -598,16 +598,16 @@ body {
 
 /* Glass card selected state */
 .glass-card-selected {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(200, 255, 61, 0.12);
+  border: 1px solid rgba(200, 255, 61, 0.35);
   box-shadow:
-    0 8px 32px 0 rgba(16, 185, 129, 0.2),
-    inset 0 0 0 1px rgba(16, 185, 129, 0.2);
+    0 8px 32px 0 rgba(200, 255, 61, 0.18),
+    inset 0 0 0 1px rgba(200, 255, 61, 0.25);
 }
 
 .dark .glass-card-selected {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  background: rgba(200, 255, 61, 0.10);
+  border: 1px solid rgba(200, 255, 61, 0.30);
 }
 
 /* Modern status badge */
@@ -633,51 +633,51 @@ body {
 }
 
 .status-approved {
-  background: rgba(16, 185, 129, 0.15);
-  color: #059669;
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(92, 242, 160, 0.15);
+  color: #177a4a;
+  border: 1px solid rgba(92, 242, 160, 0.35);
 }
 
 .status-approved::before {
-  background: #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  background: #5CF2A0;
+  box-shadow: 0 0 8px rgba(92, 242, 160, 0.6);
 }
 
 .status-rejected {
-  background: rgba(244, 63, 94, 0.15);
-  color: #dc2626;
-  border: 1px solid rgba(244, 63, 94, 0.3);
+  background: rgba(255, 107, 107, 0.15);
+  color: #c43232;
+  border: 1px solid rgba(255, 107, 107, 0.35);
 }
 
 .status-rejected::before {
-  background: #ef4444;
-  box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
+  background: #FF6B6B;
+  box-shadow: 0 0 8px rgba(255, 107, 107, 0.6);
 }
 
 .status-pending {
-  background: rgba(245, 158, 11, 0.15);
-  color: #d97706;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(255, 183, 43, 0.15);
+  color: #9a6b00;
+  border: 1px solid rgba(255, 183, 43, 0.35);
 }
 
 .status-pending::before {
-  background: #f59e0b;
-  box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+  background: #FFB72B;
+  box-shadow: 0 0 8px rgba(255, 183, 43, 0.6);
 }
 
 .dark .status-approved {
-  background: rgba(16, 185, 129, 0.2);
-  color: #6ee7b7;
+  background: rgba(92, 242, 160, 0.2);
+  color: #5CF2A0;
 }
 
 .dark .status-rejected {
-  background: rgba(244, 63, 94, 0.2);
-  color: #fca5a5;
+  background: rgba(255, 107, 107, 0.2);
+  color: #FF9B9B;
 }
 
 .dark .status-pending {
-  background: rgba(245, 158, 11, 0.2);
-  color: #fcd34d;
+  background: rgba(255, 183, 43, 0.2);
+  color: #FFD27A;
 }
 
 /* Action button with glass effect */
@@ -992,7 +992,7 @@ body {
    Touch Highlight Customization
    ============================================ */
 .tap-highlight-primary {
-  -webkit-tap-highlight-color: rgba(16, 185, 129, 0.2);
+  -webkit-tap-highlight-color: rgba(200, 255, 61, 0.25);
 }
 
 .tap-highlight-none {
