@@ -11,6 +11,11 @@ const router = useRouter()
 const { user, isAuthenticated, logout, refreshUser } = useAuth()
 
 const isOpen = computed(() => {
+  // 2FA enforcement is skipped in development to simplify the local workflow.
+  // Mirrors the server-side middleware (server/middleware/z-2fa-enforce.ts),
+  // which also returns early when NODE_ENV !== 'production'.
+  if (import.meta.dev) return false
+
   return isAuthenticated.value
     && user.value
     && user.value.twoFactorEnabled === false
