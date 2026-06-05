@@ -1,8 +1,28 @@
 import { nanoid } from 'nanoid'
-import { useDrizzle } from '~~/server/utils/drizzle'
+import { withTenantContext } from '~~/server/utils/drizzle'
 import { analyticsEvents, analyticsSessions } from '~~/server/database/schema'
 import { resolveTenantFromGuestbook } from '~~/server/utils/guestbook-resolver'
 import type { AnalyticsEventType, AnalyticsEventCategory } from '~~/server/database/schema'
+
+/**
+ * A single analytics event row prepared for insertion, scoped to a tenant.
+ */
+type PreparedEventRow = typeof analyticsEvents.$inferInsert
+
+/**
+ * A session upsert row prepared for insertion, scoped to a tenant.
+ */
+type PreparedSessionRow = typeof analyticsSessions.$inferInsert
+
+/**
+ * All analytics writes grouped under a single tenant so they can be wrapped
+ * in one RLS-scoped transaction via `withTenantContext`. Sessions are keyed
+ * by session ID so each session is upserted at most once per request.
+ */
+interface TenantBatch {
+  events: PreparedEventRow[]
+  sessions: Map<string, PreparedSessionRow>
+}
 
 /**
  * Event batch request body structure.
@@ -104,9 +124,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 429, message: 'Too many events. Please slow down.' })
   }
 
-  const db = useDrizzle()
-  const insertedEvents: string[] = []
-  const sessionUpdates = new Map<string, { guestbookId?: string; tenantId?: string; source?: string }>()
+  // Group all writes by resolved tenant. Each tenant's events and session
+  // upserts are later inserted inside a single `withTenantContext` transaction
+  // so that the RLS `WITH CHECK (tenant_id = current_setting('app.current_tenant_id'))`
+  // policy on analytics_events / analytics_sessions is satisfied. Without the
+  // SET LOCAL tenant context, the setting is NULL and every INSERT silently
+  // fails its WITH CHECK under a non-superuser DB role.
+  const tenantBatches = new Map<string, TenantBatch>()
+
+  // Cache guestbook -> tenant resolutions to avoid duplicate lookups per batch.
+  const tenantCache = new Map<string, string | null>()
 
   // Process each event
   for (const eventData of body.events) {
@@ -120,32 +147,55 @@ export default defineEventHandler(async (event) => {
       continue
     }
 
-    // Resolve tenant from guestbook if provided
-    let tenantId: string | null = null
-    if (eventData.guestbookId) {
-      tenantId = await resolveTenantFromGuestbook(eventData.guestbookId)
-      if (!tenantId) {
-        continue // Skip events for non-existent guestbooks
-      }
-    } else {
-      continue // Skip events without guestbook context
+    // Events without guestbook context cannot be tenant-scoped → skip.
+    if (!eventData.guestbookId) {
+      continue
     }
 
-    // Track session info for updates
-    if (!sessionUpdates.has(eventData.sessionId)) {
-      sessionUpdates.set(eventData.sessionId, {
+    // Resolve tenant from guestbook (cached per request).
+    let tenantId: string | null
+    if (tenantCache.has(eventData.guestbookId)) {
+      tenantId = tenantCache.get(eventData.guestbookId) ?? null
+    } else {
+      tenantId = await resolveTenantFromGuestbook(eventData.guestbookId)
+      tenantCache.set(eventData.guestbookId, tenantId)
+    }
+    if (!tenantId) {
+      continue // Skip events for non-existent guestbooks
+    }
+
+    // Lazily create the per-tenant batch.
+    let batch = tenantBatches.get(tenantId)
+    if (!batch) {
+      batch = { events: [], sessions: new Map() }
+      tenantBatches.set(tenantId, batch)
+    }
+
+    // Track session info for upsert (first event per session wins).
+    if (!batch.sessions.has(eventData.sessionId)) {
+      const source = eventData.properties?.source as string | undefined
+      batch.sessions.set(eventData.sessionId, {
+        id: eventData.sessionId,
+        tenantId,
         guestbookId: eventData.guestbookId,
-        tenantId: tenantId,
-        source: eventData.properties?.source as string | undefined
+        visitorId: body.events[0]?.visitorId,
+        startedAt: new Date(),
+        entryPage: body.events[0]?.pagePath?.slice(0, 255),
+        source: source?.slice(0, 20),
+        referrer: body.referrer?.slice(0, 500),
+        deviceType: body.deviceInfo.deviceType,
+        browser: body.deviceInfo.browser?.slice(0, 50),
+        os: body.deviceInfo.os?.slice(0, 50),
+        pageCount: 1,
+        converted: false,
+        formStepReached: 0
       })
     }
 
-    const eventId = nanoid()
-
-    // Insert event
-    await db.insert(analyticsEvents).values({
-      id: eventId,
-      tenantId: tenantId,
+    // Prepare the event row for insertion.
+    batch.events.push({
+      id: nanoid(),
+      tenantId,
       guestbookId: eventData.guestbookId,
       eventType: eventData.eventType,
       eventCategory: eventData.eventCategory,
@@ -162,39 +212,33 @@ export default defineEventHandler(async (event) => {
       properties: eventData.properties || {},
       createdAt: new Date(eventData.timestamp)
     })
-
-    insertedEvents.push(eventId)
   }
 
-  // Update or create sessions
-  for (const [sessId, info] of sessionUpdates.entries()) {
-    if (!info.tenantId || !info.guestbookId) continue
+  let processed = 0
 
-    try {
-      // Try to upsert session info
-      await db.insert(analyticsSessions).values({
-        id: sessId,
-        tenantId: info.tenantId,
-        guestbookId: info.guestbookId,
-        visitorId: body.events[0]?.visitorId,
-        startedAt: new Date(),
-        entryPage: body.events[0]?.pagePath?.slice(0, 255),
-        source: info.source?.slice(0, 20),
-        referrer: body.referrer?.slice(0, 500),
-        deviceType: body.deviceInfo.deviceType,
-        browser: body.deviceInfo.browser?.slice(0, 50),
-        os: body.deviceInfo.os?.slice(0, 50),
-        pageCount: 1,
-        converted: false,
-        formStepReached: 0
-      }).onConflictDoNothing()
-    } catch {
-      // Session already exists, that's fine
-    }
+  // Persist each tenant's batch inside its own RLS-scoped transaction.
+  for (const [tenantId, batch] of tenantBatches.entries()) {
+    await withTenantContext(tenantId, async (db) => {
+      // Insert events for this tenant.
+      if (batch.events.length > 0) {
+        await db.insert(analyticsEvents).values(batch.events)
+        processed += batch.events.length
+      }
+
+      // Upsert sessions for this tenant in a single conflict-safe statement.
+      // `onConflictDoNothing` handles existing sessions without raising, which
+      // keeps this best-effort and avoids aborting the surrounding transaction.
+      const sessionValues = Array.from(batch.sessions.values())
+      if (sessionValues.length > 0) {
+        await db.insert(analyticsSessions)
+          .values(sessionValues)
+          .onConflictDoNothing()
+      }
+    })
   }
 
   return {
     success: true,
-    processed: insertedEvents.length
+    processed
   }
 })

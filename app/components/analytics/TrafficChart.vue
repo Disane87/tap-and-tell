@@ -30,7 +30,7 @@ const props = defineProps<{
   loading?: boolean
 }>()
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 
 const chartData = computed(() => {
   if (!props.data?.traffic) {
@@ -51,7 +51,7 @@ const chartData = computed(() => {
       }
       // Daily format: show short date
       const date = new Date(t.period)
-      return date.toLocaleDateString('de-DE', { month: 'short', day: 'numeric' })
+      return date.toLocaleDateString(locale.value, { month: 'short', day: 'numeric' })
     }),
     datasets: [
       {

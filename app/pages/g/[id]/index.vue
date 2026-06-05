@@ -24,10 +24,18 @@ const {
   trackPageView,
   trackFormStart,
   trackFormStep,
+  trackFormAbandon,
   trackConversion
 } = useAnalytics(guestbookId)
 const { apply: applyColorScheme } = useForcedColorScheme()
-const { formState, status, reset, setStatus, setError, getSubmitData, validate, applyFormConfig } = useGuestForm()
+const { formState, status, currentStep, reset, setStatus, setError, getSubmitData, validate, applyFormConfig } = useGuestForm()
+
+// Offline queue: persist entries locally when offline and flush on reconnect
+const { isOnline, queueEntry, syncPendingEntries, setupListeners } = useOfflineQueue()
+
+// True once an entry has been submitted successfully — prevents firing
+// trackFormAbandon after a real conversion.
+const submittedSuccessfully = ref(false)
 
 // Admin bar: check if current user can manage this guestbook
 const { isAuthenticated, fetchMe } = useAuth()
@@ -145,11 +153,46 @@ const socialLinks = computed(() =>
 const hasFooter = computed(() => !!(footerText.value || socialLinks.value.length))
 const sheetOpen = ref(false)
 
-// Track form open
+// Timestamp when the form sheet was opened — used to compute durations for
+// form analytics (step completion and abandonment).
+const formStartedAt = ref(0)
+// Timestamp when the current step became active — used for per-step duration.
+const stepStartedAt = ref(0)
+
+// Track form open / abandon.
 watch(sheetOpen, (open) => {
   if (open) {
+    submittedSuccessfully.value = false
+    formStartedAt.value = Date.now()
+    stepStartedAt.value = formStartedAt.value
     trackFormStart()
+  } else {
+    // Sheet closed without a successful submission → user abandoned the form.
+    if (!submittedSuccessfully.value) {
+      const duration = formStartedAt.value
+        ? Math.round((Date.now() - formStartedAt.value) / 1000)
+        : undefined
+      trackFormAbandon(currentStep.value, duration)
+    }
   }
+})
+
+// Track wizard step advances. currentStep is shared module-level state driven
+// by the FormWizard's next-step transition. Only track while the sheet is open
+// and the form has not yet been submitted.
+watch(currentStep, (step, prevStep) => {
+  if (!sheetOpen.value || submittedSuccessfully.value) return
+  if (step <= prevStep) {
+    // Moving backwards (or reset) — just reset the step timer.
+    stepStartedAt.value = Date.now()
+    return
+  }
+  const duration = stepStartedAt.value
+    ? Math.round((Date.now() - stepStartedAt.value) / 1000)
+    : undefined
+  // Report completion of the step we just left.
+  trackFormStep(prevStep, duration)
+  stepStartedAt.value = Date.now()
 })
 const currentSlide = ref(0)
 const slideDirection = ref<'forward' | 'backward'>('forward')
@@ -199,30 +242,109 @@ function handleKeydown(e: KeyboardEvent): void {
   if (e.key === 'ArrowLeft') prevSlide()
 }
 
+/**
+ * Finalizes a successful (or queued-offline) submission: closes the sheet,
+ * resets the wizard and returns to the first entry slide.
+ */
+function finishSubmission(): void {
+  submittedSuccessfully.value = true
+  // Track completion of the final step before resetting.
+  const duration = stepStartedAt.value
+    ? Math.round((Date.now() - stepStartedAt.value) / 1000)
+    : undefined
+  trackFormStep(currentStep.value, duration)
+
+  setStatus('success')
+  sheetOpen.value = false
+  reset()
+  slideDirection.value = 'forward'
+  currentSlide.value = 1
+}
+
+/**
+ * Queues an entry locally for later sync and finalizes the submission.
+ * Falls back to the generic save error if queuing fails.
+ */
+async function queueOfflineAndFinish(data: import('~/types/guest').CreateGuestEntryInput): Promise<void> {
+  try {
+    await queueEntry(data)
+    toast.success(t('features.offline.description'))
+    finishSubmission()
+  } catch (error) {
+    console.error('Failed to queue offline entry:', error)
+    setError(t('toast.saveError'))
+    toast.error(t('toast.saveFailed'))
+  }
+}
+
 async function handleSubmit(): Promise<void> {
   if (!validate()) return
 
   setStatus('submitting')
   const data = getSubmitData()
+
+  // When offline, queue the entry locally and flush it once we're back online.
+  if (!isOnline.value) {
+    await queueOfflineAndFinish(data)
+    return
+  }
+
   const entry = await createEntry(data)
 
   if (entry) {
-    setStatus('success')
     toast.success(t('toast.entryAdded'))
     // Track successful conversion
     trackConversion(!!data.photo)
-    sheetOpen.value = false
-    reset()
-    slideDirection.value = 'forward'
-    currentSlide.value = 1
+    finishSubmission()
+  } else if (!isOnline.value) {
+    // Lost connectivity during the request — queue instead of failing.
+    await queueOfflineAndFinish(data)
   } else {
     setError(t('toast.saveError'))
     toast.error(t('toast.saveFailed'))
   }
 }
 
+/**
+ * Submits a queued offline entry to the server.
+ *
+ * @returns True when the entry was accepted (so it can be removed from the queue).
+ */
+async function submitQueuedEntry(data: import('~/types/guest').CreateGuestEntryInput): Promise<boolean> {
+  const entry = await createEntry(data)
+  if (entry) {
+    await fetchEntries()
+    return true
+  }
+  return false
+}
+
+/**
+ * Flushes any locally-queued entries to the server.
+ */
+async function flushOfflineQueue(): Promise<void> {
+  const synced = await syncPendingEntries(submitQueuedEntry)
+  if (synced > 0) {
+    toast.success(t('toast.entryAdded'))
+  }
+}
+
+// Flush the offline queue whenever connectivity is restored.
+watch(isOnline, (online) => {
+  if (online) {
+    flushOfflineQueue()
+  }
+})
+
 onMounted(async () => {
   window.addEventListener('keydown', handleKeydown)
+
+  // Start listening for online/offline transitions and flush any entries that
+  // were queued in a previous (offline) session.
+  setupListeners()
+  if (isOnline.value) {
+    await flushOfflineQueue()
+  }
 
   try {
     const response = await $fetch<{ success: boolean; data?: typeof guestbookInfo.value }>(
