@@ -316,6 +316,11 @@ export async function runMigrations(connectionString: string): Promise<void> {
       CREATE INDEX IF NOT EXISTS idx_analytics_daily_tenant_date ON analytics_daily_stats(tenant_id, date);
       CREATE INDEX IF NOT EXISTS idx_analytics_daily_guestbook_date ON analytics_daily_stats(guestbook_id, date);
 
+      -- Named unique index to match Drizzle schema (uniqueIndex('idx_analytics_daily_unique')).
+      -- The inline UNIQUE(tenant_id, guestbook_id, date) above already enforces the
+      -- constraint; this adds the explicitly named index the ORM expects.
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_analytics_daily_unique ON analytics_daily_stats(tenant_id, guestbook_id, date);
+
       -- Session details for funnel analysis
       CREATE TABLE IF NOT EXISTS analytics_sessions (
         id VARCHAR(64) PRIMARY KEY,
