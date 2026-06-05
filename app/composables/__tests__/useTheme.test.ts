@@ -58,10 +58,18 @@ vi.stubGlobal('window', {
   }))
 })
 
-// Mock useCookieConsent
+// Mock useCookieConsent.
+// useTheme.ts imports useCookieConsent via an explicit static import
+// (`import { useCookieConsent } from './useCookieConsent'`), so a global
+// stub is never consulted — the static binding is what executes. We must
+// mock the module itself. The mock factory reads a mutable flag so tests
+// can grant/deny functional-cookie consent the same way the app does
+// (the real composable would set its module-level consent state).
 let mockHasConsent = true
-vi.stubGlobal('useCookieConsent', () => ({
-  hasConsent: () => mockHasConsent
+vi.mock('../useCookieConsent', () => ({
+  useCookieConsent: () => ({
+    hasConsent: () => mockHasConsent
+  })
 }))
 
 describe('useTheme', () => {
@@ -93,9 +101,6 @@ describe('useTheme', () => {
         addEventListener: mockAddEventListener
       }))
     })
-    vi.stubGlobal('useCookieConsent', () => ({
-      hasConsent: () => mockHasConsent
-    }))
 
     const module = await import('../useTheme')
     useTheme = module.useTheme
