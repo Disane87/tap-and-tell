@@ -1,5 +1,15 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { getPhotoMimeType } from '../storage'
+import type { EntryStatus } from '~~/server/types/guest'
+
+/**
+ * Pure mirror of the moderation-aware status rule used by createEntry:
+ * when moderation is enabled, new entries start as `pending`; otherwise they
+ * are `approved` immediately so the public GET (approved-only) can show them.
+ */
+function resolveNewEntryStatus(moderationEnabled: boolean): EntryStatus {
+  return moderationEnabled ? 'pending' : 'approved'
+}
 
 /**
  * Unit tests for storage utilities.
@@ -52,6 +62,16 @@ describe('storage utilities', () => {
     it('should handle filenames with paths', () => {
       expect(getPhotoMimeType('photos/guestbook/photo.jpg')).toBe('image/jpeg')
       expect(getPhotoMimeType('/api/photos/abc123/photo.png.enc')).toBe('image/png')
+    })
+  })
+
+  describe('new entry status resolution (moderation-aware)', () => {
+    it('should mark entries pending when moderation is enabled', () => {
+      expect(resolveNewEntryStatus(true)).toBe('pending')
+    })
+
+    it('should approve entries immediately when moderation is disabled', () => {
+      expect(resolveNewEntryStatus(false)).toBe('approved')
     })
   })
 })

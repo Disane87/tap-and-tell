@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid status' })
   }
 
-  const entry = await updateEntryStatus(uuid, id, body.status, body.rejectionReason)
+  const entry = await updateEntryStatus(uuid, id, body.status, body.rejectionReason, gbUuid)
   if (!entry) {
     throw createError({ statusCode: 404, message: 'Entry not found' })
   }

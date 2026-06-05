@@ -19,8 +19,7 @@ export default defineConfig({
     ],
     exclude: [
       '**/node_modules/**',
-      'e2e/**/*.spec.ts',
-      'server/utils/__tests__/storage.test.ts'
+      'e2e/**/*.spec.ts'
     ],
     environment: 'node',
     globals: true,

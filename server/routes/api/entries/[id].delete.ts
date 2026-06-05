@@ -1,9 +1,15 @@
 /**
  * DELETE /api/entries/:id
- * Deletes a guest entry by ID.
- * NOTE: This endpoint is currently unprotected. Use /api/admin/entries/:id for authenticated deletion.
+ * Deletes a guest entry by ID from the default tenant.
+ * Requires an authenticated tenant member with moderate permission.
  */
 export default defineEventHandler(async (event) => {
+  const user = event.context.user
+  if (!user) {
+    throw createError({ statusCode: 401, message: 'Not authenticated' })
+  }
+  requireScope(event, 'entries:write')
+
   const id = getRouterParam(event, 'id')
 
   if (!id) {
@@ -16,6 +22,10 @@ export default defineEventHandler(async (event) => {
   const tenantId = await getDefaultTenantId()
   if (!tenantId) {
     throw createError({ statusCode: 500, message: 'No default tenant configured' })
+  }
+
+  if (!await canPerformAction(tenantId, user.id, 'moderate')) {
+    throw createError({ statusCode: 403, message: 'Forbidden' })
   }
 
   const deleted = await deleteEntry(tenantId, id)

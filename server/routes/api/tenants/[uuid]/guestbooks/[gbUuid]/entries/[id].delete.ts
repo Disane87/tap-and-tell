@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'Guestbook not found' })
   }
 
-  const deleted = await deleteEntry(uuid, id)
+  const deleted = await deleteEntry(uuid, id, gbUuid)
   if (!deleted) {
     throw createError({ statusCode: 404, message: 'Entry not found' })
   }

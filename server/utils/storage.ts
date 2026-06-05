@@ -98,6 +98,9 @@ export async function findEntryById(tenantId: string, id: string): Promise<Guest
  * @param message - Guest message.
  * @param photo - Optional base64-encoded photo data.
  * @param answers - Optional form answers.
+ * @param moderationEnabled - Whether the guestbook requires moderation. When true, the
+ *                            entry starts as `pending`; when false, it is `approved`
+ *                            immediately so it is visible to the public GET endpoint.
  * @returns The created entry.
  */
 export async function createEntry(
@@ -106,7 +109,8 @@ export async function createEntry(
   name: string,
   message: string,
   photo?: string,
-  answers?: GuestEntry['answers']
+  answers?: GuestEntry['answers'],
+  moderationEnabled = true
 ): Promise<GuestEntry> {
   const id = generateId()
   let photoUrl: string | undefined
@@ -126,6 +130,8 @@ export async function createEntry(
   }
 
   const now = new Date()
+  // Moderation-aware status: pending when moderation is on, approved otherwise.
+  const status: EntryStatus = moderationEnabled ? 'pending' : 'approved'
 
   return withTenantContext(tenantId, async (db) => {
     await db.insert(entries).values({
@@ -135,7 +141,7 @@ export async function createEntry(
       message,
       photoUrl: photoUrl || null,
       answers: answers || null,
-      status: 'pending',
+      status,
       createdAt: now
     })
 
@@ -146,7 +152,7 @@ export async function createEntry(
       photoUrl,
       answers,
       createdAt: now.toISOString(),
-      status: 'pending'
+      status
     }
   })
 }
@@ -156,11 +162,16 @@ export async function createEntry(
  *
  * @param tenantId - The tenant ID for RLS context.
  * @param id - The entry ID to delete.
+ * @param guestbookId - Optional guestbook ID to scope the entry to, preventing
+ *                      cross-guestbook deletion within the same tenant.
  * @returns True if the entry was found and deleted.
  */
-export async function deleteEntry(tenantId: string, id: string): Promise<boolean> {
+export async function deleteEntry(tenantId: string, id: string, guestbookId?: string): Promise<boolean> {
   return withTenantContext(tenantId, async (db) => {
-    const rows = await db.select().from(entries).where(eq(entries.id, id))
+    const where = guestbookId
+      ? and(eq(entries.id, id), eq(entries.guestbookId, guestbookId))
+      : eq(entries.id, id)
+    const rows = await db.select().from(entries).where(where)
     const entry = rows[0]
     if (!entry) return false
 
@@ -177,7 +188,7 @@ export async function deleteEntry(tenantId: string, id: string): Promise<boolean
       await driver.delete(filePath)
     }
 
-    await db.delete(entries).where(eq(entries.id, id))
+    await db.delete(entries).where(where)
     return true
   })
 }
@@ -189,16 +200,22 @@ export async function deleteEntry(tenantId: string, id: string): Promise<boolean
  * @param id - The entry ID.
  * @param status - The new status.
  * @param rejectionReason - Optional reason for rejection.
+ * @param guestbookId - Optional guestbook ID to scope the entry to, preventing
+ *                      cross-guestbook moderation within the same tenant.
  * @returns The updated entry or undefined if not found.
  */
 export async function updateEntryStatus(
   tenantId: string,
   id: string,
   status: EntryStatus,
-  rejectionReason?: string
+  rejectionReason?: string,
+  guestbookId?: string
 ): Promise<GuestEntry | undefined> {
   return withTenantContext(tenantId, async (db) => {
-    const rows = await db.select().from(entries).where(eq(entries.id, id))
+    const where = guestbookId
+      ? and(eq(entries.id, id), eq(entries.guestbookId, guestbookId))
+      : eq(entries.id, id)
+    const rows = await db.select().from(entries).where(where)
     if (!rows[0]) return undefined
 
     await db.update(entries)
@@ -206,9 +223,9 @@ export async function updateEntryStatus(
         status,
         rejectionReason: status === 'rejected' ? (rejectionReason || null) : null
       })
-      .where(eq(entries.id, id))
+      .where(where)
 
-    const updated = await db.select().from(entries).where(eq(entries.id, id))
+    const updated = await db.select().from(entries).where(where)
     return updated[0] ? mapRowToEntry(updated[0]) : undefined
   })
 }
@@ -219,22 +236,34 @@ export async function updateEntryStatus(
  * @param tenantId - The tenant ID for RLS context.
  * @param ids - The entry IDs.
  * @param status - The new status.
- * @returns Number of entries updated.
+ * @param guestbookId - Optional guestbook ID to scope the entries to, preventing
+ *                      cross-guestbook moderation within the same tenant.
+ * @returns Number of entries actually updated.
  */
-export async function bulkUpdateEntryStatus(tenantId: string, ids: string[], status: EntryStatus): Promise<number> {
+export async function bulkUpdateEntryStatus(
+  tenantId: string,
+  ids: string[],
+  status: EntryStatus,
+  guestbookId?: string
+): Promise<number> {
   if (ids.length === 0) return 0
 
   return withTenantContext(tenantId, async (db) => {
+    const where = guestbookId
+      ? and(inArray(entries.id, ids), eq(entries.guestbookId, guestbookId))
+      : inArray(entries.id, ids)
+
     const result = await db.update(entries)
       .set({
+        // Mirror single-update semantics: clear the rejection reason whenever the
+        // entry is not rejected, instead of leaving a stale reason in place.
         status,
-        rejectionReason: status !== 'rejected' ? null : undefined
+        rejectionReason: status === 'rejected' ? undefined : null
       })
-      .where(inArray(entries.id, ids))
+      .where(where)
 
-    // node-postgres doesn't return rowCount directly from drizzle,
-    // but the update completes successfully
-    return ids.length
+    // node-postgres exposes the affected row count via result.rowCount.
+    return result.rowCount ?? 0
   })
 }
 

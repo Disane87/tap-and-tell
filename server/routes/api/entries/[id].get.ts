@@ -1,6 +1,8 @@
 /**
  * GET /api/entries/:id
- * Returns a single guest entry by ID.
+ * Returns a single guest entry by ID from the default tenant.
+ * Public endpoint — only approved entries are returned to avoid leaking
+ * pending or rejected entries.
  */
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id')
@@ -19,7 +21,8 @@ export default defineEventHandler(async (event) => {
 
   const entry = await findEntryById(tenantId, id)
 
-  if (!entry) {
+  // Only expose approved entries publicly; treat anything else as not found.
+  if (!entry || entry.status !== 'approved') {
     throw createError({
       statusCode: 404,
       message: 'Entry not found'

@@ -61,7 +61,10 @@ export default defineEventHandler(async (event) => {
 
     return {
       success: true,
-      data: updated
+      data: updated,
+      // Return the new image URL explicitly so the client can immediately
+      // patch its local settings and avoid clobbering it on a later save.
+      backgroundImageUrl: cacheBustedUrl
     }
   } catch (error) {
     throw createError({

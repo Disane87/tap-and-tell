@@ -86,7 +86,8 @@ export default defineEventHandler(async (event) => {
     sanitized.name.trim(),
     sanitized.message.trim(),
     body.photo,
-    sanitized.answers
+    sanitized.answers,
+    guestbook.settings?.moderationEnabled ?? false
   )
 
   return {

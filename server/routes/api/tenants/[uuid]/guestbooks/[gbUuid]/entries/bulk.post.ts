@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Invalid status' })
   }
 
-  const updated = await bulkUpdateEntryStatus(uuid, body.ids, body.status)
+  const updated = await bulkUpdateEntryStatus(uuid, body.ids, body.status, gbUuid)
 
   await recordAuditLog(event, 'entry.bulk_update', { tenantId: uuid, resourceType: 'entry', details: { ids: body.ids, status: body.status } })
 
