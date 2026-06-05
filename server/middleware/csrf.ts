@@ -15,13 +15,21 @@ export default defineEventHandler(async (event) => {
 
   const pathname = getRequestURL(event).pathname
 
-  // Skip the CSRF token endpoint itself
-  if (pathname === '/api/auth/csrf') {
-    return
-  }
-
-  // Skip auth endpoints (login, register, 2FA verify — user has no token yet)
-  if (pathname.startsWith('/api/auth/')) {
+  // Skip ONLY pre-auth / bootstrap auth endpoints. At these points the user has
+  // no session yet (or is establishing/refreshing one), so a CSRF token may not
+  // be available. Authenticated, state-changing profile/password/avatar
+  // mutations (e.g. PUT /api/auth/me, PUT /api/auth/password,
+  // DELETE /api/auth/me, POST/DELETE /api/auth/avatar) are intentionally NOT
+  // exempted and must carry a valid CSRF token.
+  const CSRF_EXEMPT_AUTH_PATHS = new Set([
+    '/api/auth/csrf',
+    '/api/auth/login',
+    '/api/auth/register',
+    '/api/auth/2fa/verify',
+    '/api/auth/2fa/resend',
+    '/api/auth/refresh',
+  ])
+  if (CSRF_EXEMPT_AUTH_PATHS.has(pathname)) {
     return
   }
 

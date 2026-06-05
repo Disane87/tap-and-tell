@@ -1,4 +1,7 @@
 import { createCipheriv, createDecipheriv, randomBytes, hkdfSync } from 'crypto'
+import { createLogger } from './logger'
+
+const log = createLogger('crypto')
 
 /**
  * AES-256-GCM encryption constants.
@@ -37,15 +40,47 @@ function getMasterKey(): Buffer {
     if (process.env.NODE_ENV === 'production') {
       throw new Error('ENCRYPTION_MASTER_KEY must be set in production')
     }
+    // The insecure zero-key fallback is only permitted under the test runner
+    // or when explicitly opted in. Any other environment (staging, preview,
+    // mis-configured dev) MUST fail loudly rather than silently encrypting all
+    // data with a publicly known zero key.
+    if (!isInsecureDevKeyAllowed()) {
+      throw new Error(
+        'ENCRYPTION_MASTER_KEY must be set. The insecure dev fallback key is '
+        + 'only available under the test runner or when ALLOW_INSECURE_DEV_KEY=1 is set.'
+      )
+    }
     // Dev fallback — deterministic but insecure
     return Buffer.from('0'.repeat(64), 'hex')
   }
 
-  if (keyHex.length !== 64) {
+  if (!/^[0-9a-fA-F]{64}$/.test(keyHex)) {
     throw new Error('ENCRYPTION_MASTER_KEY must be a 64-character hex string (32 bytes)')
   }
 
-  return Buffer.from(keyHex, 'hex')
+  const key = Buffer.from(keyHex, 'hex')
+  if (Buffer.byteLength(key) !== KEY_LENGTH) {
+    throw new Error('ENCRYPTION_MASTER_KEY must decode to exactly 32 bytes')
+  }
+
+  return key
+}
+
+/**
+ * Determines whether the insecure zero-key dev fallback may be used.
+ *
+ * Allowed only under the Vitest test runner (`VITEST`), when `NODE_ENV === 'test'`,
+ * or when explicitly opted in via `ALLOW_INSECURE_DEV_KEY=1`. This prevents a
+ * mis-configured staging/preview environment from silently using the public key.
+ *
+ * @returns True if the insecure fallback key is permitted.
+ */
+function isInsecureDevKeyAllowed(): boolean {
+  return (
+    !!process.env.VITEST
+    || process.env.NODE_ENV === 'test'
+    || process.env.ALLOW_INSECURE_DEV_KEY === '1'
+  )
 }
 
 /**
@@ -124,9 +159,18 @@ export function decryptData(encryptedData: Buffer, tenantKey: Buffer): Buffer {
     // Try versioned format first
     try {
       return decryptVersioned(encryptedData, tenantKey)
-    } catch {
-      // If versioned decryption fails, fall through to legacy format.
-      // This handles the rare case where legacy data happens to start with 0x01.
+    } catch (error) {
+      // Programming errors (TypeError/RangeError) indicate a bug, not corrupt or
+      // legacy data — rethrow them instead of masking the real cause.
+      if (error instanceof TypeError || error instanceof RangeError) {
+        throw error
+      }
+      // Auth-tag / decoding failures are expected only in the rare case where
+      // genuine legacy data happens to start with 0x01. Log the swallowed error
+      // so real corruption is not silently hidden, then fall through to legacy.
+      log.debug('Versioned decryption failed, falling back to legacy format', {
+        error: error instanceof Error ? error.message : String(error)
+      })
     }
   }
 
