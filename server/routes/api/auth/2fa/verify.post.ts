@@ -1,6 +1,18 @@
 import { eq, and, gt } from 'drizzle-orm'
+import { RateLimiter } from '~~/server/utils/rate-limit'
 import { userTwoFactor, twoFactorTokens, users } from '~~/server/database/schema'
 import { createSession, setAuthCookies } from '~~/server/utils/session'
+
+/**
+ * Attempt cap for TOTP / backup-code verification against a single temp token.
+ * Mirrors the email-OTP MAX_ATTEMPTS protection so the short-lived 2FA token
+ * cannot be brute-forced. Keyed by the temp token (and IP) — once exceeded the
+ * temp token is destroyed and the user must restart the login flow.
+ */
+const verifyLimiter = new RateLimiter({
+  maxAttempts: 5,
+  windowMs: 5 * 60 * 1000 // matches the 5-minute temp-token lifetime
+})
 
 /**
  * POST /api/auth/2fa/verify
@@ -26,6 +38,21 @@ export default defineEventHandler(async (event) => {
 
   if (!tfToken) {
     throw createError({ statusCode: 401, message: 'Invalid or expired 2FA token' })
+  }
+
+  // Enforce an attempt cap before verifying. Key by the temp-token id so the
+  // cap follows the specific login attempt, plus the IP to limit distributed
+  // guessing against the same token.
+  const ip = getRequestIP(event, { xForwardedFor: true }) || 'unknown'
+  const limitKey = `${tfToken.id}:${ip}`
+  const rateCheck = verifyLimiter.check(limitKey)
+  if (!rateCheck.allowed) {
+    // Too many failed attempts: invalidate the temp token so it cannot be reused.
+    await db.delete(twoFactorTokens).where(eq(twoFactorTokens.id, tfToken.id))
+    throw createError({
+      statusCode: 429,
+      message: 'Too many invalid 2FA attempts. Please log in again.'
+    })
   }
 
   // Get user's 2FA config

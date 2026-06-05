@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm'
 import { users } from '~~/server/database/schema'
 import { sanitizeText } from '~~/server/utils/sanitize'
 import { recordAuditLog } from '~~/server/utils/audit'
+import { deleteAllUserSessions, createSession, setAuthCookies } from '~~/server/utils/session'
 
 /**
  * PUT /api/auth/me
@@ -72,6 +73,16 @@ export default defineEventHandler(async (event) => {
 
   if (!updated.length) {
     throw createError({ statusCode: 404, message: 'User not found' })
+  }
+
+  // Changing the email is a security-sensitive identity change. Invalidate all
+  // existing sessions (which were issued for the old identity) and re-issue a
+  // fresh session for the current client using the new email so the user stays
+  // logged in here.
+  if (updates.email !== undefined) {
+    await deleteAllUserSessions(user.id)
+    const tokens = await createSession(user.id, updated[0].email)
+    setAuthCookies(event, tokens)
   }
 
   await recordAuditLog(event, 'auth.profile_update', {

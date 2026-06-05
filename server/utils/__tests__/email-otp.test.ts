@@ -122,6 +122,29 @@ describe('email-otp', () => {
     it('returns false for nonexistent user', () => {
       expect(canResendOtp('nonexistent')).toBe(false)
     })
+
+    it('preserves resendCount when the OTP is refreshed via generateEmailOtp (resend flow)', () => {
+      // Simulate the resend.post.ts flow: each resend increments the counter
+      // and then generates a fresh OTP. The counter must accumulate across
+      // refreshes so the MAX_RESENDS cap actually fires.
+      generateEmailOtp('user-resend-flow', 'test@example.com')
+      expect(canResendOtp('user-resend-flow')).toBe(true)
+
+      // Resend #1
+      incrementResendCount('user-resend-flow')
+      generateEmailOtp('user-resend-flow', 'test@example.com')
+      expect(canResendOtp('user-resend-flow')).toBe(true)
+
+      // Resend #2
+      incrementResendCount('user-resend-flow')
+      generateEmailOtp('user-resend-flow', 'test@example.com')
+      expect(canResendOtp('user-resend-flow')).toBe(true)
+
+      // Resend #3 — reaches the cap
+      incrementResendCount('user-resend-flow')
+      generateEmailOtp('user-resend-flow', 'test@example.com')
+      expect(canResendOtp('user-resend-flow')).toBe(false)
+    })
   })
 
   describe('cleanupExpiredOtps', () => {

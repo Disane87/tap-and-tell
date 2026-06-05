@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm'
 import { userTwoFactor, users } from '~~/server/database/schema'
 import { verifyPassword } from '~~/server/utils/password'
+import { deleteAllUserSessions, createSession, setAuthCookies } from '~~/server/utils/session'
 
 /**
  * POST /api/auth/2fa/disable
@@ -34,6 +35,13 @@ export default defineEventHandler(async (event) => {
 
   // Delete all 2FA records for this user
   await db.delete(userTwoFactor).where(eq(userTwoFactor.userId, user.id))
+
+  // Disabling 2FA is a security-sensitive change: invalidate every existing
+  // session, then issue a fresh session for the current client so the user
+  // stays logged in here while other sessions are revoked.
+  await deleteAllUserSessions(user.id)
+  const tokens = await createSession(user.id, fullUser.email)
+  setAuthCookies(event, tokens)
 
   await recordAuditLog(event, 'auth.2fa_disable', { userId: user.id })
 

@@ -38,12 +38,17 @@ const otpStore: Map<string, OtpEntry> = new Map()
 export function generateEmailOtp(userId: string, email: string, locale?: string): string {
   const code = randomInt(100000, 999999).toString()
 
+  // Preserve the existing resend counter when refreshing an OTP (e.g. on resend),
+  // so the MAX_RESENDS cap actually accumulates instead of being reset to zero.
+  // Attempts are reset because the user is given a brand-new code to verify.
+  const existing = otpStore.get(userId)
+
   otpStore.set(userId, {
     code,
     email,
     expiresAt: new Date(Date.now() + OTP_EXPIRY_MS),
     attempts: 0,
-    resendCount: 0
+    resendCount: existing?.resendCount ?? 0
   })
 
   // In development, log the code for easy testing

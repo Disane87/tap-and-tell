@@ -1,10 +1,12 @@
 import { eq, and } from 'drizzle-orm'
-import { userTwoFactor } from '~~/server/database/schema'
+import { userTwoFactor, users } from '~~/server/database/schema'
+import { verifyPassword } from '~~/server/utils/password'
 
 /**
  * POST /api/auth/2fa/setup
- * Initiates 2FA setup. Requires authentication.
- * Body: { method: 'totp' | 'email' }
+ * Initiates 2FA setup. Requires authentication and current-password
+ * re-confirmation so a hijacked session cannot silently enroll 2FA.
+ * Body: { method: 'totp' | 'email', password: string }
  * Returns: For TOTP: { secret, uri } for QR code. For email: { message: 'Code sent' }
  */
 export default defineEventHandler(async (event) => {
@@ -13,12 +15,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Authentication required' })
   }
 
-  const body = await readBody<{ method: 'totp' | 'email' }>(event)
+  const body = await readBody<{ method: 'totp' | 'email'; password: string }>(event)
   if (!body?.method || !['totp', 'email'].includes(body.method)) {
     throw createError({ statusCode: 400, message: 'Method must be "totp" or "email"' })
   }
+  if (!body?.password) {
+    throw createError({ statusCode: 400, message: 'Current password is required' })
+  }
 
   const db = useDrizzle()
+
+  // Re-confirm the current password before initiating 2FA enrollment.
+  const userRows = await db.select().from(users).where(eq(users.id, user.id))
+  const fullUser = userRows[0]
+  if (!fullUser) {
+    throw createError({ statusCode: 404, message: 'User not found' })
+  }
+  const passwordValid = await verifyPassword(body.password, fullUser.passwordHash)
+  if (!passwordValid) {
+    throw createError({ statusCode: 401, message: 'Invalid password' })
+  }
 
   // Check if 2FA is already enabled
   const existing = await db.select().from(userTwoFactor)

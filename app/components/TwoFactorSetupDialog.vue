@@ -24,6 +24,10 @@ const { t } = useI18n()
 
 const step = ref<'method' | 'verify' | 'backup'>('method')
 const method = ref<'totp' | 'email'>('totp')
+// Current-password re-confirmation, required by the server to prevent a
+// hijacked session from silently enrolling 2FA. Captured once on the method
+// step and sent to both /2fa/setup and /2fa/verify-setup.
+const password = ref('')
 const setupLoading = ref(false)
 const verifyLoading = ref(false)
 const verifyCode = ref('')
@@ -56,7 +60,7 @@ async function startSetup(): Promise<void> {
       }
     }>('/api/auth/2fa/setup', {
       method: 'POST',
-      body: { method: method.value }
+      body: { method: method.value, password: password.value }
     })
 
     if (response.success && response.data) {
@@ -73,8 +77,11 @@ async function startSetup(): Promise<void> {
     } else {
       errorMessage.value = t('twoFactor.setupFailed')
     }
-  } catch {
-    errorMessage.value = t('twoFactor.setupFailed')
+  } catch (err) {
+    // A 401 means the re-confirmation password was wrong.
+    errorMessage.value = (err as { statusCode?: number })?.statusCode === 401
+      ? t('auth.invalidPassword')
+      : t('twoFactor.setupFailed')
   } finally {
     setupLoading.value = false
   }
@@ -98,7 +105,7 @@ async function verifySetup(): Promise<void> {
       data?: { backupCodes: string[] }
     }>('/api/auth/2fa/verify-setup', {
       method: 'POST',
-      body: { code: verifyCode.value }
+      body: { code: verifyCode.value, password: password.value }
     })
 
     if (response.success && response.data?.backupCodes) {
@@ -144,6 +151,7 @@ function finishSetup(): void {
 function resetState(): void {
   step.value = 'method'
   method.value = 'totp'
+  password.value = ''
   verifyCode.value = ''
   errorMessage.value = ''
   totpSecret.value = ''
@@ -203,6 +211,19 @@ function handleOpenChange(value: boolean): void {
             <p class="text-xs text-muted-foreground">{{ t('twoFactor.emailDescription') }}</p>
           </div>
         </button>
+
+        <!-- Current-password re-confirmation (anti session-hijack enrollment) -->
+        <div class="space-y-2 pt-2">
+          <Label for="setup-password">{{ t('profile.currentPassword') }}</Label>
+          <Input
+            id="setup-password"
+            v-model="password"
+            type="password"
+            :placeholder="t('auth.passwordPlaceholder')"
+            autocomplete="current-password"
+            @keyup.enter="password && startSetup()"
+          />
+        </div>
 
         <p v-if="errorMessage" class="text-sm text-destructive">{{ errorMessage }}</p>
       </div>
@@ -269,7 +290,7 @@ function handleOpenChange(value: boolean): void {
 
       <DialogFooter>
         <template v-if="step === 'method'">
-          <Button :disabled="setupLoading" @click="startSetup">
+          <Button :disabled="setupLoading || !password" @click="startSetup">
             {{ setupLoading ? t('common.loading') : t('common.next') }}
           </Button>
         </template>

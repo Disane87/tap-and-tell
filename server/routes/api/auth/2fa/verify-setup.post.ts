@@ -1,11 +1,13 @@
 import { eq, and } from 'drizzle-orm'
 import { randomBytes } from 'crypto'
-import { userTwoFactor } from '~~/server/database/schema'
+import { userTwoFactor, users } from '~~/server/database/schema'
+import { verifyPassword } from '~~/server/utils/password'
 
 /**
  * POST /api/auth/2fa/verify-setup
- * Verifies and activates 2FA setup.
- * Body: { code: string }
+ * Verifies and activates 2FA setup. Requires current-password re-confirmation
+ * so a hijacked session cannot silently enable 2FA.
+ * Body: { code: string, password: string }
  * Returns: { backupCodes: string[] } — shown once, user must save them.
  */
 export default defineEventHandler(async (event) => {
@@ -14,12 +16,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, message: 'Authentication required' })
   }
 
-  const body = await readBody<{ code: string }>(event)
+  const body = await readBody<{ code: string; password: string }>(event)
   if (!body?.code || typeof body.code !== 'string') {
     throw createError({ statusCode: 400, message: 'Verification code is required' })
   }
+  if (!body?.password) {
+    throw createError({ statusCode: 400, message: 'Current password is required' })
+  }
 
   const db = useDrizzle()
+
+  // Re-confirm the current password before activating 2FA.
+  const userRows = await db.select().from(users).where(eq(users.id, user.id))
+  const fullUser = userRows[0]
+  if (!fullUser) {
+    throw createError({ statusCode: 404, message: 'User not found' })
+  }
+  const passwordValid = await verifyPassword(body.password, fullUser.passwordHash)
+  if (!passwordValid) {
+    throw createError({ statusCode: 401, message: 'Invalid password' })
+  }
 
   // Find the pending 2FA setup
   const pendingRows = await db.select().from(userTwoFactor)
