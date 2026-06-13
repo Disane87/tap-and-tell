@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.30.0](https://github.com/Disane87/tap-and-tell/compare/v1.29.0...v1.30.0) (2026-06-13)
+
+
+### ✨ Features
+
+* **sharing:** per-guestbook Open Graph link previews ([4854c99](https://github.com/Disane87/tap-and-tell/commit/4854c990ce93f890a004f38640b1ec8548a90e8d))
+
 ## [1.29.0](https://github.com/Disane87/tap-and-tell/compare/v1.28.4...v1.29.0) (2026-06-13)
 
 
