@@ -107,15 +107,17 @@ describe('useTheme', () => {
   })
 
   describe('initial state', () => {
-    it('should default to system theme', () => {
+    it('should default to dark theme', () => {
       const { theme } = useTheme()
 
-      expect(theme.value).toBe('system')
+      expect(theme.value).toBe('dark')
     })
 
-    it('should default isDark to false', () => {
+    it('should default isDark to false until theme is applied', () => {
       const { isDark } = useTheme()
 
+      // isDark only updates when applyTheme() runs (via setTheme/initTheme).
+      // The bare default ref starts at false even though theme is 'dark'.
       expect(isDark.value).toBe(false)
     })
   })
@@ -263,9 +265,9 @@ describe('useTheme', () => {
     })
 
     it('should cycle from system to light', () => {
-      const { theme, cycleTheme } = useTheme()
+      const { theme, setTheme, cycleTheme } = useTheme()
 
-      // Default is system
+      setTheme('system')
       expect(theme.value).toBe('system')
       cycleTheme()
 
@@ -325,12 +327,12 @@ describe('useTheme', () => {
       expect(mockClassList.add).toHaveBeenCalledWith('dark')
     })
 
-    it('should keep default system theme when localStorage is empty', () => {
+    it('should keep default dark theme when localStorage is empty', () => {
       const { theme, initTheme } = useTheme()
 
       initTheme()
 
-      expect(theme.value).toBe('system')
+      expect(theme.value).toBe('dark')
     })
 
     it('should ignore invalid localStorage values', () => {
@@ -340,7 +342,7 @@ describe('useTheme', () => {
 
       initTheme()
 
-      expect(theme.value).toBe('system')
+      expect(theme.value).toBe('dark')
     })
 
     it('should register system preference change listener', () => {
