@@ -78,6 +78,9 @@ function cloneSettings(): GuestbookSettings {
     colorScheme: s.colorScheme ?? 'system',
     footerText: s.footerText ?? '',
     socialLinks: s.socialLinks ? [...s.socialLinks] : [],
+    shareTitle: s.shareTitle ?? '',
+    shareDescription: s.shareDescription ?? '',
+    shareImageUrl: s.shareImageUrl ?? undefined,
     formConfig: s.formConfig
       ? {
           steps: { ...s.formConfig.steps },
@@ -116,6 +119,13 @@ async function handleSave(): Promise<void> {
       const trimmed = localSettings.ctaButtonText.trim()
       localSettings.ctaButtonText = trimmed || undefined
     }
+    // Normalize empty share fields to undefined so the OG fallback chain applies.
+    if (localSettings.shareTitle !== undefined) {
+      localSettings.shareTitle = localSettings.shareTitle.trim() || undefined
+    }
+    if (localSettings.shareDescription !== undefined) {
+      localSettings.shareDescription = localSettings.shareDescription.trim() || undefined
+    }
     const result = await updateGuestbook(props.guestbook.id, { settings: localSettings })
     if (result) {
       toast.success(t('settings.saveSuccess'))
@@ -149,6 +159,15 @@ function handleBackgroundImageChanged(url: string | undefined): void {
  */
 function handleHeaderImageChanged(url: string | undefined): void {
   localSettings.headerImageUrl = url
+  emit('saved')
+}
+
+/**
+ * Patch the share image URL into local settings after upload/delete.
+ * See handleBackgroundImageChanged for the rationale.
+ */
+function handleShareImageChanged(url: string | undefined): void {
+  localSettings.shareImageUrl = url
   emit('saved')
 }
 
@@ -509,6 +528,44 @@ function setTab(tab: SettingsTab): void {
 
     <!-- Advanced Tab -->
     <div v-show="activeTab === 'advanced'" class="space-y-6">
+      <!-- Social Sharing / Link Preview (Open Graph) -->
+      <div class="space-y-4">
+        <div>
+          <Label class="text-sm font-medium">{{ t('settings.sharing.label') }}</Label>
+          <p class="text-xs text-muted-foreground">{{ t('settings.sharing.description') }}</p>
+        </div>
+
+        <!-- Share Title -->
+        <div class="space-y-2">
+          <Label class="text-xs">{{ t('settings.shareTitle.label') }}</Label>
+          <Input
+            v-model="localSettings.shareTitle"
+            :placeholder="props.guestbook.name || t('settings.shareTitle.placeholder')"
+          />
+          <p class="text-xs text-muted-foreground">{{ t('settings.shareTitle.hint') }}</p>
+        </div>
+
+        <!-- Share Description -->
+        <div class="space-y-2">
+          <Label class="text-xs">{{ t('settings.shareDescription.label') }}</Label>
+          <Textarea
+            v-model="localSettings.shareDescription"
+            :placeholder="t('settings.shareDescription.placeholder')"
+            class="min-h-16 resize-none"
+            rows="2"
+          />
+          <p class="text-xs text-muted-foreground">{{ t('settings.shareDescription.hint') }}</p>
+        </div>
+
+        <!-- Share Image -->
+        <AdminShareImagePicker
+          :share-image-url="localSettings.shareImageUrl"
+          :tenant-id="props.tenantId"
+          :guestbook-id="props.guestbook.id"
+          @share-image-changed="handleShareImageChanged"
+        />
+      </div>
+
       <!-- Slideshow Settings -->
       <div class="space-y-4">
         <div>

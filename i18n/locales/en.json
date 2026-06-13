@@ -911,6 +911,33 @@
       "removeSuccess": "Header image removed.",
       "removeFailed": "Failed to remove header image."
     },
+    "sharing": {
+      "label": "Social Sharing / Link Preview",
+      "description": "Customize how this guestbook looks when its link is shared on WhatsApp, Facebook, Instagram and other platforms."
+    },
+    "shareTitle": {
+      "label": "Share Title",
+      "placeholder": "e.g. Anna & Tom's Wedding Guestbook",
+      "hint": "Shown as the headline in the link preview. Defaults to the guestbook name."
+    },
+    "shareDescription": {
+      "label": "Share Description",
+      "placeholder": "e.g. Leave us a message and a photo!",
+      "hint": "Shown below the title in the link preview. Defaults to the welcome message."
+    },
+    "shareImage": {
+      "label": "Share Image",
+      "description": "The preview image shown when the link is shared (recommended 1200×630 px). Falls back to the header or background image.",
+      "upload": "Click to upload a share image",
+      "replace": "Replace Image",
+      "remove": "Remove",
+      "tooLarge": "Image is too large (max 5MB).",
+      "invalidFormat": "Invalid image format.",
+      "uploadSuccess": "Share image uploaded!",
+      "uploadFailed": "Failed to upload share image.",
+      "removeSuccess": "Share image removed.",
+      "removeFailed": "Failed to remove share image."
+    },
     "cardColor": {
       "label": "Card Color",
       "description": "Set a custom background color for the info card on the landing page."

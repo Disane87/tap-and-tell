@@ -911,6 +911,33 @@
       "removeSuccess": "Header-Bild entfernt.",
       "removeFailed": "Header-Bild konnte nicht entfernt werden."
     },
+    "sharing": {
+      "label": "Teilen / Link-Vorschau",
+      "description": "Lege fest, wie dieses Gästebuch aussieht, wenn der Link auf WhatsApp, Facebook, Instagram und anderen Plattformen geteilt wird."
+    },
+    "shareTitle": {
+      "label": "Titel beim Teilen",
+      "placeholder": "z. B. Annas & Toms Hochzeits-Gästebuch",
+      "hint": "Wird als Überschrift in der Link-Vorschau angezeigt. Standard ist der Gästebuch-Name."
+    },
+    "shareDescription": {
+      "label": "Beschreibung beim Teilen",
+      "placeholder": "z. B. Hinterlasst uns eine Nachricht und ein Foto!",
+      "hint": "Wird unter dem Titel in der Link-Vorschau angezeigt. Standard ist die Willkommensnachricht."
+    },
+    "shareImage": {
+      "label": "Vorschaubild beim Teilen",
+      "description": "Das Vorschaubild, das beim Teilen des Links angezeigt wird (empfohlen 1200×630 px). Fällt sonst auf das Header- oder Hintergrundbild zurück.",
+      "upload": "Klicke, um ein Vorschaubild hochzuladen",
+      "replace": "Bild ersetzen",
+      "remove": "Entfernen",
+      "tooLarge": "Das Bild ist zu groß (max. 5 MB).",
+      "invalidFormat": "Ungültiges Bildformat.",
+      "uploadSuccess": "Vorschaubild hochgeladen!",
+      "uploadFailed": "Vorschaubild konnte nicht hochgeladen werden.",
+      "removeSuccess": "Vorschaubild entfernt.",
+      "removeFailed": "Vorschaubild konnte nicht entfernt werden."
+    },
     "cardColor": {
       "label": "Kartenfarbe",
       "description": "Lege eine eigene Hintergrundfarbe für die Info-Karte auf der Landingpage fest."

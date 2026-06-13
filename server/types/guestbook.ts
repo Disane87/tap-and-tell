@@ -37,6 +37,12 @@ export interface GuestbookSettings {
   bodyFont?: 'sans' | 'display' | 'handwritten'
   /** Custom labels for form fields. */
   customLabels?: Record<string, string>
+  /** Open Graph share title shown in social link previews. Falls back to the guestbook name. */
+  shareTitle?: string
+  /** Open Graph share description shown in social link previews. Falls back to the welcome message. */
+  shareDescription?: string
+  /** URL for a dedicated Open Graph share image. Falls back to the header/background image, then the global OG image. */
+  shareImageUrl?: string
 }
 
 /**
