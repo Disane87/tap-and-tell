@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.29.0](https://github.com/Disane87/tap-and-tell/compare/v1.28.4...v1.29.0) (2026-06-13)
+
+
+### ✨ Features
+
+* **theme:** Editorial Noir Spotlight design system ([4526676](https://github.com/Disane87/tap-and-tell/commit/45266763ff0106dd8b66563e01c86b655cb0f1d6))
+* **e2e:** harden test infrastructure and expand security coverage ([b18be86](https://github.com/Disane87/tap-and-tell/commit/b18be8675f033d1071a21ce200581361facf6715))
+
+
+### 🐛 Bug Fixes
+
+* **db:** add named analytics unique index to match Drizzle schema ([47e6cc0](https://github.com/Disane87/tap-and-tell/commit/47e6cc0d2142ae7c921ce9768bdb045701086d0a))
+* **tests:** align useTheme tests with dark default + restore module-level useGuestbook state ([56b4cea](https://github.com/Disane87/tap-and-tell/commit/56b4cea1fb0c77d55c8373e13624bac3c444ad3c))
+* **admin:** close settings/image save race, add question reorder, fix i18n ([4cf76e0](https://github.com/Disane87/tap-and-tell/commit/4cf76e0d87ed4818a4d1a9e39e66be4937b14642))
+* comprehensive UI/UX, accessibility and code quality improvements ([a65430d](https://github.com/Disane87/tap-and-tell/commit/a65430d9ab65ecf893412cee5505339692957eb7))
+* **auth:** harden 2FA enrollment, verification and session lifecycle ([326cdd1](https://github.com/Disane87/tap-and-tell/commit/326cdd1706db47c73e2a9a2f435be4f0039fbb91))
+* **guestbook:** respect moderation setting and scope/secure entry routes ([35cdc69](https://github.com/Disane87/tap-and-tell/commit/35cdc69554709ba9e067af2718b8208011f6209a))
+* **analytics:** set tenant RLS context and wire funnel/offline tracking ([a1ada64](https://github.com/Disane87/tap-and-tell/commit/a1ada64306516388002c4f60f456ad522098e89c))
+* **2fa:** skip mandatory 2FA setup dialog in development ([a4704f1](https://github.com/Disane87/tap-and-tell/commit/a4704f18169a9bb307ca4ec1b451b76eaaa51e61))
+* **deps:** sync pnpm-lock.yaml with package.json (@playwright/test 1.60.0, esbuild override) ([79b3baf](https://github.com/Disane87/tap-and-tell/commit/79b3baff6ddf4988b4dc73b5849f8866281061a1))
+* **security:** validate encryption key and tighten CSRF/dev-key guards ([6b28d15](https://github.com/Disane87/tap-and-tell/commit/6b28d1504b5542aac8a39bb3ac48bd965e892f2f))
+
+
+### ♻️ Code Refactoring
+
+* remove SaaS-only feedback widget; skip 2FA dialog in dev ([5bd833c](https://github.com/Disane87/tap-and-tell/commit/5bd833c02406739ed22c48bcd90cf96fd1fceeef))
+
 ## [1.28.4](https://github.com/Disane87/tap-and-tell/compare/v1.28.3...v1.28.4) (2026-03-17)
 
 
