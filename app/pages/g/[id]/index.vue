@@ -460,7 +460,7 @@ onUnmounted(() => {
     <Sheet v-model:open="sheetOpen">
       <SheetContent
         side="bottom"
-        class="form-sheet-content overflow-y-auto lg:inset-0 lg:m-auto lg:h-fit lg:max-h-[85vh] lg:w-full lg:max-w-xl lg:rounded-3xl lg:border"
+        class="form-sheet-content overflow-y-auto lg:inset-0 lg:m-auto lg:h-fit lg:max-h-[85vh] lg:w-full lg:max-w-xl lg:rounded-3xl lg:border lg:data-[state=open]:slide-in-from-bottom-0 lg:data-[state=closed]:slide-out-to-bottom-0 lg:data-[state=open]:zoom-in-95 lg:data-[state=closed]:zoom-out-95"
       >
         <SheetHeader>
           <SheetTitle class="font-display text-xl">{{ t('form.addEntry') }}</SheetTitle>

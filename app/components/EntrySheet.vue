@@ -59,7 +59,7 @@ function formatFullDate(iso: string): string {
   <Sheet :open="open" @update:open="$emit('update:open', $event)">
     <SheetContent
       side="bottom"
-      class="max-h-[85vh] overflow-y-auto lg:inset-0 lg:m-auto lg:h-fit lg:max-h-[85vh] lg:w-full lg:max-w-2xl lg:rounded-3xl lg:border"
+      class="max-h-[85vh] overflow-y-auto lg:inset-0 lg:m-auto lg:h-fit lg:max-h-[85vh] lg:w-full lg:max-w-2xl lg:rounded-3xl lg:border lg:data-[state=open]:slide-in-from-bottom-0 lg:data-[state=closed]:slide-out-to-bottom-0 lg:data-[state=open]:zoom-in-95 lg:data-[state=closed]:zoom-out-95"
     >
       <SheetHeader v-if="entry">
         <SheetTitle class="font-handwritten text-3xl">
