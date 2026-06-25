@@ -4,7 +4,6 @@
  * URL: /g/[id]/view
  */
 import { Search, X, ArrowUpDown, Play, Download, Loader2 } from 'lucide-vue-next'
-import type { GuestEntry } from '~/types/guest'
 import type { CustomQuestion } from '~/types/guestbook'
 
 const { locale } = useI18n()
@@ -16,8 +15,6 @@ const { searchQuery, sortOrder, filterEntries, clearFilters, hasActiveFilters } 
 const { apply: applyColorScheme } = useForcedColorScheme()
 const { generatePdf, isGenerating } = usePdfExport()
 
-const selectedEntry = ref<GuestEntry | null>(null)
-const sheetOpen = ref(false)
 const guestbookInfo = ref<{ settings?: Record<string, unknown> } | null>(null)
 
 /** Computed background styles from guestbook settings. */
@@ -62,11 +59,6 @@ async function exportToPdf(): Promise<void> {
 
 const filteredEntries = computed(() => filterEntries(entries.value))
 
-function openEntry(entry: GuestEntry): void {
-  selectedEntry.value = entry
-  sheetOpen.value = true
-}
-
 function toggleSortOrder(): void {
   sortOrder.value = sortOrder.value === 'newest' ? 'oldest' : 'newest'
 }
@@ -110,7 +102,7 @@ onUnmounted(() => {
 
 <template>
   <div class="min-h-screen" :style="backgroundStyles">
-  <div class="mx-auto max-w-4xl px-4 py-8">
+  <div class="mx-auto max-w-4xl px-4 py-8 lg:max-w-6xl xl:max-w-7xl">
     <div class="mb-6 text-center">
       <h1 class="font-handwritten text-4xl text-foreground">
         {{ $t('guestbook.title') }}
@@ -218,53 +210,13 @@ onUnmounted(() => {
       </Button>
     </div>
 
-    <!-- Grid layout (default) -->
-    <div v-else-if="viewLayout === 'grid'" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <GuestCard
-        v-for="entry in filteredEntries"
-        :key="entry.id"
-        :entry="entry"
-        :card-style="cardStyle"
-        :custom-questions="customQuestions"
-        @click="openEntry(entry)"
-      />
-    </div>
-
-    <!-- Masonry layout -->
-    <MasonryGrid v-else-if="viewLayout === 'masonry'">
-      <GuestCard
-        v-for="entry in filteredEntries"
-        :key="entry.id"
-        :entry="entry"
-        :card-style="cardStyle"
-        :custom-questions="customQuestions"
-        @click="openEntry(entry)"
-      />
-    </MasonryGrid>
-
-    <!-- List layout -->
-    <div v-else-if="viewLayout === 'list'" class="space-y-3">
-      <EntryListItem
-        v-for="entry in filteredEntries"
-        :key="entry.id"
-        :entry="entry"
-        @click="openEntry(entry)"
-      />
-    </div>
-
-    <!-- Timeline layout -->
-    <EntryTimeline
-      v-else-if="viewLayout === 'timeline'"
+    <!-- Entry gallery (grid / masonry / list / timeline + detail sheet) -->
+    <EntryGallery
+      v-else
       :entries="filteredEntries"
-      @entry-click="openEntry"
-    />
-
-    <!-- Detail sheet -->
-    <EntrySheet
-      :entry="selectedEntry"
-      :open="sheetOpen"
+      :view-layout="viewLayout"
+      :card-style="cardStyle"
       :custom-questions="customQuestions"
-      @update:open="sheetOpen = $event"
     />
   </div>
   </div>

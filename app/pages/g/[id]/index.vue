@@ -3,7 +3,6 @@
  * Simplified guestbook guest landing page.
  * URL: /g/[id]
  */
-import { Icon } from '@iconify/vue'
 import { useSwipe } from '@vueuse/core'
 import { ChevronLeft, ChevronRight, Settings } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
@@ -85,72 +84,20 @@ const backgroundStyles = computed(() => {
   return styles
 })
 
-/** Computed inline styles for the info card based on cardColor, cardOpacity & cardBlur settings. */
-const cardStyles = computed(() => {
-  const settings = guestbookInfo.value?.settings
-  const styles: Record<string, string> = {}
-  const color = settings?.cardColor as string | undefined
-  if (color) {
-    const opacity = (settings?.cardOpacity as number | undefined) ?? 70
-    const r = parseInt(color.slice(1, 3), 16)
-    const g = parseInt(color.slice(3, 5), 16)
-    const b = parseInt(color.slice(5, 7), 16)
-    styles.backgroundColor = `rgba(${r}, ${g}, ${b}, ${opacity / 100})`
-  }
-  const blur = (settings?.cardBlur as number | undefined) ?? 20
-  styles.backdropFilter = `blur(${blur}px)`
-  styles.WebkitBackdropFilter = `blur(${blur}px)`
-  return styles
-})
-
-/** Whether a custom card color is configured. */
-const hasCustomCardColor = computed(() => !!(guestbookInfo.value?.settings?.cardColor))
-
-/** Resolved welcome message from settings or default. */
-const welcomeMessage = computed(() =>
-  (guestbookInfo.value?.settings?.welcomeMessage as string) || t('landing.subtitle')
+/** Gallery layout variant for the desktop landing (from settings). */
+const viewLayout = computed(() =>
+  (guestbookInfo.value?.settings?.viewLayout as 'grid' | 'masonry' | 'list' | 'timeline' | undefined) || 'grid'
 )
 
-/** Font class for the title. */
-const titleFontClass = computed(() => {
-  switch (guestbookInfo.value?.settings?.titleFont as string | undefined) {
-    case 'display': return 'font-display'
-    case 'sans': return 'font-sans'
-    default: return 'font-handwritten'
-  }
-})
-
-/** Font class for body text. */
-const bodyFontClass = computed(() => {
-  switch (guestbookInfo.value?.settings?.bodyFont as string | undefined) {
-    case 'handwritten': return 'font-handwritten'
-    case 'display': return 'font-display'
-    default: return 'font-sans'
-  }
-})
-
-/** Header image URL from settings. */
-const headerImageUrl = computed(() =>
-  guestbookInfo.value?.settings?.headerImageUrl as string | undefined
+/** Card visual style for the desktop gallery (from settings). */
+const cardStyle = computed(() =>
+  (guestbookInfo.value?.settings?.cardStyle as 'polaroid' | 'minimal' | 'rounded' | 'bordered' | undefined) || 'polaroid'
 )
 
-/** Header image position from settings. */
-const headerImagePosition = computed(() =>
-  (guestbookInfo.value?.settings?.headerImagePosition as string | undefined) || 'above-title'
+/** Custom questions for the detail sheet (from settings). */
+const customQuestions = computed(() =>
+  (guestbookInfo.value?.settings?.customQuestions as import('~/types/guestbook').CustomQuestion[] | undefined) || []
 )
-
-/** Footer text from settings. */
-const footerText = computed(() =>
-  guestbookInfo.value?.settings?.footerText as string | undefined
-)
-
-/** Social links from settings. */
-const socialLinks = computed(() =>
-  (guestbookInfo.value?.settings?.socialLinks as Array<{ platform: string; url: string }>) || []
-)
-
-/** Whether footer should be displayed. */
-const hasFooter = computed(() => !!(footerText.value || socialLinks.value.length))
 const sheetOpen = ref(false)
 
 // Timestamp when the form sheet was opened — used to compute durations for
@@ -401,9 +348,10 @@ onUnmounted(() => {
       {{ t('landing.adminBar') }}
     </NuxtLink>
 
+    <!-- Mobile / tablet: swipeable single-entry experience (unchanged below lg) -->
     <div
       ref="swiperEl"
-      class="relative flex flex-1 flex-col overflow-hidden"
+      class="relative flex flex-1 flex-col overflow-hidden lg:hidden"
       :style="{ touchAction: 'pan-y', ...backgroundStyles }"
     >
 
@@ -415,80 +363,13 @@ onUnmounted(() => {
         class="flex flex-1 flex-col items-center justify-center px-6"
         :class="{ 'landing-gradient': !hasCustomBackground }"
       >
-        <div
-          class="relative mx-auto max-w-sm overflow-hidden rounded-2xl border border-border/20 p-8 text-center shadow-md shadow-black"
-          :class="{ 'bg-card/70': !hasCustomCardColor }"
-          :style="cardStyles"
-        >
-          <!-- Header image behind title -->
-          <img
-            v-if="headerImageUrl && headerImagePosition === 'behind-title'"
-            :src="headerImageUrl"
-            alt=""
-            class="absolute inset-0 h-full w-full object-cover opacity-20"
-          >
-          <div class="relative">
-            <!-- Header image above title -->
-            <img
-              v-if="headerImageUrl && headerImagePosition === 'above-title'"
-              :src="headerImageUrl"
-              alt=""
-              class="mx-auto mb-4 h-20 max-w-[180px] object-contain"
-            >
-            <h1
-              class="text-5xl text-foreground"
-              :class="titleFontClass"
-            >
-              {{ guestbookInfo?.name || t('landing.title') }}
-            </h1>
-            <!-- Header image below title -->
-            <img
-              v-if="headerImageUrl && headerImagePosition === 'below-title'"
-              :src="headerImageUrl"
-              alt=""
-              class="mx-auto mt-4 h-20 max-w-[180px] object-contain"
-            >
-            <p
-              class="mt-3 text-sm text-muted-foreground"
-              :class="bodyFontClass"
-            >
-              {{ welcomeMessage }}
-            </p>
-            <Button class="mt-6 w-full" size="lg" @click="sheetOpen = true">
-              {{ (guestbookInfo?.settings?.ctaButtonText as string)?.trim() || t('landing.cta') }}
-            </Button>
-            <NuxtLink
-              v-if="hasEntries"
-              :to="`/g/${guestbookId}/view`"
-              class="mt-3 block text-sm text-muted-foreground underline hover:text-foreground"
-            >
-              {{ t('landing.viewAll') }}
-            </NuxtLink>
-
-            <!-- Footer -->
-            <div v-if="hasFooter" class="mt-6 pt-4 border-t border-border/30">
-              <p v-if="footerText" class="text-xs text-muted-foreground text-center">
-                {{ footerText }}
-              </p>
-              <div v-if="socialLinks.length" class="mt-3 flex justify-center gap-3">
-                <a
-                  v-for="link in socialLinks"
-                  :key="link.url"
-                  :href="link.url"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="text-muted-foreground hover:text-foreground transition-colors"
-                  :aria-label="link.platform"
-                >
-                  <Icon
-                    :icon="link.platform === 'instagram' ? 'lucide:instagram' : link.platform === 'twitter' ? 'lucide:twitter' : link.platform === 'youtube' ? 'lucide:youtube' : link.platform === 'tiktok' ? 'simple-icons:tiktok' : 'lucide:globe'"
-                    class="h-5 w-5"
-                  />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <LandingHero
+          :name="guestbookInfo?.name"
+          :settings="guestbookInfo?.settings"
+          :guestbook-id="guestbookId"
+          :show-view-all="hasEntries"
+          @cta="sheetOpen = true"
+        />
       </div>
 
       <!-- Slides 1+: Entry views -->
@@ -545,9 +426,42 @@ onUnmounted(() => {
       {{ currentSlide }} / {{ entries.length }}
     </div>
 
-    <!-- Form Sheet -->
+    </div>
+
+    <!-- Desktop: gallery-first layout (lg and up) -->
+    <div
+      class="hidden flex-1 overflow-y-auto lg:block"
+      :class="{ 'landing-gradient': !hasCustomBackground }"
+      :style="backgroundStyles"
+    >
+      <div class="mx-auto max-w-6xl px-6 py-10 xl:max-w-7xl">
+        <!-- Hero / CTA -->
+        <LandingHero
+          :name="guestbookInfo?.name"
+          :settings="guestbookInfo?.settings"
+          :guestbook-id="guestbookId"
+          wide
+          @cta="sheetOpen = true"
+        />
+
+        <!-- Entry gallery -->
+        <div v-if="hasEntries" class="mt-10">
+          <EntryGallery
+            :entries="entries"
+            :view-layout="viewLayout"
+            :card-style="cardStyle"
+            :custom-questions="customQuestions"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Sheet (bottom sheet on mobile, centered modal from lg up) -->
     <Sheet v-model:open="sheetOpen">
-      <SheetContent side="bottom" class="form-sheet-content overflow-y-auto">
+      <SheetContent
+        side="bottom"
+        class="form-sheet-content overflow-y-auto lg:inset-0 lg:m-auto lg:h-fit lg:max-h-[85vh] lg:w-full lg:max-w-xl lg:rounded-3xl lg:border"
+      >
         <SheetHeader>
           <SheetTitle class="font-display text-xl">{{ t('form.addEntry') }}</SheetTitle>
           <SheetDescription>{{ t('form.addEntryDescription') }}</SheetDescription>
@@ -563,6 +477,5 @@ onUnmounted(() => {
         </div>
       </SheetContent>
     </Sheet>
-    </div>
   </div>
 </template>

@@ -159,13 +159,16 @@ onUnmounted(() => {
 
     <!-- Slideshow -->
     <div v-else class="relative min-h-screen">
-      <Transition name="fade" mode="out-in">
-        <GuestEntryFullView
-          v-if="currentEntry"
-          :key="currentEntry.id"
-          :entry="currentEntry"
-        />
-      </Transition>
+      <!-- Constrain entry width on large screens so it doesn't stretch edge-to-edge -->
+      <div class="mx-auto lg:max-w-5xl xl:max-w-6xl">
+        <Transition name="fade" mode="out-in">
+          <GuestEntryFullView
+            v-if="currentEntry"
+            :key="currentEntry.id"
+            :entry="currentEntry"
+          />
+        </Transition>
+      </div>
 
       <!-- Controls overlay -->
       <Transition name="fade">
