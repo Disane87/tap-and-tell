@@ -119,7 +119,7 @@ function socialIcon(platform: string): string {
 
 <template>
   <div
-    class="relative mx-auto overflow-hidden rounded-2xl border border-border/20 p-8 text-center shadow-md shadow-black"
+    class="relative mx-auto w-full overflow-hidden rounded-2xl border border-border/20 p-8 text-center shadow-md shadow-black"
     :class="[wide ? 'max-w-3xl' : 'max-w-sm', { 'bg-card/70': !hasCustomCardColor }]"
     :style="cardStyles"
   >
@@ -139,7 +139,7 @@ function socialIcon(platform: string): string {
         class="mx-auto mb-4 h-20 max-w-[180px] object-contain"
       >
       <h1
-        class="text-5xl text-foreground"
+        class="wrap-break-word text-5xl text-foreground"
         :class="titleFontClass"
       >
         {{ name || t('landing.title') }}
