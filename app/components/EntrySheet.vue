@@ -57,7 +57,10 @@ function formatFullDate(iso: string): string {
 
 <template>
   <Sheet :open="open" @update:open="$emit('update:open', $event)">
-    <SheetContent side="bottom" class="max-h-[85vh] overflow-y-auto">
+    <SheetContent
+      side="bottom"
+      class="max-h-[85vh] overflow-y-auto lg:inset-0 lg:m-auto lg:h-fit lg:max-h-[85vh] lg:w-full lg:max-w-2xl lg:rounded-3xl lg:border"
+    >
       <SheetHeader v-if="entry">
         <SheetTitle class="font-handwritten text-3xl">
           {{ entry.name }}
