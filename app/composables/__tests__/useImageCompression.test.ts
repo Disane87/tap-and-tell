@@ -33,13 +33,15 @@ describe('useImageCompression', () => {
   })
 
   describe('return value structure', () => {
-    it('should return compressImage, isCompressing, and compressionProgress', () => {
+    it('should return compressImage, compressToFile, isCompressing, and compressionProgress', () => {
       const result = useImageCompression()
 
       expect(result).toHaveProperty('compressImage')
+      expect(result).toHaveProperty('compressToFile')
       expect(result).toHaveProperty('isCompressing')
       expect(result).toHaveProperty('compressionProgress')
       expect(typeof result.compressImage).toBe('function')
+      expect(typeof result.compressToFile).toBe('function')
     })
   })
 
@@ -298,6 +300,79 @@ describe('useImageCompression', () => {
       await compressImage(file)
 
       expect(mockCtx.drawImage).toHaveBeenCalledTimes(1)
+    })
+
+    it('should honour a custom maxDimension option', async () => {
+      vi.stubGlobal('Image', class MockImage {
+        width = 3840
+        height = 2160
+        src = ''
+        onload: (() => void) | null = null
+        onerror: (() => void) | null = null
+        constructor() {
+          setTimeout(() => { if (this.onload) this.onload() }, 0)
+        }
+      })
+
+      const { compressImage } = useImageCompression()
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
+
+      await compressImage(file, { maxDimension: 1000 })
+
+      // ratio = min(1000/3840, 1000/2160) = 0.2604 → width = 1000
+      expect(mockCanvas.width).toBe(1000)
+    })
+  })
+
+  describe('compressToFile', () => {
+    let mockCtx: { imageSmoothingEnabled: boolean; imageSmoothingQuality: string; drawImage: ReturnType<typeof vi.fn> }
+    let mockCanvas: { width: number; height: number; getContext: ReturnType<typeof vi.fn>; toDataURL: ReturnType<typeof vi.fn> }
+
+    beforeEach(() => {
+      mockCtx = { imageSmoothingEnabled: false, imageSmoothingQuality: '', drawImage: vi.fn() }
+      mockCanvas = {
+        width: 0,
+        height: 0,
+        getContext: vi.fn().mockReturnValue(mockCtx),
+        // Valid base64 payload so atob() in dataUrlToBlob can decode it.
+        toDataURL: vi.fn().mockReturnValue('data:image/jpeg;base64,' + 'A'.repeat(100))
+      }
+      vi.stubGlobal('document', { ...globalThis.document, createElement: vi.fn().mockReturnValue(mockCanvas) })
+      vi.stubGlobal('URL', { createObjectURL: vi.fn().mockReturnValue('blob:mock-url'), revokeObjectURL: vi.fn() })
+      vi.stubGlobal('Image', class MockImage {
+        width = 800
+        height = 600
+        src = ''
+        onload: (() => void) | null = null
+        onerror: (() => void) | null = null
+        constructor() {
+          setTimeout(() => { if (this.onload) this.onload() }, 0)
+        }
+      })
+    })
+
+    it('should return a File with the source basename and jpeg extension (WebP unsupported)', async () => {
+      const { compressToFile } = useImageCompression()
+      const file = new File(['test'], 'holiday.png', { type: 'image/png' })
+
+      const result = await compressToFile(file)
+
+      expect(result).toBeInstanceOf(File)
+      expect(result.type).toBe('image/jpeg')
+      expect(result.name).toBe('holiday.jpg')
+      expect(result.size).toBeGreaterThan(0)
+    })
+
+    it('should produce a WebP File when the canvas supports WebP', async () => {
+      mockCanvas.toDataURL.mockReturnValue('data:image/webp;base64,' + 'A'.repeat(100))
+
+      const { compressToFile } = useImageCompression()
+      const file = new File(['test'], 'photo.jpg', { type: 'image/jpeg' })
+
+      const result = await compressToFile(file)
+
+      expect(result.type).toBe('image/webp')
+      expect(result.name).toBe('photo.webp')
     })
   })
 })

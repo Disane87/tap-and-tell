@@ -23,6 +23,7 @@ const {
   user, isAuthenticated, initialized, fetchMe,
   updateProfile, changePassword, deleteAccount, uploadAvatar, deleteAvatar
 } = useAuth()
+const { compressToFile } = useImageCompression()
 
 // ── Auth guard ──
 onMounted(async () => {
@@ -78,18 +79,32 @@ async function handleAvatarUpload(event: Event): Promise<void> {
   const file = target.files?.[0]
   if (!file) return
 
-  uploadingAvatar.value = true
-  const success = await uploadAvatar(file)
-  uploadingAvatar.value = false
-
-  if (success) {
-    toast.success(t('profile.avatarUploaded'))
-  } else {
+  const isImage = file.type.startsWith('image/') || /\.(heic|heif)$/i.test(file.name)
+  if (!isImage) {
     toast.error(t('profile.avatarUploadFailed'))
+    target.value = ''
+    return
   }
 
-  // Reset input so same file can be re-selected
-  target.value = ''
+  uploadingAvatar.value = true
+  try {
+    // Route through the central compression routine. Avatars are small and
+    // square-ish, so a 512px / ~300KB target keeps them crisp and light.
+    const compressed = await compressToFile(file, { maxDimension: 512, targetSize: 300 * 1024 })
+    const success = await uploadAvatar(compressed)
+    if (success) {
+      toast.success(t('profile.avatarUploaded'))
+    } else {
+      toast.error(t('profile.avatarUploadFailed'))
+    }
+  } catch (error) {
+    console.error('Failed to process avatar:', error)
+    toast.error(t('profile.avatarUploadFailed'))
+  } finally {
+    uploadingAvatar.value = false
+    // Reset input so same file can be re-selected
+    target.value = ''
+  }
 }
 
 async function handleAvatarDelete(): Promise<void> {
@@ -256,7 +271,7 @@ const initials = computed(() => {
             <input
               ref="avatarInput"
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
               class="hidden"
               :aria-label="t('profile.avatar.upload')"
               @change="handleAvatarUpload"

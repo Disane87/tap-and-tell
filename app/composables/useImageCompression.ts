@@ -1,101 +1,143 @@
 /**
- * Composable for client-side image compression.
+ * Composable for client-side image compression — the single, central routine
+ * through which **every** image upload in the app passes.
  *
- * Decodes any image the browser/OS can hand us — including iPhone HEIC/HEIF
+ * It decodes any image the browser/OS can hand us — including iPhone HEIC/HEIF
  * (converted on the fly via heic2any) — fixes EXIF orientation, resizes large
  * images, and encodes to WebP (falling back to JPEG when WebP encoding is not
  * available) under a target file size. This guarantees that virtually any photo
- * a guest picks can be uploaded, regardless of source format or size.
+ * a guest or owner picks can be uploaded, regardless of source format or size.
+ *
+ * Two outputs are exposed for the two transport styles used across the app:
+ * - {@link compressImage} → a base64 data URL (for JSON request bodies).
+ * - {@link compressToFile} → a `File` (for `multipart/form-data` uploads).
+ *
+ * Both share the exact same compression pipeline, so no upload path can drift.
  */
+
+/**
+ * Per-call compression options. All fields are optional and fall back to
+ * sensible defaults tuned for guest photos.
+ */
+export interface CompressOptions {
+  /** Maximum dimension (width or height) in pixels. Default 1920. */
+  maxDimension?: number
+  /** Target maximum output size in bytes. Default ~1 MB. */
+  targetSize?: number
+  /** Initial encoder quality (0-1). Default 0.82. */
+  initialQuality?: number
+  /** Lowest quality to drop to before accepting the result. Default 0.4. */
+  minQuality?: number
+}
+
+/** Default compression settings, tuned for guest photos. */
+const DEFAULTS: Required<CompressOptions> = {
+  maxDimension: 1920,
+  targetSize: 1024 * 1024,
+  initialQuality: 0.82,
+  minQuality: 0.4
+}
+
 export function useImageCompression() {
   const isCompressing = ref(false)
   const compressionProgress = ref(0)
 
   /**
-   * Maximum dimension for resized images (width or height) in pixels.
-   * 1920px keeps photos crisp on a TV slideshow while staying lightweight.
-   */
-  const MAX_DIMENSION = 1920
-
-  /**
-   * Initial encoder quality (0-1). WebP at 0.82 is visually near-lossless
-   * for photos while producing small files.
-   */
-  const INITIAL_QUALITY = 0.82
-
-  /**
-   * Lowest quality we are willing to drop to before accepting the result.
-   */
-  const MIN_QUALITY = 0.4
-
-  /**
-   * Target maximum file size in bytes (~1 MB). Generous enough for slideshow
-   * quality; storage cost on Vercel Blob is negligible.
-   */
-  const TARGET_SIZE = 1024 * 1024
-
-  /**
    * Compresses an image file to a smaller base64 data URL.
    *
    * @param file - The image file to compress (any browser-pickable format).
+   * @param options - Optional overrides for dimension/size/quality.
    * @returns Promise resolving to a compressed base64 data URL (WebP or JPEG).
    * @throws If the image cannot be decoded or the canvas is unavailable.
    */
-  async function compressImage(file: File): Promise<string> {
+  async function compressImage(file: File, options: CompressOptions = {}): Promise<string> {
     isCompressing.value = true
     compressionProgress.value = 0
-
     try {
-      // iPhone HEIC/HEIF cannot be decoded by most browsers — convert first.
-      const decodable = await ensureDecodable(file)
-      compressionProgress.value = 20
-
-      // Decode the image, respecting EXIF orientation where supported.
-      const source = await decodeImage(decodable)
-      compressionProgress.value = 50
-
-      const { width, height } = calculateDimensions(
-        sourceWidth(source),
-        sourceHeight(source),
-        MAX_DIMENSION
-      )
-
-      const canvas = document.createElement('canvas')
-      canvas.width = width
-      canvas.height = height
-
-      const ctx = canvas.getContext('2d')
-      if (!ctx) {
-        throw new Error('Could not get canvas context')
-      }
-
-      ctx.imageSmoothingEnabled = true
-      ctx.imageSmoothingQuality = 'high'
-      ctx.drawImage(source as CanvasImageSource, 0, 0, width, height)
-
-      // Release decoded bitmap memory where supported (ImageBitmap only).
-      if (typeof (source as ImageBitmap).close === 'function') {
-        (source as ImageBitmap).close()
-      }
-      compressionProgress.value = 70
-
-      // Prefer WebP for better size/quality; fall back to JPEG when needed.
-      const mimeType = supportsWebp(canvas) ? 'image/webp' : 'image/jpeg'
-
-      let quality = INITIAL_QUALITY
-      let dataUrl = canvas.toDataURL(mimeType, quality)
-
-      // If still too large, reduce quality iteratively.
-      while (getBase64Size(dataUrl) > TARGET_SIZE && quality > MIN_QUALITY) {
-        quality = Math.round((quality - 0.1) * 100) / 100
-        dataUrl = canvas.toDataURL(mimeType, quality)
-      }
-
-      compressionProgress.value = 100
-      return dataUrl
+      return await compress(file, options)
     } finally {
       isCompressing.value = false
     }
+  }
+
+  /**
+   * Compresses an image file to a `File` ready for `multipart/form-data` upload.
+   *
+   * @param file - The image file to compress (any browser-pickable format).
+   * @param options - Optional overrides plus a target `filename`.
+   * @returns Promise resolving to a compressed `File` (WebP or JPEG).
+   * @throws If the image cannot be decoded or the canvas is unavailable.
+   */
+  async function compressToFile(
+    file: File,
+    options: CompressOptions & { filename?: string } = {}
+  ): Promise<File> {
+    isCompressing.value = true
+    compressionProgress.value = 0
+    try {
+      const dataUrl = await compress(file, options)
+      const blob = dataUrlToBlob(dataUrl)
+      const ext = blob.type === 'image/webp' ? 'webp' : 'jpg'
+      const base = (options.filename ?? file.name).replace(/\.[^.]+$/, '') || 'image'
+      return new File([blob], `${base}.${ext}`, { type: blob.type })
+    } finally {
+      isCompressing.value = false
+    }
+  }
+
+  /**
+   * Core compression pipeline shared by every output format.
+   *
+   * @param file - The image to compress.
+   * @param options - Compression overrides merged over the defaults.
+   * @returns A compressed base64 data URL.
+   */
+  async function compress(file: File, options: CompressOptions): Promise<string> {
+    const { maxDimension, targetSize, initialQuality, minQuality } = { ...DEFAULTS, ...options }
+
+    // iPhone HEIC/HEIF cannot be decoded by most browsers — convert first.
+    const decodable = await ensureDecodable(file)
+    compressionProgress.value = 20
+
+    // Decode the image, respecting EXIF orientation where supported.
+    const source = await decodeImage(decodable)
+    compressionProgress.value = 50
+
+    const { width, height } = calculateDimensions(source.width, source.height, maxDimension)
+
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+
+    const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      throw new Error('Could not get canvas context')
+    }
+
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
+    ctx.drawImage(source as CanvasImageSource, 0, 0, width, height)
+
+    // Release decoded bitmap memory where supported (ImageBitmap only).
+    if (typeof (source as ImageBitmap).close === 'function') {
+      (source as ImageBitmap).close()
+    }
+    compressionProgress.value = 70
+
+    // Prefer WebP for better size/quality; fall back to JPEG when needed.
+    const mimeType = supportsWebp(canvas) ? 'image/webp' : 'image/jpeg'
+
+    let quality = initialQuality
+    let dataUrl = canvas.toDataURL(mimeType, quality)
+
+    // If still too large, reduce quality iteratively.
+    while (getBase64Size(dataUrl) > targetSize && quality > minQuality) {
+      quality = Math.round((quality - 0.1) * 100) / 100
+      dataUrl = canvas.toDataURL(mimeType, quality)
+    }
+
+    compressionProgress.value = 100
+    return dataUrl
   }
 
   /**
@@ -183,20 +225,6 @@ export function useImageCompression() {
   }
 
   /**
-   * Reads the intrinsic width of a decoded image source.
-   */
-  function sourceWidth(source: ImageBitmap | HTMLImageElement): number {
-    return source.width
-  }
-
-  /**
-   * Reads the intrinsic height of a decoded image source.
-   */
-  function sourceHeight(source: ImageBitmap | HTMLImageElement): number {
-    return source.height
-  }
-
-  /**
    * Detects whether the canvas can actually encode WebP.
    *
    * Some older engines silently fall back to PNG when asked for WebP, so we
@@ -250,8 +278,26 @@ export function useImageCompression() {
     return Math.round((base64.length * 3) / 4)
   }
 
+  /**
+   * Converts a base64 data URL into a Blob.
+   *
+   * @param dataUrl - The data URL to convert.
+   * @returns A Blob carrying the decoded bytes and MIME type.
+   */
+  function dataUrlToBlob(dataUrl: string): Blob {
+    const [header, data] = dataUrl.split(',')
+    const mime = header?.match(/data:(.*?);/)?.[1] || 'image/webp'
+    const binary = atob(data || '')
+    const bytes = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i)
+    }
+    return new Blob([bytes], { type: mime })
+  }
+
   return {
     compressImage,
+    compressToFile,
     isCompressing,
     compressionProgress
   }

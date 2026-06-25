@@ -16,6 +16,15 @@ import { Upload, Trash2, Loader2, ImageIcon } from 'lucide-vue-next'
 import { toast } from 'vue-sonner'
 
 const { t } = useI18n()
+const { compressToFile } = useImageCompression()
+
+/** Maximum source file size (50MB) before client-side compression. */
+const MAX_SOURCE_SIZE = 50 * 1024 * 1024
+
+/** True for any browser-pickable image, including HEIC/HEIF (empty MIME type). */
+function isSupportedImage(file: File): boolean {
+  return file.type.startsWith('image/') || /\.(heic|heif)$/i.test(file.name)
+}
 
 const props = defineProps<{
   headerImageUrl?: string
@@ -48,22 +57,24 @@ async function handleFileChange(event: Event): Promise<void> {
   const file = input.files?.[0]
   if (!file) return
 
-  if (file.size > 5 * 1024 * 1024) {
-    toast.error(t('settings.headerImage.tooLarge'))
+  if (!isSupportedImage(file)) {
+    toast.error(t('settings.headerImage.invalidFormat'))
     input.value = ''
     return
   }
 
-  if (!file.type.startsWith('image/')) {
-    toast.error(t('settings.headerImage.invalidFormat'))
+  if (file.size > MAX_SOURCE_SIZE) {
+    toast.error(t('settings.headerImage.tooLarge'))
     input.value = ''
     return
   }
 
   uploading.value = true
   try {
+    // Route through the central compression routine before upload.
+    const compressed = await compressToFile(file, { maxDimension: 2048 })
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('file', compressed)
 
     const res = await $fetch<{ headerImageUrl?: string }>(
       `/api/tenants/${props.tenantId}/guestbooks/${props.guestbookId}/header`,
