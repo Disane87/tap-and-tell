@@ -295,6 +295,11 @@ async function handleSubmit(): Promise<void> {
     toast.success(t('toast.entryAdded'))
     // Track successful conversion
     trackConversion(!!(data.media && data.media.length > 0))
+    // Refresh from the server so the new entry shows up immediately. This
+    // mirrors the offline-sync path (submitQueuedEntry); the online path
+    // previously relied solely on the in-memory insert in useGuestbook, which
+    // could leave the swiper showing a stale list until a manual reload.
+    await fetchEntries()
     finishSubmission()
   } else if (!isOnline.value) {
     // Lost connectivity during the request — queue instead of failing.
