@@ -9,6 +9,11 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Space Grotesk', ui-sans-serif, sans-serif;
 
+  /* Guestbook owner font customization (guest-facing pages only) */
+  --font-gb-handwritten: 'Caveat', ui-serif, cursive;
+  --font-gb-display: 'DM Sans', ui-sans-serif, sans-serif;
+  --font-gb-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
   /* Brand — Editorial Noir "Spotlight" */
   --color-primary: #C8FF3D;            /* Electric Lime */
   --color-primary-foreground: #0E0E12;
@@ -155,6 +160,22 @@ body {
 
 .font-display {
   font-family: var(--font-display);
+}
+
+/* Guestbook owner-selectable fonts (guest-facing customization only).
+   Kept separate from the design-system .font-* utilities so the title/body
+   font picker renders the labeled typefaces (Caveat / DM Sans / Inter)
+   without overriding the Editorial Noir app chrome. */
+.font-gb-handwritten {
+  font-family: var(--font-gb-handwritten);
+}
+
+.font-gb-display {
+  font-family: var(--font-gb-display);
+}
+
+.font-gb-sans {
+  font-family: var(--font-gb-sans);
 }
 
 /* ============================================

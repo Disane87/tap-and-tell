@@ -28,9 +28,9 @@ const cardClass = computed(() => {
 /** Font class for body text. */
 const bodyFontClass = computed(() => {
   switch (props.settings.bodyFont) {
-    case 'handwritten': return 'font-handwritten'
-    case 'display': return 'font-display'
-    default: return 'font-sans'
+    case 'handwritten': return 'font-gb-handwritten'
+    case 'display': return 'font-gb-display'
+    default: return 'font-gb-sans'
   }
 })
 

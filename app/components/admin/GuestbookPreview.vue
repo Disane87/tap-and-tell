@@ -78,18 +78,18 @@ const headerImagePosition = computed(() =>
 /** Font class for the title. */
 const titleFontClass = computed(() => {
   switch (props.settings.titleFont) {
-    case 'display': return 'font-display'
-    case 'sans': return 'font-sans'
-    default: return 'font-handwritten'
+    case 'display': return 'font-gb-display'
+    case 'sans': return 'font-gb-sans'
+    default: return 'font-gb-handwritten'
   }
 })
 
 /** Font class for the body text. */
 const bodyFontClass = computed(() => {
   switch (props.settings.bodyFont) {
-    case 'handwritten': return 'font-handwritten'
-    case 'display': return 'font-display'
-    default: return 'font-sans'
+    case 'handwritten': return 'font-gb-handwritten'
+    case 'display': return 'font-gb-display'
+    default: return 'font-gb-sans'
   }
 })
 

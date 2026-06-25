@@ -359,9 +359,9 @@ function setTab(tab: SettingsTab): void {
               :variant="(localSettings.titleFont ?? 'handwritten') === opt.value ? 'default' : 'outline'"
               class="rounded-xl"
               :class="{
-                'font-handwritten': opt.value === 'handwritten',
-                'font-display': opt.value === 'display',
-                'font-sans': opt.value === 'sans'
+                'font-gb-handwritten': opt.value === 'handwritten',
+                'font-gb-display': opt.value === 'display',
+                'font-gb-sans': opt.value === 'sans'
               }"
               @click="localSettings.titleFont = opt.value"
             >
@@ -380,9 +380,9 @@ function setTab(tab: SettingsTab): void {
               :variant="(localSettings.bodyFont ?? 'sans') === opt.value ? 'default' : 'outline'"
               class="rounded-xl"
               :class="{
-                'font-handwritten': opt.value === 'handwritten',
-                'font-display': opt.value === 'display',
-                'font-sans': opt.value === 'sans'
+                'font-gb-handwritten': opt.value === 'handwritten',
+                'font-gb-display': opt.value === 'display',
+                'font-gb-sans': opt.value === 'sans'
               }"
               @click="localSettings.bodyFont = opt.value"
             >
