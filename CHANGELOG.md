@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.33.1](https://github.com/Disane87/tap-and-tell/compare/v1.33.0...v1.33.1) (2026-06-25)
+
+
+### 🐛 Bug Fixes
+
+* **guest:** show entry detail as centered modal on desktop ([10e578d](https://github.com/Disane87/tap-and-tell/commit/10e578dd9e2ddd40360b37d5e8049d0b7a241b94))
+
 ## [1.33.0](https://github.com/Disane87/tap-and-tell/compare/v1.32.1...v1.33.0) (2026-06-25)
 
 
