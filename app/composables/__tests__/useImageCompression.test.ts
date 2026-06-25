@@ -81,7 +81,8 @@ describe('useImageCompression', () => {
       })
 
       vi.stubGlobal('URL', {
-        createObjectURL: vi.fn().mockReturnValue('blob:mock-url')
+        createObjectURL: vi.fn().mockReturnValue('blob:mock-url'),
+        revokeObjectURL: vi.fn()
       })
 
       // Mock Image constructor
@@ -234,16 +235,17 @@ describe('useImageCompression', () => {
     })
 
     it('should reduce quality iteratively if image is too large', async () => {
-      // Create a base64 string that represents a large file (> 500KB)
-      // 500 * 1024 = 512000 bytes. Base64 expands by 4/3, so we need
-      // ~682667 base64 chars to represent 512000 bytes
-      const largeBase64 = 'data:image/jpeg;base64,' + 'A'.repeat(700000)
+      // Create a base64 string that represents a large file (> TARGET_SIZE = 1MB).
+      // 1024 * 1024 = 1048576 bytes. Base64 expands by 4/3, so we need
+      // ~1398101 base64 chars to represent 1048576 bytes.
+      const largeBase64 = 'data:image/jpeg;base64,' + 'A'.repeat(1_500_000)
       const smallBase64 = 'data:image/jpeg;base64,' + 'A'.repeat(100)
 
       let callCount = 0
       mockCanvas.toDataURL.mockImplementation(() => {
         callCount++
-        // Return large result for first few calls, then small
+        // First call is the WebP-support probe (returns jpeg → unsupported),
+        // then the quality-reduction loop runs until a small result is returned.
         if (callCount <= 3) return largeBase64
         return smallBase64
       })
@@ -255,6 +257,28 @@ describe('useImageCompression', () => {
 
       // toDataURL should be called multiple times due to quality reduction
       expect(mockCanvas.toDataURL.mock.calls.length).toBeGreaterThan(1)
+    })
+
+    it('should output WebP when the canvas supports it', async () => {
+      const webpBase64 = 'data:image/webp;base64,' + 'A'.repeat(100)
+      mockCanvas.toDataURL.mockReturnValue(webpBase64)
+
+      const { compressImage } = useImageCompression()
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
+
+      const result = await compressImage(file)
+      expect(result).toContain('data:image/webp;base64,')
+      // The encode call must request WebP, not JPEG.
+      expect(mockCanvas.toDataURL).toHaveBeenCalledWith('image/webp', expect.any(Number))
+    })
+
+    it('should fall back to JPEG when WebP is not supported', async () => {
+      const { compressImage } = useImageCompression()
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
+
+      const result = await compressImage(file)
+      // Default mock returns a jpeg data URL → WebP probe fails → JPEG output.
+      expect(result).toContain('data:image/jpeg;base64,')
     })
 
     it('should use high quality image smoothing', async () => {

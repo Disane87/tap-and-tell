@@ -2,11 +2,13 @@
 /**
  * Photo upload component with preview, drag-and-drop, and compression.
  *
- * Accepts images up to 10MB, compresses them client-side to max 500KB,
- * and emits the compressed base64 string to parent via v-model.
+ * Accepts virtually any image (incl. iPhone HEIC) up to 50MB, compresses them
+ * client-side to ~1MB WebP, and emits the compressed base64 string to parent
+ * via v-model. Failures surface a user-facing toast instead of failing silently.
  *
  * @model modelValue - Base64-encoded image string or null.
  */
+import { toast } from 'vue-sonner'
 import { Camera, X, Upload, Loader2 } from 'lucide-vue-next'
 
 const { t } = useI18n()
@@ -25,20 +27,33 @@ const isDragging = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 
 /**
- * Maximum file size in bytes (10MB - will be compressed).
+ * Maximum source file size in bytes (50MB). Anything within this is compressed
+ * client-side to ~1MB before upload; the cap only guards against decoding
+ * absurdly large files that could exhaust device memory.
  */
-const MAX_SIZE = 10 * 1024 * 1024
+const MAX_SIZE = 50 * 1024 * 1024
+
+/**
+ * Determines whether a picked file is a usable image, including HEIC/HEIF
+ * which some browsers report with an empty MIME type.
+ */
+function isSupportedImage(file: File): boolean {
+  if (file.type.startsWith('image/')) return true
+  return /\.(heic|heif)$/i.test(file.name)
+}
 
 /**
  * Handles file selection from input or drop.
- * Compresses the image before emitting.
+ * Compresses the image before emitting. Surfaces failures to the user.
  */
 async function handleFile(file: File): Promise<void> {
-  if (!file.type.startsWith('image/')) {
+  if (!isSupportedImage(file)) {
+    toast.error(t('photo.errorInvalidType'))
     return
   }
 
   if (file.size > MAX_SIZE) {
+    toast.error(t('photo.errorTooLarge'))
     return
   }
 
@@ -47,6 +62,7 @@ async function handleFile(file: File): Promise<void> {
     emit('update:modelValue', compressedBase64)
   } catch (error) {
     console.error('Failed to compress image:', error)
+    toast.error(t('photo.errorProcessing'))
   }
 }
 

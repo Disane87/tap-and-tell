@@ -598,8 +598,11 @@
     "remove": "Entfernen",
     "addPhoto": "Foto hinzufügen",
     "dropHere": "Foto hier ablegen",
-    "hint": "Tippen oder per Drag & Drop (max 10MB)",
-    "compressing": "Wird komprimiert..."
+    "hint": "Tippen oder per Drag & Drop — jedes Foto, auch vom iPhone",
+    "compressing": "Wird komprimiert...",
+    "errorInvalidType": "Diese Datei ist kein Bild. Bitte wähle ein Foto.",
+    "errorTooLarge": "Dieses Foto ist zu groß. Bitte wähle ein kleineres.",
+    "errorProcessing": "Dieses Foto konnte nicht verarbeitet werden. Bitte versuche ein anderes."
   },
   "errors": {
     "nameRequired": "Name ist erforderlich",
