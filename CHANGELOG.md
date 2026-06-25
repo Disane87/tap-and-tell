@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.31.0](https://github.com/Disane87/tap-and-tell/compare/v1.30.0...v1.31.0) (2026-06-25)
+
+
+### ✨ Features
+
+* **photo:** accept any image via WebP compression with HEIC support ([d84afc3](https://github.com/Disane87/tap-and-tell/commit/d84afc32f172f0850c99f75b915fcb1e3f2b7cc9))
+
 ## [1.30.0](https://github.com/Disane87/tap-and-tell/compare/v1.29.0...v1.30.0) (2026-06-13)
 
 
