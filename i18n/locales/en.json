@@ -440,7 +440,8 @@
       "subtitle": "Tell us your name and show your best side.",
       "name": "Name",
       "namePlaceholder": "Your name",
-      "photo": "Photo"
+      "photo": "Photo",
+      "media": "Photos & Videos"
     },
     "favorites": {
       "title": "Your Favorites",
@@ -603,6 +604,19 @@
     "errorInvalidType": "That file isn't an image. Please pick a photo.",
     "errorTooLarge": "This photo is too large. Please choose a smaller one.",
     "errorProcessing": "We couldn't process that photo. Please try a different one."
+  },
+  "media": {
+    "addMedia": "Add photos or videos",
+    "addMore": "Add more",
+    "dropHere": "Drop your files here",
+    "hint": "Tap or drag & drop — photos and videos, even from your iPhone",
+    "processing": "Processing...",
+    "remove": "Remove",
+    "goToItem": "Go to item {index}",
+    "errorInvalidType": "\"{name}\" isn't a photo or video.",
+    "errorImageTooLarge": "\"{name}\" is too large. Please choose a smaller image.",
+    "errorVideoTooLarge": "\"{name}\" is too large. Videos must be 50 MB or less.",
+    "errorProcessing": "We couldn't process \"{name}\". Please try a different file."
   },
   "errors": {
     "nameRequired": "Name is required",

@@ -45,19 +45,14 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Validate photo size (5MB limit for base64)
-  if (body.photo && body.photo.length > 7_000_000) {
-    throw createError({
-      statusCode: 400,
-      message: 'Photo must be 5MB or less'
-    })
-  }
+  // Resolve media inputs: prefer the new `media` array, fall back to the
+  // legacy single `photo` field for backwards compatibility.
+  const mediaInputs = Array.isArray(body.media) && body.media.length > 0
+    ? body.media
+    : (body.photo ? [body.photo] : [])
 
-  if (body.photo && !validatePhotoMimeType(body.photo).valid) {
-    throw createError({
-      statusCode: 400,
-      message: 'Invalid photo format'
-    })
+  if (mediaInputs.some(item => typeof item !== 'string')) {
+    throw createError({ statusCode: 400, message: 'Invalid media payload' })
   }
 
   const tenantId = await getDefaultTenantId()
@@ -80,15 +75,24 @@ export default defineEventHandler(async (event) => {
 
   const sanitized = sanitizeEntryInput({ name: body.name, message: body.message, answers: body.answers })
 
-  const entry = await createEntry(
-    tenantId,
-    guestbook.id,
-    sanitized.name.trim(),
-    sanitized.message.trim(),
-    body.photo,
-    sanitized.answers,
-    guestbook.settings?.moderationEnabled ?? false
-  )
+  let entry
+  try {
+    entry = await createEntry(
+      tenantId,
+      guestbook.id,
+      sanitized.name.trim(),
+      sanitized.message.trim(),
+      mediaInputs,
+      sanitized.answers,
+      guestbook.settings?.moderationEnabled ?? false
+    )
+  }
+  catch (error) {
+    throw createError({
+      statusCode: 400,
+      message: error instanceof Error ? error.message : 'Invalid media'
+    })
+  }
 
   return {
     success: true,

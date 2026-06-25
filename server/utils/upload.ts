@@ -1,12 +1,25 @@
 import { join } from 'path'
 import { getStorageDriver } from '~~/server/utils/storage-driver'
 import { encryptData, getTenantEncryptionKey } from '~~/server/utils/crypto'
-import { validatePhotoMimeType } from '~~/server/utils/sanitize'
+import { validatePhotoMimeType, validateMediaMimeType } from '~~/server/utils/sanitize'
 
 const DATA_DIR = process.env.DATA_DIR || '.data'
 
 /** Default maximum file size: 5 MB */
 const DEFAULT_MAX_SIZE = 5 * 1024 * 1024
+
+/**
+ * Maximum size for a single image media item: 10 MB. Images are compressed
+ * client-side to ~1 MB, so this only guards against pathological inputs.
+ */
+const MEDIA_IMAGE_MAX_SIZE = 10 * 1024 * 1024
+
+/**
+ * Maximum size for a single video media item: 50 MB. Videos are not compressed
+ * client-side, so this cap bounds storage and (since the file is decrypted
+ * in memory when served) request memory usage.
+ */
+const MEDIA_VIDEO_MAX_SIZE = 50 * 1024 * 1024
 
 /** Maps MIME types to file extensions */
 const MIME_TO_EXT: Record<string, string> = {
@@ -14,7 +27,10 @@ const MIME_TO_EXT: Record<string, string> = {
   'image/png': 'png',
   'image/webp': 'webp',
   'image/heic': 'heic',
-  'image/gif': 'gif'
+  'image/gif': 'gif',
+  'video/mp4': 'mp4',
+  'video/webm': 'webm',
+  'video/quicktime': 'mov'
 }
 
 /**
@@ -170,6 +186,28 @@ export async function processUpload(
 
   // Validate file and detect MIME type
   const mimeType = validateUpload(data, options)
+
+  return writeFile(data, mimeType, options)
+}
+
+/**
+ * Writes file data to storage with the resolved MIME type.
+ *
+ * Shared by {@link processUpload} (image-only validation) and
+ * {@link processBase64MediaUpload} (image + video validation). Handles
+ * extension/filename building, optional deletion of prior versions, optional
+ * tenant encryption, and URL construction. Assumes validation already happened.
+ *
+ * @param data - Raw file data as Buffer
+ * @param mimeType - The validated MIME type
+ * @param options - Upload configuration options
+ * @returns Upload result with URL and filename
+ */
+async function writeFile(
+  data: Buffer,
+  mimeType: string,
+  options: UploadOptions
+): Promise<UploadResult> {
   const ext = getExtension(mimeType)
 
   // Build filename
@@ -233,6 +271,59 @@ export async function processBase64Upload(
 
   const data = Buffer.from(match[1], 'base64')
   return processUpload(data, options)
+}
+
+/**
+ * Result of a successful media upload, including whether it is an image or video.
+ */
+export interface MediaUploadResult extends UploadResult {
+  /** Whether the stored file is an image or a video. */
+  kind: 'image' | 'video'
+}
+
+/**
+ * Processes a base64-encoded data URL that may be an **image or a video**, and
+ * stores the file. Unlike {@link processBase64Upload} (image-only, used for
+ * avatars/backgrounds), this validates video magic bytes too and applies a
+ * larger size cap for videos.
+ *
+ * Images and videos are both encrypted with the tenant key when `encrypt` is
+ * set, matching the existing photo storage model.
+ *
+ * @param dataUrl - Base64 data URL, e.g. `data:image/webp;base64,...` or `data:video/mp4;base64,...`
+ * @param options - Upload configuration options. `maxSize`, when omitted,
+ *                   defaults to 10 MB for images and 50 MB for videos.
+ * @returns Upload result with URL, filename, MIME type, and media kind, or
+ *          `undefined` if the string is not a valid media data URL
+ * @throws Error if the media format is unsupported or the file exceeds the size cap
+ */
+export async function processBase64MediaUpload(
+  dataUrl: string,
+  options: UploadOptions
+): Promise<MediaUploadResult | undefined> {
+  const match = dataUrl.match(/^data:(?:image|video)\/[\w.+-]+;base64,(.+)$/)
+  if (!match) return undefined
+
+  if (options.encrypt && !options.tenantId) {
+    throw new Error('tenantId is required when encryption is enabled')
+  }
+
+  const data = Buffer.from(match[1], 'base64')
+
+  const detection = validateMediaMimeType(dataUrl)
+  if (!detection.valid || !detection.mimeType || !detection.kind) {
+    throw new Error('Unsupported media format')
+  }
+
+  const maxSize = options.maxSize
+    ?? (detection.kind === 'video' ? MEDIA_VIDEO_MAX_SIZE : MEDIA_IMAGE_MAX_SIZE)
+  if (data.length > maxSize) {
+    const maxMB = Math.round(maxSize / 1024 / 1024)
+    throw new Error(`File too large (max ${maxMB} MB)`)
+  }
+
+  const result = await writeFile(data, detection.mimeType, options)
+  return { ...result, kind: detection.kind }
 }
 
 /**

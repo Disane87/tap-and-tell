@@ -4,8 +4,8 @@ import { eq, desc, and, inArray } from 'drizzle-orm'
 import { entries } from '~~/server/database/schema'
 import { decryptData, getTenantEncryptionKey } from '~~/server/utils/crypto'
 import { getStorageDriver } from '~~/server/utils/storage-driver'
-import { processBase64Upload } from '~~/server/utils/upload'
-import type { EntryStatus, GuestEntry } from '~~/server/types/guest'
+import { processBase64MediaUpload } from '~~/server/utils/upload'
+import type { EntryStatus, GuestEntry, EntryMedia } from '~~/server/types/guest'
 
 /**
  * Data directory path for photo storage.
@@ -90,13 +90,15 @@ export async function findEntryById(tenantId: string, id: string): Promise<Guest
 
 /**
  * Creates a new guest entry with a generated ID.
- * Photos are encrypted with the tenant's derived key before saving.
+ * Each media item (image or video) is encrypted with the tenant's derived key
+ * before saving. The first image URL is mirrored into `photoUrl` for
+ * backwards compatibility (PDF export, OG sharing, analytics, legacy views).
  *
  * @param tenantId - The tenant ID for RLS context and encryption.
  * @param guestbookId - The guestbook this entry belongs to.
  * @param name - Guest name.
  * @param message - Guest message.
- * @param photo - Optional base64-encoded photo data.
+ * @param media - Optional list of base64 data URLs (images and/or videos), in display order.
  * @param answers - Optional form answers.
  * @param moderationEnabled - Whether the guestbook requires moderation. When true, the
  *                            entry starts as `pending`; when false, it is `approved`
@@ -108,26 +110,31 @@ export async function createEntry(
   guestbookId: string,
   name: string,
   message: string,
-  photo?: string,
+  media?: string[],
   answers?: GuestEntry['answers'],
   moderationEnabled = true
 ): Promise<GuestEntry> {
   const id = generateId()
-  let photoUrl: string | undefined
+  const mediaItems: EntryMedia[] = []
 
-  // Save and encrypt photo if provided
-  if (photo) {
-    const result = await processBase64Upload(photo, {
+  // Save and encrypt each media item, preserving upload order via the index.
+  const dataUrls = media ?? []
+  for (let i = 0; i < dataUrls.length; i++) {
+    const result = await processBase64MediaUpload(dataUrls[i], {
       directory: `photos/${guestbookId}`,
-      filePrefix: id,
+      filePrefix: `${id}-${i}`,
       urlPrefix: `/api/photos/${guestbookId}`,
       encrypt: true,
       tenantId
     })
     if (result) {
-      photoUrl = result.url
+      mediaItems.push({ type: result.kind, url: result.url, mime: result.mimeType })
     }
   }
+
+  // Mirror the first image URL into photo_url for backwards compatibility.
+  const photoUrl = mediaItems.find(m => m.type === 'image')?.url
+  const mediaToStore = mediaItems.length > 0 ? mediaItems : undefined
 
   const now = new Date()
   // Moderation-aware status: pending when moderation is on, approved otherwise.
@@ -140,6 +147,7 @@ export async function createEntry(
       name,
       message,
       photoUrl: photoUrl || null,
+      media: mediaToStore || null,
       answers: answers || null,
       status,
       createdAt: now
@@ -150,6 +158,7 @@ export async function createEntry(
       name,
       message,
       photoUrl,
+      media: mediaToStore,
       answers,
       createdAt: now.toISOString(),
       status
@@ -175,16 +184,24 @@ export async function deleteEntry(tenantId: string, id: string, guestbookId?: st
     const entry = rows[0]
     if (!entry) return false
 
-    // Delete photo file if exists
-    if (entry.photoUrl) {
-      const parts = entry.photoUrl.replace('/api/photos/', '').split('/')
-      let filePath: string
-      if (parts.length === 2) {
-        filePath = join(PHOTOS_DIR, parts[0], parts[1])
-      } else {
-        filePath = join(PHOTOS_DIR, parts[0])
+    // Collect every stored media file URL: the new media[] plus the legacy
+    // photo_url (which mirrors the first image, so de-duplicate via the Set).
+    const urls = new Set<string>()
+    if (entry.photoUrl) urls.add(entry.photoUrl)
+    const media = entry.media as EntryMedia[] | null
+    if (Array.isArray(media)) {
+      for (const item of media) {
+        if (item?.url) urls.add(item.url)
       }
-      const driver = getStorageDriver()
+    }
+
+    // Delete all media files
+    const driver = getStorageDriver()
+    for (const url of urls) {
+      const parts = url.replace('/api/photos/', '').split('/')
+      const filePath = parts.length === 2
+        ? join(PHOTOS_DIR, parts[0], parts[1])
+        : join(PHOTOS_DIR, parts[0])
       await driver.delete(filePath)
     }
 
@@ -338,6 +355,12 @@ export function getPhotoMimeType(filename: string): string {
       return 'image/gif'
     case 'webp':
       return 'image/webp'
+    case 'mp4':
+      return 'video/mp4'
+    case 'webm':
+      return 'video/webm'
+    case 'mov':
+      return 'video/quicktime'
     default:
       return 'application/octet-stream'
   }
@@ -355,6 +378,7 @@ function mapRowToEntry(row: typeof entries.$inferSelect): GuestEntry {
     name: row.name,
     message: row.message,
     photoUrl: row.photoUrl || undefined,
+    media: (row.media as EntryMedia[] | null) || undefined,
     answers: row.answers as GuestEntry['answers'],
     createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : String(row.createdAt),
     status: row.status as EntryStatus | undefined,

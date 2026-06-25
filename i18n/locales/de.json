@@ -440,7 +440,8 @@
       "subtitle": "Sag uns deinen Namen und zeig dich von deiner besten Seite.",
       "name": "Name",
       "namePlaceholder": "Dein Name",
-      "photo": "Foto"
+      "photo": "Foto",
+      "media": "Fotos & Videos"
     },
     "favorites": {
       "title": "Deine Favoriten",
@@ -603,6 +604,19 @@
     "errorInvalidType": "Diese Datei ist kein Bild. Bitte wähle ein Foto.",
     "errorTooLarge": "Dieses Foto ist zu groß. Bitte wähle ein kleineres.",
     "errorProcessing": "Dieses Foto konnte nicht verarbeitet werden. Bitte versuche ein anderes."
+  },
+  "media": {
+    "addMedia": "Fotos oder Videos hinzufügen",
+    "addMore": "Mehr hinzufügen",
+    "dropHere": "Dateien hier ablegen",
+    "hint": "Tippen oder per Drag & Drop — Fotos und Videos, auch vom iPhone",
+    "processing": "Wird verarbeitet...",
+    "remove": "Entfernen",
+    "goToItem": "Zu Element {index}",
+    "errorInvalidType": "„{name}“ ist kein Foto oder Video.",
+    "errorImageTooLarge": "„{name}“ ist zu groß. Bitte wähle ein kleineres Bild.",
+    "errorVideoTooLarge": "„{name}“ ist zu groß. Videos dürfen maximal 50 MB groß sein.",
+    "errorProcessing": "„{name}“ konnte nicht verarbeitet werden. Bitte versuche eine andere Datei."
   },
   "errors": {
     "nameRequired": "Name ist erforderlich",

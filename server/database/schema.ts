@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, uniqueIndex, index, jsonb, varchar, boolean, serial, integer } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 import type { GuestbookSettings, GuestbookType } from '../types/guestbook'
+import type { EntryMedia } from '../types/guest'
 
 /**
  * Users table for owner authentication.
@@ -92,6 +93,7 @@ export const entries = pgTable('entries', {
   name: text('name').notNull(),
   message: text('message').notNull(),
   photoUrl: text('photo_url'),
+  media: jsonb('media').$type<EntryMedia[]>(),
   answers: jsonb('answers').$type<Record<string, unknown>>(),
   status: text('status', { enum: ['pending', 'approved', 'rejected'] }).notNull().default('pending'),
   rejectionReason: text('rejection_reason'),

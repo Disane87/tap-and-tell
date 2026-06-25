@@ -68,13 +68,16 @@ function formatFullDate(iso: string): string {
       </SheetHeader>
 
       <div v-if="entry" class="mt-4 space-y-6 pb-6">
-        <!-- Photo -->
-        <div v-if="entry.photoUrl" class="flex justify-center">
-          <img
-            :src="entry.photoUrl"
-            :alt="$t('entry.photoBy', { name: entry.name })"
-            class="photo-frame max-h-64 rounded-xl object-cover"
-          >
+        <!-- Media gallery -->
+        <div
+          v-if="entry.media?.length || entry.photoUrl"
+          class="h-64 w-full overflow-hidden rounded-xl"
+        >
+          <MediaGallery
+            :media="entry.media"
+            :fallback-url="entry.photoUrl"
+            :name="entry.name"
+          />
         </div>
 
         <!-- Message -->

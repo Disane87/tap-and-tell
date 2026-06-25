@@ -32,7 +32,7 @@ describe('useGuestForm', () => {
       const { formState } = useGuestForm()
       expect(formState.name).toBe('')
       expect(formState.message).toBe('')
-      expect(formState.photo).toBeNull()
+      expect(formState.media).toEqual([])
     })
 
     it('has 4 enabled steps by default', () => {
@@ -69,12 +69,12 @@ describe('useGuestForm', () => {
       expect(errors.name).toBe('errors.nameTooLong')
     })
 
-    it('fails when photo exceeds size limit', () => {
+    it('passes step 1 with attached media (per-file checks live in MediaUpload)', () => {
       const { formState, validateCurrentStep, errors } = useGuestForm()
       formState.name = 'Test User'
-      formState.photo = 'a'.repeat(7_000_001) // > 7MB base64
-      expect(validateCurrentStep()).toBe(false)
-      expect(errors.photo).toBe('errors.photoTooLarge')
+      formState.media = ['data:image/webp;base64,AAAA', 'data:video/mp4;base64,BBBB']
+      expect(validateCurrentStep()).toBe(true)
+      expect(errors.media).toBeUndefined()
     })
 
     it('passes with valid name', () => {
@@ -588,14 +588,14 @@ describe('useGuestForm', () => {
       expect(errors.message).toBe('errors.messageTooLong')
     })
 
-    it('fails with photo too large in full validation', () => {
+    it('passes full validation regardless of attached media', () => {
       const { formState, validate, errors } = useGuestForm()
       formState.name = 'Test'
       formState.message = 'Hello'
-      formState.photo = 'a'.repeat(7_000_001)
+      formState.media = ['data:image/webp;base64,AAAA', 'data:video/mp4;base64,BBBB']
 
-      expect(validate()).toBe(false)
-      expect(errors.photo).toBe('errors.photoTooLarge')
+      expect(validate()).toBe(true)
+      expect(errors.media).toBeUndefined()
     })
   })
 
@@ -818,27 +818,27 @@ describe('useGuestForm', () => {
     })
   })
 
-  describe('getSubmitData - photo handling', () => {
-    it('includes photo when provided', () => {
+  describe('getSubmitData - media handling', () => {
+    it('includes media when provided, in order', () => {
       const { formState, getSubmitData, reset } = useGuestForm()
       reset()
       formState.name = 'Test'
       formState.message = 'Hello'
-      formState.photo = 'base64photodata'
+      formState.media = ['data:image/webp;base64,AAAA', 'data:video/mp4;base64,BBBB']
 
       const data = getSubmitData()
-      expect(data.photo).toBe('base64photodata')
+      expect(data.media).toEqual(['data:image/webp;base64,AAAA', 'data:video/mp4;base64,BBBB'])
     })
 
-    it('excludes photo when null', () => {
+    it('excludes media when empty', () => {
       const { formState, getSubmitData, reset } = useGuestForm()
       reset()
       formState.name = 'Test'
       formState.message = 'Hello'
-      formState.photo = null
+      formState.media = []
 
       const data = getSubmitData()
-      expect(data.photo).toBeUndefined()
+      expect(data.media).toBeUndefined()
     })
   })
 

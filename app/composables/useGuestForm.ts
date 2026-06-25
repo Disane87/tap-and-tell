@@ -12,7 +12,8 @@ export type FormStatus = 'idle' | 'submitting' | 'success' | 'error'
 export interface GuestFormState {
   // Step 1: Basics (required)
   name: string
-  photo: string | null
+  /** Base64 data URLs for attached images and/or videos, in display order. */
+  media: string[]
 
   // Step 2: Favorites (optional)
   favoriteColor: string
@@ -46,7 +47,7 @@ export interface GuestFormState {
  */
 export interface FormErrors {
   name?: string
-  photo?: string
+  media?: string
   message?: string
   general?: string
   customAnswers?: Record<string, string>
@@ -58,7 +59,7 @@ export interface FormErrors {
 function getDefaultState(): GuestFormState {
   return {
     name: '',
-    photo: null,
+    media: [],
     favoriteColor: '',
     favoriteFood: '',
     favoriteMovie: '',
@@ -164,7 +165,7 @@ export function useGuestForm() {
   function validateCurrentStep(): boolean {
     // Clear previous errors
     errors.name = undefined
-    errors.photo = undefined
+    errors.media = undefined
     errors.message = undefined
     errors.general = undefined
     errors.customAnswers = undefined
@@ -178,11 +179,7 @@ export function useGuestForm() {
         errors.name = 'errors.nameTooLong'
         return false
       }
-      // Photo size validation (5MB = ~6.67MB base64)
-      if (formState.photo && formState.photo.length > 7_000_000) {
-        errors.photo = 'errors.photoTooLarge'
-        return false
-      }
+      // Per-file media size/type validation happens in the MediaUpload component.
     }
 
     if (currentStep.value === 4) {
@@ -222,7 +219,7 @@ export function useGuestForm() {
    */
   function validate(): boolean {
     errors.name = undefined
-    errors.photo = undefined
+    errors.media = undefined
     errors.message = undefined
     errors.general = undefined
 
@@ -233,11 +230,6 @@ export function useGuestForm() {
       valid = false
     } else if (formState.name.length > 100) {
       errors.name = 'errors.nameTooLong'
-      valid = false
-    }
-
-    if (formState.photo && formState.photo.length > 7_000_000) {
-      errors.photo = 'errors.photoTooLarge'
       valid = false
     }
 
@@ -349,7 +341,7 @@ export function useGuestForm() {
     return {
       name: formState.name.trim(),
       message: formState.message.trim(),
-      photo: formState.photo || undefined,
+      media: formState.media.length > 0 ? [...formState.media] : undefined,
       answers: buildAnswers()
     }
   }
@@ -375,7 +367,7 @@ export function useGuestForm() {
   function reset(): void {
     Object.assign(formState, getDefaultState())
     errors.name = undefined
-    errors.photo = undefined
+    errors.media = undefined
     errors.message = undefined
     errors.general = undefined
     errors.customAnswers = undefined

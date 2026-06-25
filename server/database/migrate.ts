@@ -104,6 +104,10 @@ export async function runMigrations(connectionString: string): Promise<void> {
 
       CREATE INDEX IF NOT EXISTS idx_entries_guestbook ON entries(guestbook_id);
 
+      -- Multiple images/videos per entry (in upload order). photo_url is kept
+      -- as a mirror of the first image for backwards compatibility.
+      ALTER TABLE entries ADD COLUMN IF NOT EXISTS media JSONB;
+
       CREATE TABLE IF NOT EXISTS tenant_members (
         id VARCHAR(24) PRIMARY KEY,
         tenant_id VARCHAR(24) NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,

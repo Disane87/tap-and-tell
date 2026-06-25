@@ -40,6 +40,19 @@ describe('storage utilities', () => {
       expect(getPhotoMimeType('IMAGE.WEBP')).toBe('image/webp')
     })
 
+    it('should return correct MIME type for video files', () => {
+      expect(getPhotoMimeType('clip.mp4')).toBe('video/mp4')
+      expect(getPhotoMimeType('clip.webm')).toBe('video/webm')
+      expect(getPhotoMimeType('clip.mov')).toBe('video/quicktime')
+      expect(getPhotoMimeType('CLIP.MP4')).toBe('video/mp4')
+    })
+
+    it('should handle encrypted video extensions (.enc)', () => {
+      expect(getPhotoMimeType('clip.mp4.enc')).toBe('video/mp4')
+      expect(getPhotoMimeType('clip.webm.enc')).toBe('video/webm')
+      expect(getPhotoMimeType('clip.mov.enc')).toBe('video/quicktime')
+    })
+
     it('should return octet-stream for unknown extensions', () => {
       expect(getPhotoMimeType('file.unknown')).toBe('application/octet-stream')
       expect(getPhotoMimeType('file.bmp')).toBe('application/octet-stream')

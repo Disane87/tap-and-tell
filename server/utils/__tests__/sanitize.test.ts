@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { stripHtmlTags, sanitizeText, sanitizeEntryInput, validatePhotoMimeType, sanitizeTenantName } from '../sanitize'
+import { stripHtmlTags, sanitizeText, sanitizeEntryInput, validatePhotoMimeType, validateMediaMimeType, sanitizeTenantName } from '../sanitize'
 
 describe('stripHtmlTags', () => {
   it('removes simple HTML tags', () => {
@@ -205,6 +205,66 @@ describe('validatePhotoMimeType', () => {
     const base64 = `data:image/jpeg;base64,${jpegBuffer.toString('base64')}`
     const result = validatePhotoMimeType(base64)
     expect(result.valid).toBe(true)
+  })
+})
+
+describe('validateMediaMimeType', () => {
+  /** ASCII codes for a string (helper for building magic-byte buffers). */
+  function ascii(s: string): number[] {
+    return [...s].map(c => c.charCodeAt(0))
+  }
+
+  /** Builds a base64 string from a byte array, padded to at least 12 bytes. */
+  function b64(bytes: number[]): string {
+    const padded = bytes.length >= 12 ? bytes : [...bytes, ...new Array(12 - bytes.length).fill(0)]
+    return Buffer.from(Uint8Array.from(padded)).toString('base64')
+  }
+
+  it('detects MP4 video (ftyp + isom brand)', () => {
+    const bytes = [0x00, 0x00, 0x00, 0x18, ...ascii('ftyp'), ...ascii('isom')]
+    const result = validateMediaMimeType(b64(bytes))
+    expect(result).toEqual({ valid: true, mimeType: 'video/mp4', kind: 'video' })
+  })
+
+  it('detects QuickTime video (ftyp + qt brand)', () => {
+    const bytes = [0x00, 0x00, 0x00, 0x18, ...ascii('ftyp'), ...ascii('qt  ')]
+    const result = validateMediaMimeType(b64(bytes))
+    expect(result).toEqual({ valid: true, mimeType: 'video/quicktime', kind: 'video' })
+  })
+
+  it('detects WebM video (EBML header)', () => {
+    const bytes = [0x1A, 0x45, 0xDF, 0xA3]
+    const result = validateMediaMimeType(b64(bytes))
+    expect(result).toEqual({ valid: true, mimeType: 'video/webm', kind: 'video' })
+  })
+
+  it('classifies HEIC (ftyp + heic brand) as an image, not a video', () => {
+    const bytes = [0x00, 0x00, 0x00, 0x18, ...ascii('ftyp'), ...ascii('heic')]
+    const result = validateMediaMimeType(b64(bytes))
+    expect(result).toEqual({ valid: true, mimeType: 'image/heic', kind: 'image' })
+  })
+
+  it('detects JPEG as an image', () => {
+    const bytes = [0xFF, 0xD8, 0xFF, 0xE0]
+    const result = validateMediaMimeType(b64(bytes))
+    expect(result).toEqual({ valid: true, mimeType: 'image/jpeg', kind: 'image' })
+  })
+
+  it('handles the data URI prefix for videos', () => {
+    const bytes = [0x00, 0x00, 0x00, 0x18, ...ascii('ftyp'), ...ascii('isom')]
+    const result = validateMediaMimeType(`data:video/mp4;base64,${b64(bytes)}`)
+    expect(result.valid).toBe(true)
+    expect(result.kind).toBe('video')
+  })
+
+  it('rejects unrecognized magic bytes', () => {
+    const result = validateMediaMimeType(b64([0x00, 0x01, 0x02, 0x03]))
+    expect(result).toEqual({ valid: false, mimeType: null, kind: null })
+  })
+
+  it('rejects data that is too short', () => {
+    const result = validateMediaMimeType(Buffer.alloc(8).toString('base64'))
+    expect(result).toEqual({ valid: false, mimeType: null, kind: null })
   })
 })
 

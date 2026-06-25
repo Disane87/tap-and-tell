@@ -294,7 +294,7 @@ async function handleSubmit(): Promise<void> {
   if (entry) {
     toast.success(t('toast.entryAdded'))
     // Track successful conversion
-    trackConversion(!!data.photo)
+    trackConversion(!!(data.media && data.media.length > 0))
     finishSubmission()
   } else if (!isOnline.value) {
     // Lost connectivity during the request — queue instead of failing.

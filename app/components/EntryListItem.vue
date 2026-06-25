@@ -7,7 +7,8 @@
  * @emits click - When the item is clicked.
  */
 import { useTimeAgo } from '@vueuse/core'
-import type { GuestEntry } from '~/types/guest'
+import { Play } from 'lucide-vue-next'
+import type { GuestEntry, EntryMedia } from '~/types/guest'
 
 const { locale } = useI18n()
 
@@ -18,6 +19,18 @@ const props = defineProps<{
 defineEmits<{
   click: []
 }>()
+
+/**
+ * Thumbnail media: the first media item, falling back to the legacy photo URL.
+ */
+const cover = computed<EntryMedia | null>(() => {
+  if (props.entry.media && props.entry.media.length > 0) return props.entry.media[0]
+  if (props.entry.photoUrl) return { type: 'image', url: props.entry.photoUrl, mime: '' }
+  return null
+})
+
+/** Total number of media items attached to the entry. */
+const mediaCount = computed(() => props.entry.media?.length ?? (props.entry.photoUrl ? 1 : 0))
 
 /**
  * Formats an ISO date string to a short human-readable format.
@@ -67,14 +80,37 @@ const relativeTime = computed(() => {
   >
     <!-- Thumbnail -->
     <div
-      v-if="entry.photoUrl"
-      class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted"
+      v-if="cover"
+      class="relative h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted"
     >
+      <video
+        v-if="cover.type === 'video'"
+        :src="cover.url"
+        class="h-full w-full bg-black object-cover"
+        muted
+        playsinline
+        preload="metadata"
+      />
       <img
-        :src="entry.photoUrl"
+        v-else
+        :src="cover.url"
         :alt="entry.name"
         class="h-full w-full object-cover"
       >
+      <!-- Video indicator -->
+      <div
+        v-if="cover.type === 'video'"
+        class="pointer-events-none absolute inset-0 flex items-center justify-center"
+      >
+        <Play class="h-5 w-5 text-white drop-shadow" />
+      </div>
+      <!-- Media count badge -->
+      <div
+        v-if="mediaCount > 1"
+        class="pointer-events-none absolute bottom-0.5 right-0.5 rounded bg-black/60 px-1 text-[10px] font-medium text-white"
+      >
+        {{ mediaCount }}
+      </div>
     </div>
     <div
       v-else

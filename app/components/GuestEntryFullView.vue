@@ -131,20 +131,13 @@ const youtubeEmbed = computed(() => {
 
 <template>
   <div class="relative min-h-screen overflow-hidden">
-    <!-- Top image (fixed, no scroll) -->
+    <!-- Top media gallery (fixed, no scroll) -->
     <section class="h-[45vh] w-full">
-      <img
-        v-if="entry.photoUrl"
-        :src="entry.photoUrl"
-        :alt="$t('entry.photoBy', { name: entry.name })"
-        class="h-full w-full object-cover"
-      >
-      <div
-        v-else
-        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-primary/70"
-      >
-        <span class="font-handwritten text-6xl text-[#0E0E12]/70">{{ entry.name.charAt(0) }}</span>
-      </div>
+      <MediaGallery
+        :media="entry.media"
+        :fallback-url="entry.photoUrl"
+        :name="entry.name"
+      />
     </section>
 
     <!-- Bottom sheet -->

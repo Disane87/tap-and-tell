@@ -10,7 +10,7 @@ const { formState, errors } = useGuestForm()
 
 /** Translate error key if present. */
 const nameError = computed(() => errors.name ? t(errors.name) : undefined)
-const photoError = computed(() => errors.photo ? t(errors.photo) : undefined)
+const mediaError = computed(() => errors.media ? t(errors.media) : undefined)
 </script>
 
 <template>
@@ -39,12 +39,12 @@ const photoError = computed(() => errors.photo ? t(errors.photo) : undefined)
       </p>
     </div>
 
-    <!-- Photo upload -->
+    <!-- Media upload (images & videos) -->
     <div class="space-y-2">
-      <Label>{{ $t('form.basics.photo') }} ({{ $t('common.optional') }})</Label>
-      <PhotoUpload
-        v-model="formState.photo"
-        :error="photoError"
+      <Label>{{ $t('form.basics.media') }} ({{ $t('common.optional') }})</Label>
+      <MediaUpload
+        v-model="formState.media"
+        :error="mediaError"
       />
     </div>
   </div>

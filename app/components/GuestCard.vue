@@ -9,7 +9,8 @@
  * @emits click - When the card is clicked.
  */
 import { useTimeAgo } from '@vueuse/core'
-import type { GuestEntry } from '~/types/guest'
+import { Play, Images } from 'lucide-vue-next'
+import type { GuestEntry, EntryMedia } from '~/types/guest'
 import type { CustomQuestion } from '~/types/guestbook'
 
 const { t, locale } = useI18n()
@@ -33,6 +34,19 @@ const cardClass = computed(() => {
 defineEmits<{
   click: []
 }>()
+
+/**
+ * Cover media for the card: the first media item, falling back to the legacy
+ * photo URL. May be a video (rendered as a muted preview).
+ */
+const cover = computed<EntryMedia | null>(() => {
+  if (props.entry.media && props.entry.media.length > 0) return props.entry.media[0]
+  if (props.entry.photoUrl) return { type: 'image', url: props.entry.photoUrl, mime: '' }
+  return null
+})
+
+/** Total number of media items attached to the entry. */
+const mediaCount = computed(() => props.entry.media?.length ?? (props.entry.photoUrl ? 1 : 0))
 
 /**
  * Formats an ISO date string to a short human-readable format.
@@ -111,12 +125,40 @@ const answerBadges = computed(() => {
     :class="cardClass"
     @click="$emit('click')"
   >
-    <div v-if="entry.photoUrl" class="photo-frame mb-3 aspect-square w-full bg-muted">
+    <div v-if="cover" class="photo-frame relative mb-3 aspect-square w-full bg-muted">
+      <video
+        v-if="cover.type === 'video'"
+        :src="cover.url"
+        class="h-full w-full bg-black object-cover"
+        muted
+        playsinline
+        preload="metadata"
+      />
       <img
-        :src="entry.photoUrl"
+        v-else
+        :src="cover.url"
         :alt="$t('entry.photoBy', { name: entry.name })"
         class="h-full w-full object-cover"
       >
+
+      <!-- Video play indicator -->
+      <div
+        v-if="cover.type === 'video'"
+        class="pointer-events-none absolute inset-0 flex items-center justify-center"
+      >
+        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 text-white">
+          <Play class="h-5 w-5" />
+        </div>
+      </div>
+
+      <!-- Media count badge -->
+      <div
+        v-if="mediaCount > 1"
+        class="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white"
+      >
+        <Images class="h-3 w-3" />
+        {{ mediaCount }}
+      </div>
     </div>
     <h3 class="font-handwritten text-2xl text-foreground">
       {{ entry.name }}
