@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.34.0](https://github.com/Disane87/tap-and-tell/compare/v1.33.2...v1.34.0) (2026-06-25)
+
+
+### ✨ Features
+
+* **guestbook:** owner-selectable guest fonts (Caveat/DM Sans/Inter) ([e9ad058](https://github.com/Disane87/tap-and-tell/commit/e9ad058d5cac9d76a96a90b24cf2706d2ba1b5b8))
+
+
+### 🐛 Bug Fixes
+
+* **landing:** prevent guestbook hero card overflow on mobile ([abec807](https://github.com/Disane87/tap-and-tell/commit/abec8075880f4266c084c0c9064b4a32e5b20d04))
+
 ## [1.33.2](https://github.com/Disane87/tap-and-tell/compare/v1.33.1...v1.33.2) (2026-06-25)
 
 
