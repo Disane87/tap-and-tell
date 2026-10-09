@@ -752,3 +752,9 @@ Got a bug to report? Have an idea for a new feature? [Open an issue](https://git
 <p align="center">
   Made with ❤️ using <a href="https://nuxt.com/">Nuxt</a>, <a href="https://vuejs.org/">Vue</a>, and <a href="https://tailwindcss.com/">Tailwind CSS</a>
 </p>
+
+---
+
+<p align="center">
+  Made by me at <a href="https://subthiel.eu/softwareentwicklung">Subthiel</a> — software development &amp; 3D printing
+</p>
